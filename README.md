@@ -36,6 +36,24 @@ Full requirements and architecture: [`docs/spec.md`](docs/spec.md).
 
 **Prerequisite:** WSL2 with a Linux distribution (Ubuntu 22.04 recommended) and Docker Desktop with WSL integration enabled. The project lives on the WSL ext4 filesystem at `/home/<you>/recipe-hub` for fast file I/O — see [`docs/spec.md` §14](docs/spec.md) for rationale.
 
+### Hostname setup
+
+The app is served at `http://rec-hub.loc` instead of `http://localhost`. Add this entry to your **Windows hosts file** (`C:\Windows\System32\drivers\etc\hosts`, requires admin rights):
+
+```
+127.0.0.1   rec-hub.loc
+```
+
+One quick way to do this from an elevated PowerShell:
+
+```powershell
+Add-Content -Path "$env:SystemRoot\System32\drivers\etc\hosts" -Value "127.0.0.1`trec-hub.loc"
+```
+
+Then flush DNS (optional, but instant): `ipconfig /flushdns`.
+
+The same hostname covers all services on their respective ports (8025 for Mailpit, 7700 for MeiliSearch, 5173 for Vite).
+
 ### First-time setup (already completed for current developer)
 
 ```bash
@@ -56,7 +74,7 @@ docker run --rm -v "$(pwd):/app" -w /app composer:latest install --ignore-platfo
 ./vendor/bin/sail npm run dev
 ```
 
-App: http://localhost · Mailpit UI: http://localhost:8025 · MeiliSearch: http://localhost:7700
+App: http://rec-hub.loc · Mailpit UI: http://rec-hub.loc:8025 · MeiliSearch: http://rec-hub.loc:7700
 
 ### Day-to-day
 
