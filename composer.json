@@ -7,8 +7,21 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "filament/filament": "^3.2",
+        "intervention/image": "^4.0",
+        "laravel/fortify": "^1.36",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/horizon": "^5.46",
+        "laravel/sanctum": "^4.3",
+        "laravel/scout": "^11.1",
+        "laravel/tinker": "^2.10.1",
+        "livewire/flux": "^2.14",
+        "livewire/livewire": "^3.5",
+        "meilisearch/meilisearch-php": "^1.16",
+        "owen-it/laravel-auditing": "^14.0",
+        "spatie/laravel-medialibrary": "^11.22",
+        "spatie/laravel-permission": "^7.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -60,7 +73,8 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

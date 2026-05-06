@@ -32,7 +32,7 @@ A web application that lets registered users browse a curated bank of recipes, s
 | DB | MySQL 8.0 (primary) / PostgreSQL 16 (alt) |
 | Cache / Queues | Redis 7 + Laravel Horizon |
 | Search | Laravel Scout + MeiliSearch |
-| Frontend | **Blade + Livewire 3 + Alpine.js 3 + Tailwind CSS 3** |
+| Frontend | **Blade + Livewire 3 + Alpine.js 3 + Tailwind CSS 4** |
 | UI Components | Flux UI (Livewire's official component library), Heroicons |
 | Charts | ApexCharts (nutrition donut, macro bars) |
 | Auth | Laravel Fortify + Sanctum (SPA/API tokens) |
@@ -580,12 +580,12 @@ Implemented in a `SetLocale` middleware on the `web` group. No DB lookup; works 
 - `laravel/scout` + `meilisearch/meilisearch-php`
 - `owen-it/laravel-auditing`
 - `barryvdh/laravel-dompdf` (printable recipes)
-- `maatwebsite/excel` (CSV import)
+- `maatwebsite/excel` (CSV import) — **deferred: incompatible with PHP 8.5 as of 2026-05**
 - `pestphp/pest`, `laravel/dusk`, `laravel/telescope`, `laravel/pint`, `larastan/larastan` (dev)
 
 ### 12.2 NPM
 
-- `tailwindcss`, `@tailwindcss/forms`, `@tailwindcss/typography`, `autoprefixer`, `postcss`
+- `tailwindcss@4`, `@tailwindcss/vite` (forms/typography plugins are built into v4)
 - `alpinejs`, `@alpinejs/focus`, `@alpinejs/persist`
 - `apexcharts`
 - `vite`, `laravel-vite-plugin`
@@ -822,7 +822,7 @@ All MVP decisions are locked. Remaining items below are intentional v1.1+ deferr
 
 ### 17.1 Locked
 - **Backend:** Laravel 12.x on PHP 8.5.
-- **Frontend:** Livewire 3 + Alpine.js 3 + Tailwind CSS 3 (Flux UI for primitives, ApexCharts for charts).
+- **Frontend:** Livewire 3 + Alpine.js 3 + Tailwind CSS 4 (Flux UI for primitives, ApexCharts for charts). Upgraded from v3 → v4 because Laravel 12 scaffolds with v4, Flux UI requires v4, and forms/typography plugins are built-in.
 - **Admin panel:** Filament 3, **English-only UI and content entry** (no translation tabs).
 - **Local dev:** Laravel Sail (Docker Compose).
 - **Database:** MySQL 8.0.

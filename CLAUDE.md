@@ -35,7 +35,7 @@ If a session is already inside WSL (e.g. running on Linux), drop the `wsl -d ...
 | Layer | Choice |
 |---|---|
 | Backend | Laravel 12.x, PHP 8.5 |
-| Frontend | Livewire 3 + Alpine.js 3 + Tailwind CSS 3 + Flux UI |
+| Frontend | Livewire 3 + Alpine.js 3 + Tailwind CSS 4 + Flux UI |
 | Admin | Filament 3, **English-only UI and content** |
 | DB | MySQL 8 |
 | Cache / Queue | Redis 7 + Horizon |

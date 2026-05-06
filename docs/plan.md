@@ -69,11 +69,19 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - **GitHub Actions** workflow `.github/workflows/ci.yml`: Pint `--test` → Larastan → Pest, with MySQL 8.4 service, PHP 8.4, Composer cache. Triggers on push to `main` and PRs.
   - All quality gates verified green inside Sail: Pint, Larastan, Pest (2 tests, 2 assertions).
 
-- [ ] **L0.3 — Runtime packages**
-  - Composer: `livewire/livewire`, `filament/filament`, `spatie/laravel-permission`, `spatie/laravel-medialibrary`, `laravel/scout`, `meilisearch/meilisearch-php`, `intervention/image`, `laravel/horizon`, `owen-it/laravel-auditing`, `barryvdh/laravel-dompdf`, `maatwebsite/excel`, `laravel/fortify`, `laravel/sanctum`.
-  - NPM: `tailwindcss@3` + plugins, `alpinejs` + `@alpinejs/focus` + `@alpinejs/persist`, `apexcharts`, `vite`.
-  - Tailwind initialized, Vite building, base layout serves a styled "Hello".
-  - Horizon dashboard reachable at `/horizon`.
+- [x] **L0.3 — Runtime packages** *(completed 2026-05-07)*
+  - **Composer** (13 packages): `livewire/livewire ^3.8`, `livewire/flux ^2.14`, `filament/filament ^3.3`, `spatie/laravel-permission ^7.4`, `spatie/laravel-medialibrary ^11.22`, `laravel/scout ^11.1`, `meilisearch/meilisearch-php ^1.16`, `intervention/image ^4.0`, `laravel/horizon ^5.46`, `owen-it/laravel-auditing ^14.0`, `barryvdh/laravel-dompdf ^3.1`, `laravel/fortify ^1.36`, `laravel/sanctum ^4.3`.
+  - **`maatwebsite/excel` deferred:** `phpoffice/phpspreadsheet` requires PHP `<8.5.0`. Only needed for L6.2 (stretch CSV import UI); USDA artisan command uses native PHP CSV. Will revisit when phpspreadsheet adds PHP 8.5 support.
+  - **NPM:** `alpinejs`, `@alpinejs/focus`, `@alpinejs/persist`, `apexcharts`. Tailwind CSS 4 + `@tailwindcss/vite` kept from Laravel 12 scaffold (forms/typography plugins built-in; Flux UI requires v4).
+  - **Tailwind CSS version change:** spec updated from v3 → v4. Reason: Laravel 12 defaults, Flux UI dependency, plugins built-in.
+  - Vite builds `app.css` + `app.js` (Alpine.js + plugins bootstrapped).
+  - Base layout `components/layouts/app.blade.php` with slate/emerald theme, Livewire styles/scripts.
+  - Welcome page at `/` renders styled "Hello" with Alpine.js toggle proving stack integration.
+  - Filament admin panel at `/admin` (login page) — emerald primary color, auto-discovered resources.
+  - Horizon dashboard at `/horizon` returns HTTP 200.
+  - Fortify published: config, service provider, user actions (create, reset password, update profile/password).
+  - `.env.example` updated: `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`, `SESSION_DRIVER=redis`, `REDIS_HOST=redis`, Mailpit SMTP, MeiliSearch host.
+  - All quality gates green: Pint (41 files pass), Larastan level 6 (0 errors), Pest (2 tests, 2 assertions).
 
 ---
 
