@@ -1,0 +1,58 @@
+# Paths Claude / AI agents should not read or index.
+# Same syntax as .gitignore.
+
+# === Dependencies (huge, regenerable) ===
+/vendor
+/node_modules
+
+# === Build / runtime artifacts ===
+/public/build
+/public/hot
+/public/storage
+/bootstrap/cache
+/storage/app/public
+/storage/debugbar
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/testing
+/storage/framework/views
+/storage/logs
+/storage/pail
+*.log
+
+# === Test caches ===
+/.phpunit.cache
+.phpunit.result.cache
+/.pest
+
+# === Editor / IDE state ===
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+/.phpactor.json
+
+# === Secrets & local config ===
+.env
+.env.backup
+.env.production
+.env.*.local
+/auth.json
+/storage/*.key
+
+# === Database files (if any leak in) ===
+/database/database.sqlite
+*.sqlite
+*.sqlite-journal
+
+# === OS / VCS internals ===
+.DS_Store
+Thumbs.db
+/.git
+
+# === Large data files (USDA dump etc.) ===
+# The repo only checks in the slim curated CSV (~600 rows).
+# The full USDA bulk dump is downloaded ad hoc, never committed.
+/storage/app/usda
+/database/seeders/data/usda-bulk-*.csv
