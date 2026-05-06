@@ -59,11 +59,15 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Git initialized on `main` branch; `user.email` + `user.name` set repo-locally; `core.autocrlf=input` for WSL.
   - **GitHub push deferred** — `gh` CLI is not installed locally. To push: create an empty `recipe-hub` repo on GitHub, then `git remote add origin git@github.com:<you>/recipe-hub.git && git push -u origin main`.
 
-- [ ] **L0.2 — Dev tooling**
-  - Install: Pest 3, Pint, Larastan (level 6), Telescope (local only).
-  - Configure `.editorconfig`, `.gitattributes`, `phpstan.neon`, `pint.json`.
-  - GitHub Actions workflow `.github/workflows/ci.yml`: Pint → Larastan → Pest on every PR.
-  - Confirm CI green on a no-op PR.
+- [x] **L0.2 — Dev tooling** *(completed 2026-05-07)*
+  - **Pest 3.8** installed with `pestphp/pest-plugin-laravel`. PHPUnit example tests converted to Pest syntax. `tests/Pest.php` created with `TestCase` binding for Feature tests.
+  - **Pint 1.24** (was already a dev dep) — `pint.json` created with `laravel` preset. All files pass `--test`.
+  - **Larastan 3.9** installed — `phpstan.neon` at level 6, targeting `app/`. Zero errors.
+  - **Telescope 5.20** installed as dev-only dependency. Registered conditionally via `AppServiceProvider::register()` (only in `local` env + class exists guard). Migration ran. `TELESCOPE_ENABLED` added to `.env.example`.
+  - `.editorconfig` extended with JS/JSON indent rule. `.gitattributes` extended with export-ignore for dev files.
+  - Composer scripts added: `composer pint`, `composer larastan`.
+  - **GitHub Actions** workflow `.github/workflows/ci.yml`: Pint `--test` → Larastan → Pest, with MySQL 8.4 service, PHP 8.4, Composer cache. Triggers on push to `main` and PRs.
+  - All quality gates verified green inside Sail: Pint, Larastan, Pest (2 tests, 2 assertions).
 
 - [ ] **L0.3 — Runtime packages**
   - Composer: `livewire/livewire`, `filament/filament`, `spatie/laravel-permission`, `spatie/laravel-medialibrary`, `laravel/scout`, `meilisearch/meilisearch-php`, `intervention/image`, `laravel/horizon`, `owen-it/laravel-auditing`, `barryvdh/laravel-dompdf`, `maatwebsite/excel`, `laravel/fortify`, `laravel/sanctum`.
