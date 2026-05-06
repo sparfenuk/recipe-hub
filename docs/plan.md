@@ -1,0 +1,429 @@
+# Recipe Hub — Project Plan
+
+**Companion to:** `recipe-app-technical-specification.md`
+**Mode:** Solo developer
+**Created:** 2026-05-07
+**Estimated total:** 6–8 weeks at 1–2 tasks/day (MVP through Layer 5)
+
+---
+
+## How to use this plan
+
+- Tasks run **strictly sequentially** by layer. Inside a layer they could parallelize on a team, but you're solo — do them in listed order.
+- Each task is a single PR/branch, sized for **half a day to a full day**. If you hit something taking >1 day, split it.
+- Branch naming: `feat/L1.2-auth-scaffolding`, `fix/L3.4-recipe-form-validation`, etc.
+- After every task: tests green, app boots, a tiny piece of new behavior is demoable. Then merge and check the box.
+- Stop at the end of each layer and play with the app for 10 minutes before continuing. It's a forcing function for "did I actually finish?"
+- Tracking: just check the boxes in this file as you go. No external tooling needed at solo scale.
+
+---
+
+## Sizing & quality gates
+
+A task is "done" when:
+
+- [ ] Code merged to `main` (or default branch).
+- [ ] CI green: Pint, Larastan level 6, Pest tests.
+- [ ] Manual smoke check: the new behavior works in the running Sail stack.
+- [ ] No new TODOs left without a tracking note.
+
+If you can't tick all four, the task isn't done — keep going or split off a follow-up.
+
+---
+
+## Status legend
+
+- [ ] Not started
+- [~] In progress (only one task at a time)
+- [x] Done
+- [!] Blocked (with note)
+
+---
+
+## Layer 0 — Bootstrap
+
+> Goal: empty Laravel app that boots in Sail with CI green. Anything that's true once for the whole project lives here.
+
+- [x] **L0.1 — Scaffold project** *(completed 2026-05-07)*
+  - **Project location:** `/home/sparf/recipe-hub` inside WSL2 (Ubuntu 22.04). From Windows: `\\wsl$\Ubuntu-22.04\home\sparf\recipe-hub`. Decision recorded: keeping the project on the WSL ext4 filesystem for fast I/O per spec §14.7.
+  - Laravel **12.58** scaffolded via `composer create-project laravel/laravel`.
+  - Sail installed with services: MySQL 8.4, Redis 7-alpine, MeiliSearch (latest), Mailpit (latest). PHP runtime in container: **8.5.5**.
+  - `.env` configured: `APP_NAME="Recipe Hub"`, `APP_TIMEZONE=UTC`, `DB_DATABASE=recipe_hub`. `.env.example` mirrored so future clones get the same defaults. Stray SQLite file removed.
+  - `sail up -d` brings up 5 containers, all healthy. `sail artisan migrate` applies the 3 default migrations on MySQL.
+  - **Smoke checks passed:**
+    - `curl http://localhost` → HTTP 200, `X-Powered-By: PHP/8.5.5`, `<title>Recipe Hub</title>`.
+    - `curl http://localhost:7700/health` → `{"status":"available"}`.
+    - Mailpit UI reachable at `http://localhost:8025`.
+    - `sail artisan migrate:status` shows 3 ran migrations.
+  - Spec + plan copied into `docs/spec.md` and `docs/plan.md` — these are the canonical living copies going forward.
+  - Git initialized on `main` branch; `user.email` + `user.name` set repo-locally; `core.autocrlf=input` for WSL.
+  - **GitHub push deferred** — `gh` CLI is not installed locally. To push: create an empty `recipe-hub` repo on GitHub, then `git remote add origin git@github.com:<you>/recipe-hub.git && git push -u origin main`.
+
+- [ ] **L0.2 — Dev tooling**
+  - Install: Pest 3, Pint, Larastan (level 6), Telescope (local only).
+  - Configure `.editorconfig`, `.gitattributes`, `phpstan.neon`, `pint.json`.
+  - GitHub Actions workflow `.github/workflows/ci.yml`: Pint → Larastan → Pest on every PR.
+  - Confirm CI green on a no-op PR.
+
+- [ ] **L0.3 — Runtime packages**
+  - Composer: `livewire/livewire`, `filament/filament`, `spatie/laravel-permission`, `spatie/laravel-medialibrary`, `laravel/scout`, `meilisearch/meilisearch-php`, `intervention/image`, `laravel/horizon`, `owen-it/laravel-auditing`, `barryvdh/laravel-dompdf`, `maatwebsite/excel`, `laravel/fortify`, `laravel/sanctum`.
+  - NPM: `tailwindcss@3` + plugins, `alpinejs` + `@alpinejs/focus` + `@alpinejs/persist`, `apexcharts`, `vite`.
+  - Tailwind initialized, Vite building, base layout serves a styled "Hello".
+  - Horizon dashboard reachable at `/horizon`.
+
+---
+
+## Layer 1 — Foundation
+
+> Goal: an authenticated user can log in, switch language, and see an empty admin shell. The skeleton is in place for everything else.
+
+- [ ] **L1.1 — Public layout & theme**
+  - Blade layout `layouts/app.blade.php` with header (logo wordmark "Recipe Hub", nav placeholder, locale switcher slot, login/register links), main slot, footer.
+  - `layouts/guest.blade.php` for auth pages.
+  - Tailwind config with slate + emerald palette, `@tailwindcss/forms`, `@tailwindcss/typography`.
+  - Heroicons Blade components installed.
+
+- [ ] **L1.2 — Auth scaffolding (Fortify)**
+  - Register, login, logout, email verification, password reset, password confirmation flows.
+  - Forms styled with the layout from L1.1.
+  - Mailpit catches the verification email locally.
+  - Pest feature tests for each flow.
+
+- [ ] **L1.3 — Roles & permissions**
+  - `spatie/laravel-permission` published & migrated.
+  - `RoleSeeder` creates `guest`, `user`, `editor`, `admin`.
+  - New users assigned `user` role on registration.
+  - `Gate`/policy boilerplate in place.
+  - Pest test: registered user has `user` role; admin role grants admin gate.
+
+- [ ] **L1.4 — Localization scaffolding**
+  - `lang/en.json`, `lang/uk.json`, `lang/{en,uk}/auth.php`, `validation.php`, `passwords.php`, `pagination.php`.
+  - Custom: `lang/{en,uk}/recipes.php`, `calculator.php`, `cabinet.php`, `nav.php`.
+  - `SetLocale` middleware on the `web` group: `?locale=` → cookie → `Accept-Language` → `en`.
+  - `LocaleSwitcher` Livewire component in header (English / Українська).
+  - Pest drift-guard test: every `lang/en/*` key exists in `lang/uk/*`.
+
+- [ ] **L1.5 — Filament admin shell**
+  - Filament installed at `/admin`.
+  - Middleware forces `app()->setLocale('en')` for `/admin/*` regardless of cookie.
+  - Login gated by `admin` role.
+  - Empty dashboard with a placeholder widget.
+
+- [ ] **L1.6 — User profile + cabinet shell**
+  - `user_profiles` migration: `sex`, `birth_date`, `height_cm`, `weight_kg`, `activity_level`, `daily_kcal_target`, `p_pct`, `f_pct`, `c_pct`, `units_pref`, `timezone` (reserved).
+  - `User::profile()` relation, auto-created on registration.
+  - `/cabinet` route + Livewire `CabinetDashboard` skeleton (just shows name + email).
+  - `ProfileForm` Livewire component (name, avatar, units pref) with file upload + Pest test.
+
+---
+
+## Layer 2 — Reference data
+
+> Goal: the ingredient catalog is populated and editable. Recipes can't exist yet, but admin can browse and edit ~600 ingredients with full nutrition data.
+
+- [ ] **L2.1 — Units + UnitConverter**
+  - `units` table + seeder (`g`, `kg`, `mg`, `ml`, `l`, `tsp`, `tbsp`, `cup`, `oz`, `lb`, `piece`).
+  - `App\Services\Nutrition\UnitConverter::toGrams(amount, unit, ingredient)`: handles mass→g directly, volume→g via density, count via `default_unit`.
+  - Pest unit tests covering each conversion path with fixtures.
+
+- [ ] **L2.2 — Taxonomies**
+  - Migrations + seeders + Filament resources for: `ingredient_categories`, `cuisines`, `tags` (typed: diet/cuisine/misc), `allergens`, `categories` (recipe categories).
+  - Each resource lists / creates / edits / deletes in admin.
+
+- [ ] **L2.3 — Ingredients CRUD (no import yet)**
+  - `ingredients` migration with all nutrition columns + `density_g_per_ml`, `default_unit_id`, `is_active`, `source`.
+  - `ingredient_aliases`, `ingredient_allergen` pivot, `ingredient_tag` pivot.
+  - Filament `IngredientResource`: form with nutrition inputs, allergens multi-select, tags multi-select, aliases repeater. List view with search + filters.
+  - Pest test: create + read + update + delete via Filament actions.
+
+- [ ] **L2.4 — USDA curation script**
+  - One-time Node.js or PHP script `scripts/curate-usda.php` that:
+    - Reads `foundation_foods.csv`, `sr_legacy_foods.csv`, `food_nutrient.csv`, `nutrient.csv`.
+    - Applies filter rules (drop branded/baby/restaurant/etc., keep whole foods).
+    - Deduplicates near-identical variants.
+    - Outputs `database/seeders/data/usda-curated.csv` (~600 rows).
+  - Document the run command in `README` so it's reproducible.
+
+- [ ] **L2.5 — `ingredients:import-usda` artisan command**
+  - Reads the curated CSV (streaming).
+  - Maps USDA nutrient IDs to ingredient columns (1003/1004/1005/1008/1079/1093/1258/2000).
+  - Idempotent on `source = "USDA FDC #<id>"`.
+  - `--dry-run`, `--chunk=1000`, `--enrich` flags.
+  - Row-level error log to `storage/logs/usda-import-{date}.log`.
+  - Pest tests on a 5-row fixture CSV.
+
+- [ ] **L2.6 — Enrichment data files**
+  - `database/seeders/data/densities.json` — ~50 common items (oils, dairy, syrups, flour, sugar).
+  - `database/seeders/data/allergen-rules.json` — keyword → allergen flag mapping.
+  - `database/seeders/data/aliases.json` — ~200 known synonym pairs.
+  - Importer applies them when run with `--enrich`.
+
+- [ ] **L2.7 — `IngredientSeeder`**
+  - Runs the importer on the checked-in curated CSV.
+  - `php artisan migrate:fresh --seed` produces a working DB with ~600 ingredients.
+  - Smoke check: pick 5 ingredients, verify nutrition values match a public USDA reference.
+
+- [ ] **L2.8 — Media library wiring**
+  - `spatie/laravel-medialibrary` published & migrated.
+  - Conversions: `thumb` (200×200), `card` (600×400), `full` (1600w).
+  - `image-processing` queue defined; conversions run on Horizon.
+  - Ingredient model has a media collection; admin can upload an ingredient photo and see all conversions render.
+  - User avatar upload works via `ProfileForm`.
+
+---
+
+## Layer 3 — Core features
+
+> Goal: an admin can create a recipe with ingredients, see auto-computed nutrition, and a logged-in user can see their suggested daily calorie target.
+
+- [ ] **L3.1 — Recipe schema**
+  - Migrations: `recipes`, `recipe_ingredients`, `recipe_steps`, `recipe_tag` pivot.
+  - All columns from spec section 5: status enum, difficulty enum, cached nutrition totals, slugs.
+  - Models with relationships, factories for testing.
+
+- [ ] **L3.2 — `NutritionCalculator` service**
+  - Method `totalsFor(Recipe $r): NutritionTotals` — returns kcal, P/F/C, fiber for the whole recipe and per serving.
+  - Uses `UnitConverter` to resolve each `recipe_ingredient` to grams, then proportions per-100g nutrition.
+  - Pest tests against 3 hand-computed reference recipes (simple / with liquids / with `grams_override`). Tolerance ±1%.
+
+- [ ] **L3.3 — Nutrition recompute job**
+  - `RecalculateRecipeNutrition` job dispatched on:
+    - Recipe save (model observer).
+    - Recipe ingredient row change (observer).
+    - Bulk ingredient nutrition update (model observer on `Ingredient`).
+  - Stores totals + `nutrition_cached_at`.
+  - Pest test: editing an ingredient triggers a recompute on every recipe using it.
+
+- [ ] **L3.4 — Filament Recipe resource**
+  - Form: title, summary, description, category, cuisine, difficulty, servings, prep/cook time, status.
+  - Repeater for ingredients (ingredient picker + amount + unit + note + optional flag + group label).
+  - Repeater for steps (position auto, body, image upload).
+  - Tags multi-select.
+  - Live computed nutrition panel inside the form (read-only, refreshes after save).
+  - List view: filters by status, category, cuisine, search.
+  - Bulk actions: publish, archive, duplicate.
+
+- [ ] **L3.5 — Recipe media**
+  - Hero photo + gallery via medialibrary.
+  - Step photos already covered by L3.4.
+  - Filament uploader with drag-drop multi-file for the gallery.
+
+- [ ] **L3.6 — Cabinet: health profile**
+  - `HealthForm` Livewire component on `/cabinet/health`.
+  - Inputs: sex, birth date, height, weight, activity level (sedentary → very active).
+  - Live BMR via Mifflin-St Jeor → suggested daily kcal target shown beside the form.
+  - "Use suggested" button writes the value to the user's daily target. Manual override allowed.
+  - Pest tests on the BMR formula and the form action.
+
+- [ ] **L3.7 — Cabinet: macro targets**
+  - `MacroTargetForm` Livewire component on the same page.
+  - Inputs: P %, F %, C %. Live validation: must sum to 100. Defaults to 30/30/40.
+  - Saves to `user_profiles`.
+
+- [ ] **L3.8 — Public catalog v1**
+  - `/recipes` route + `RecipeBrowser` Livewire component.
+  - Lists published recipes with hero photo, title, kcal/serving, prep time.
+  - Pagination.
+  - Basic filters: category, cuisine.
+
+- [ ] **L3.9 — Catalog filters v2**
+  - Add filters: max kcal/serving, max prep time, diet tags, allergens (auto-applied from logged-in user's profile).
+  - Sort: newest, lowest calories, shortest prep, most-favorited.
+  - Filter sidebar uses `wire:model.live.debounce`.
+
+- [ ] **L3.10 — MeiliSearch wiring**
+  - Scout configured for `Recipe` and `Ingredient` models.
+  - Indexed fields: title, summary, description, ingredient names (denormalized).
+  - Reindex command works locally + on first deploy.
+  - Search bar in catalog header → filters list to matching recipes.
+  - Pest test: search returns expected recipe.
+
+---
+
+## Layer 4 — User-facing interactions
+
+> Goal: a visitor can browse a recipe, save it, and use the calculator to scale ingredients to a target. This is the MVP money-shot.
+
+- [ ] **L4.1 — Recipe detail page**
+  - `/recipes/{slug}` route.
+  - Hero photo, title, meta (servings, prep, cook, difficulty, cuisine, tags).
+  - Ingredient list with amounts and units.
+  - Numbered step list with optional step photos.
+  - Nutrition panel (per serving + per 100 g) — placeholder until L4.7 charts.
+  - Print button (placeholder for L5.2).
+
+- [ ] **L4.2 — Favorites**
+  - `favorites` table (composite PK), model relation.
+  - `FavoriteButton` Livewire component (optimistic toggle, login redirect for guests).
+  - `/cabinet/favorites` page lists saved recipes with quick filters.
+
+- [ ] **L4.3 — Calculator: scale by servings**
+  - `PortionCalculator` Livewire component embedded on recipe detail.
+  - Input: target servings (number, default = recipe's servings).
+  - Output: scaled ingredient quantities + new totals (kcal, P/F/C, fiber).
+  - Updates live as input changes (`wire:model.live.debounce`).
+
+- [ ] **L4.4 — Calculator: scale by total kcal**
+  - Mode selector tabs: Servings / Calories / % of daily.
+  - Calorie mode: input kcal, scale factor = target / current_total, ingredients scaled accordingly.
+  - Display rounded scaled amounts.
+
+- [ ] **L4.5 — Calculator: % of daily intake**
+  - Daily-percent mode: input 5–100 %, pulls user's daily kcal target from profile.
+  - If user not logged in or no target set: show inline prompt "Set your daily target to use this mode" with a link.
+  - Same scaling math as L4.4.
+
+- [ ] **L4.6 — Calculator history**
+  - `calculator_sessions` table.
+  - "Save calculation" button on the calculator stores `mode`, `value`, `scale_factor`, `totals`, `recipe_id`, `user_id`.
+  - `/cabinet/calculations` page lists saved sessions, allows reload + delete.
+  - Pest test: save → list → reload restores the same outputs.
+
+- [ ] **L4.7 — Charts**
+  - ApexCharts wrapper component (Alpine).
+  - Donut: kcal split into P/F/C grams × 4/9/4.
+  - Bar: actual macros vs user target (only if logged in with target set).
+  - Charts react to calculator updates.
+
+- [ ] **L4.8 — Ingredient autocomplete**
+  - `IngredientAutocomplete` Livewire component (debounced search via Scout).
+  - Used in catalog filter sidebar (include / exclude ingredient).
+  - Used as a fallback in admin recipe form if Filament's default picker is sluggish.
+
+---
+
+## Layer 5 — Polish & production readiness
+
+> Goal: site is production-ready. Localized, monitored, backed up, deployed.
+
+- [ ] **L5.1 — Email flows localized**
+  - Verify-email, reset-password, welcome emails extend `Mail::to(...)->locale(...)` using locale captured at dispatch.
+  - Blade templates use `__()`.
+  - Pest test: dispatching with locale `uk` produces a Ukrainian email body.
+
+- [ ] **L5.2 — Print + PDF**
+  - Print stylesheet: hides nav/footer, expands all sections, B&W friendly.
+  - PDF export via `barryvdh/laravel-dompdf` for a recipe page.
+  - "Print / PDF" buttons on recipe detail.
+
+- [ ] **L5.3 — SEO**
+  - Meta tags (title, description, og:image, og:type), Twitter card.
+  - `<link rel="alternate" hreflang="en|uk|x-default">` on public pages.
+  - `sitemap.xml` generator (recipes + categories), `robots.txt`.
+  - Lighthouse SEO score ≥ 95 on recipe detail page.
+
+- [ ] **L5.4 — Audit log**
+  - `owen-it/laravel-auditing` enabled on `Recipe`, `Ingredient`, `User`, taxonomies.
+  - Filament page lists audits with filtering by user / model / action.
+  - 90-day retention via scheduled prune job.
+
+- [ ] **L5.5 — Rate limiting**
+  - Auth routes: 5 req/min per IP.
+  - Calculator endpoint: 60 req/min per user.
+  - API: 60/min per token, 30/min per IP for unauth.
+  - 429 responses use the localized error page.
+
+- [ ] **L5.6 — Backups**
+  - `spatie/laravel-backup` configured to push DB + storage to off-server S3-compatible bucket nightly.
+  - 14-day retention.
+  - Manual `backup:run` confirmed working.
+  - Test restore on a throwaway local DB.
+
+- [ ] **L5.7 — Sentry**
+  - PHP SDK + JS SDK initialized for production env only.
+  - Test exception captured.
+  - Source maps uploaded on deploy.
+
+- [ ] **L5.8 — Forge provisioning**
+  - VPS provisioned (Hetzner CPX21 or equivalent).
+  - Forge sites created: staging + production, separate databases.
+  - MeiliSearch installed as Forge daemon, bound to `127.0.0.1`.
+  - Horizon daemon configured.
+  - SSL via Forge's Let's Encrypt.
+  - UFW firewall: 22/80/443 only.
+  - Server timezone `UTC`.
+
+- [ ] **L5.9 — First staging deploy + smoke test**
+  - Push to `develop` triggers staging deploy.
+  - Run through every flow: register, verify email (real inbox), edit profile, search, view recipe, calculate, save favorite.
+  - Check Sentry catches a deliberately-thrown error.
+  - Verify backups land in the bucket.
+
+- [ ] **L5.10 — Pre-launch checklist**
+  - Lighthouse Performance + Accessibility ≥ 90 on landing, catalog, recipe detail.
+  - Manual keyboard-only walkthrough.
+  - Validate every email template renders correctly in Gmail + Outlook web.
+  - Spot-check 20 random recipes for correct nutrition totals.
+  - Final content review (50+ recipes seeded, photos present).
+  - Cut a `v1.0.0` git tag.
+  - Promote to production.
+
+---
+
+## Layer 6 — Stretch (post-MVP, only if time before launch)
+
+- [ ] **L6.1 — Public API v1** — recipes list/detail + ingredient search; Sanctum tokens for `/me/*` (favorites, calculator history).
+- [ ] **L6.2 — CSV ingredient import in Filament** — column-mapping wizard, dry-run preview.
+- [ ] **L6.3 — OpenAPI / Scribe** — generated API docs.
+- [ ] **L6.4 — Dusk smoke tests** — registration → first calculator save end-to-end.
+- [ ] **L6.5 — Performance pass** — Telescope-driven N+1 sweep, eager loading audit, image lazyloading verification.
+
+---
+
+## Critical-path summary
+
+Tasks that block the most downstream work — never skip ahead of these:
+
+```
+L0.1 → L0.3 → L1.2 → L1.3 → L1.5 → L2.1 → L2.5 → L2.7 → L3.1 → L3.2 → L3.4 → L4.1 → L4.3
+```
+
+Get to L4.3 (calculator scale-by-servings) and the product is technically demoable end-to-end, even if rough.
+
+---
+
+## Estimated timeline (solo, 1.5 tasks/day)
+
+| Layer | Tasks | Days | Calendar weeks |
+|---|---|---|---|
+| L0 — Bootstrap | 3 | 2 | 0.5 |
+| L1 — Foundation | 6 | 4 | 1 |
+| L2 — Reference data | 8 | 6 | 1.5 |
+| L3 — Core features | 10 | 7 | 1.5 |
+| L4 — Interactions | 8 | 6 | 1.5 |
+| L5 — Polish | 10 | 7 | 1.5 |
+| **MVP total** | **45** | **~32** | **~6.5 weeks** |
+| L6 — Stretch | 5 | 4 | 1 |
+
+Add 20 % buffer for unknowns → realistic MVP target **~8 weeks**.
+
+---
+
+## Working rhythm (recommended)
+
+- **Start of day:** check the next unticked task, branch, write a 1-line acceptance criterion at the top of the PR description, then code.
+- **End of task:** push, CI green, merge, tick the box in this file, commit the tick.
+- **End of day:** if the task isn't done, leave clear notes in the PR for tomorrow-you.
+- **End of layer:** boot the app, click through the new flow, spot-fix anything ugly with a quick follow-up task. Then move on.
+
+---
+
+## Things to deliberately NOT do during MVP
+
+A reminder list because scope creep kills solo projects:
+
+- No comments / ratings.
+- No social login.
+- No PDF recipe import.
+- No meal planner.
+- No mobile app.
+- No final branding / logo work.
+- No multilingual content (UI strings only, content is English).
+- No imperial unit conversion in recipes (the `units_pref` column exists but only swaps display labels in cabinet).
+- No public API beyond what L6.1 says.
+
+If an idea like these appears mid-build, write it in `IDEAS.md` and keep moving.
+
+---
+
+*End of plan.*
