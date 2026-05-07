@@ -11,14 +11,94 @@
     @livewireStyles
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-    <header class="border-b border-slate-200 bg-white">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-            <a href="/" class="text-xl font-bold tracking-tight text-emerald-600">
-                Recipe Hub
+    <header x-data="{ mobileOpen: false }" class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+            {{-- Logo --}}
+            <a href="/" class="flex items-center gap-2 text-xl font-bold tracking-tight text-emerald-600">
+                <x-heroicon-o-fire class="h-7 w-7" />
+                <span>Recipe Hub</span>
             </a>
-            <nav class="flex items-center gap-4 text-sm text-slate-600">
+
+            {{-- Desktop navigation --}}
+            <nav class="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
                 {{ $nav ?? '' }}
             </nav>
+
+            {{-- Desktop right side: locale switcher + auth --}}
+            <div class="hidden items-center gap-3 md:flex">
+                {{ $localeSwitcher ?? '' }}
+
+                @auth
+                    <a href="/cabinet" class="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600">
+                        {{ Auth::user()->name }}
+                    </a>
+                    <form method="POST" action="/logout" class="inline">
+                        @csrf
+                        <button type="submit" class="text-sm font-medium text-slate-500 transition-colors hover:text-slate-700">
+                            Log out
+                        </button>
+                    </form>
+                @else
+                    <a href="/login" class="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600">
+                        Log in
+                    </a>
+                    <a href="/register" class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700">
+                        Register
+                    </a>
+                @endauth
+            </div>
+
+            {{-- Mobile menu button --}}
+            <button
+                x-on:click="mobileOpen = !mobileOpen"
+                type="button"
+                class="inline-flex items-center justify-center rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 md:hidden"
+                :aria-expanded="mobileOpen"
+                aria-label="Toggle navigation"
+            >
+                <x-heroicon-o-bars-3 x-show="!mobileOpen" class="h-6 w-6" />
+                <x-heroicon-o-x-mark x-show="mobileOpen" x-cloak class="h-6 w-6" />
+            </button>
+        </div>
+
+        {{-- Mobile menu --}}
+        <div
+            x-show="mobileOpen"
+            x-transition:enter="transition duration-200 ease-out"
+            x-transition:enter-start="opacity-0 -translate-y-1"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition duration-150 ease-in"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-1"
+            x-cloak
+            class="border-t border-slate-200 bg-white md:hidden"
+        >
+            <nav class="space-y-1 px-4 py-3 text-sm font-medium text-slate-600">
+                {{ $nav ?? '' }}
+            </nav>
+
+            <div class="border-t border-slate-200 px-4 py-3">
+                {{ $localeSwitcher ?? '' }}
+
+                @auth
+                    <a href="/cabinet" class="block py-2 text-sm font-medium text-slate-600">
+                        {{ Auth::user()->name }}
+                    </a>
+                    <form method="POST" action="/logout">
+                        @csrf
+                        <button type="submit" class="block w-full py-2 text-left text-sm font-medium text-slate-500">
+                            Log out
+                        </button>
+                    </form>
+                @else
+                    <a href="/login" class="block py-2 text-sm font-medium text-slate-600">
+                        Log in
+                    </a>
+                    <a href="/register" class="block py-2 text-sm font-medium text-emerald-600">
+                        Register
+                    </a>
+                @endauth
+            </div>
         </div>
     </header>
 
@@ -27,8 +107,16 @@
     </main>
 
     <footer class="border-t border-slate-200 bg-white">
-        <div class="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-slate-500 sm:px-6 lg:px-8">
-            {{ config('app.name') }} &copy; {{ date('Y') }}
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+                <a href="/" class="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
+                    <x-heroicon-o-fire class="h-5 w-5" />
+                    Recipe Hub
+                </a>
+                <p class="text-sm text-slate-500">
+                    &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+                </p>
+            </div>
         </div>
     </footer>
 
