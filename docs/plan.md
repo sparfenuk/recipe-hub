@@ -95,11 +95,13 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Tailwind config with slate + emerald palette, `@tailwindcss/forms`, `@tailwindcss/typography`.
   - Heroicons Blade components installed.
 
-- [ ] **L1.2 — Auth scaffolding (Fortify)**
-  - Register, login, logout, email verification, password reset, password confirmation flows.
-  - Forms styled with the layout from L1.1.
-  - Mailpit catches the verification email locally.
-  - Pest feature tests for each flow.
+- [x] **L1.2 — Auth scaffolding (Fortify)** *(completed 2026-05-07)*
+  - Register, login, logout, email verification, password reset, password confirmation flows via Fortify.
+  - 6 Blade views styled with guest layout (emerald/slate theme).
+  - User model implements `MustVerifyEmail`; Fortify `emailVerification` feature enabled; Mailpit catches verification emails locally.
+  - Cabinet placeholder at `/cabinet` behind `auth`+`verified` middleware.
+  - 23 Pest feature tests (43 assertions) covering all auth flows including rate limiting.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L1.3 — Roles & permissions**
   - `spatie/laravel-permission` published & migrated.
