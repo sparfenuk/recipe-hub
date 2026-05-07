@@ -112,12 +112,15 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 10 Pest tests (registered user has `user` role, admin gate, editor permissions, Filament panel access/deny, seeder idempotency).
   - Quality gates green: Pint, Larastan level 6, Pest (33 tests, 58 assertions).
 
-- [ ] **L1.4 — Localization scaffolding**
-  - `lang/en.json`, `lang/uk.json`, `lang/{en,uk}/auth.php`, `validation.php`, `passwords.php`, `pagination.php`.
-  - Custom: `lang/{en,uk}/recipes.php`, `calculator.php`, `cabinet.php`, `nav.php`.
-  - `SetLocale` middleware on the `web` group: `?locale=` → cookie → `Accept-Language` → `en`.
-  - `LocaleSwitcher` Livewire component in header (English / Українська).
-  - Pest drift-guard test: every `lang/en/*` key exists in `lang/uk/*`.
+- [x] **L1.4 — Localization scaffolding** *(completed 2026-05-07)*
+  - `lang/en.json`, `lang/uk.json` with all UI strings (31 keys each). `lang/{en,uk}/auth.php`, `validation.php`, `passwords.php`, `pagination.php` copied from framework and translated.
+  - Custom domain files: `lang/{en,uk}/recipes.php`, `calculator.php`, `cabinet.php`, `nav.php`.
+  - `SetLocale` middleware on `web` group: `?locale=` query param (sets cookie + redirects) → `locale` cookie → `Accept-Language` header → `en` fallback. Cookie: 1-year, SameSite=Lax.
+  - `LocaleSwitcher` Livewire component in header (English / Українська) with Alpine.js dropdown. Uses `<a href="?locale=xx">` links handled by middleware.
+  - All existing Blade views (auth, layouts, welcome, cabinet) wrapped with `__()` for translation.
+  - Filament admin unaffected — it uses its own middleware stack, not the `web` group.
+  - 10 Pest tests (43 tests total, 94 assertions): middleware behavior, drift-guard for JSON + PHP keys, locale switcher rendering, translated content verification.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L1.5 — Filament admin shell**
   - Filament installed at `/admin`.

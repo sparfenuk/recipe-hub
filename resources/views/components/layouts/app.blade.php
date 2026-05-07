@@ -26,7 +26,7 @@
 
             {{-- Desktop right side: locale switcher + auth --}}
             <div class="hidden items-center gap-3 md:flex">
-                {{ $localeSwitcher ?? '' }}
+                <livewire:locale-switcher />
 
                 @auth
                     <a href="/cabinet" class="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600">
@@ -35,15 +35,15 @@
                     <form method="POST" action="/logout" class="inline">
                         @csrf
                         <button type="submit" class="text-sm font-medium text-slate-500 transition-colors hover:text-slate-700">
-                            Log out
+                            {{ __('Log out') }}
                         </button>
                     </form>
                 @else
                     <a href="/login" class="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600">
-                        Log in
+                        {{ __('Log in') }}
                     </a>
                     <a href="/register" class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700">
-                        Register
+                        {{ __('Register') }}
                     </a>
                 @endauth
             </div>
@@ -78,7 +78,7 @@
             </nav>
 
             <div class="border-t border-slate-200 px-4 py-3">
-                {{ $localeSwitcher ?? '' }}
+                <livewire:locale-switcher />
 
                 @auth
                     <a href="/cabinet" class="block py-2 text-sm font-medium text-slate-600">
@@ -87,15 +87,15 @@
                     <form method="POST" action="/logout">
                         @csrf
                         <button type="submit" class="block w-full py-2 text-left text-sm font-medium text-slate-500">
-                            Log out
+                            {{ __('Log out') }}
                         </button>
                     </form>
                 @else
                     <a href="/login" class="block py-2 text-sm font-medium text-slate-600">
-                        Log in
+                        {{ __('Log in') }}
                     </a>
                     <a href="/register" class="block py-2 text-sm font-medium text-emerald-600">
-                        Register
+                        {{ __('Register') }}
                     </a>
                 @endauth
             </div>
@@ -114,7 +114,7 @@
                     Recipe Hub
                 </a>
                 <p class="text-sm text-slate-500">
-                    &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+                    &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
                 </p>
             </div>
         </div>

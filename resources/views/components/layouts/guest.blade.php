@@ -23,7 +23,7 @@
     </div>
 
     <p class="mt-8 pb-8 text-center text-sm text-slate-500">
-        &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+        &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
     </p>
 
     @livewireScripts

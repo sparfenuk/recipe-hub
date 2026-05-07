@@ -7,15 +7,15 @@
         </h1>
 
         <p class="mt-4 max-w-lg text-lg text-slate-600">
-            Browse curated recipes with full nutritional data. Scale ingredients to your daily calorie target with the built-in portion calculator.
+            {{ __('Browse curated recipes with full nutritional data. Scale ingredients to your daily calorie target with the built-in portion calculator.') }}
         </p>
 
         <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:gap-4">
             <a href="/recipes" class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700">
-                Browse Recipes
+                {{ __('Browse Recipes') }}
             </a>
             <a href="/register" class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
-                Create Account
+                {{ __('Create Account') }}
             </a>
         </div>
     </div>

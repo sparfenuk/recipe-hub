@@ -1,17 +1,17 @@
-<x-layouts.guest title="Log in">
+<x-layouts.guest :title="__('Log in')">
     @if (session('status'))
         <div class="mb-4 rounded-lg bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
             {{ session('status') }}
         </div>
     @endif
 
-    <h1 class="mb-6 text-center text-2xl font-bold text-slate-900">Log in to your account</h1>
+    <h1 class="mb-6 text-center text-2xl font-bold text-slate-900">{{ __('Log in to your account') }}</h1>
 
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
         <div>
-            <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
+            <label for="email" class="block text-sm font-medium text-slate-700">{{ __('Email') }}</label>
             <input
                 id="email"
                 type="email"
@@ -28,7 +28,7 @@
         </div>
 
         <div>
-            <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+            <label for="password" class="block text-sm font-medium text-slate-700">{{ __('Password') }}</label>
             <input
                 id="password"
                 type="password"
@@ -45,21 +45,21 @@
         <div class="flex items-center justify-between">
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="remember" class="rounded border-slate-300 text-emerald-600 shadow-sm focus:ring-emerald-500" />
-                <span class="text-sm text-slate-600">Remember me</span>
+                <span class="text-sm text-slate-600">{{ __('Remember me') }}</span>
             </label>
 
             <a href="{{ route('password.request') }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-500">
-                Forgot password?
+                {{ __('Forgot password?') }}
             </a>
         </div>
 
         <button type="submit" class="flex w-full justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
-            Log in
+            {{ __('Log in') }}
         </button>
     </form>
 
     <p class="mt-6 text-center text-sm text-slate-600">
-        Don't have an account?
-        <a href="{{ route('register') }}" class="font-medium text-emerald-600 hover:text-emerald-500">Register</a>
+        {{ __("Don't have an account?") }}
+        <a href="{{ route('register') }}" class="font-medium text-emerald-600 hover:text-emerald-500">{{ __('Register') }}</a>
     </p>
 </x-layouts.guest>

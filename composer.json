@@ -21,6 +21,7 @@
         "livewire/livewire": "^3.5",
         "meilisearch/meilisearch-php": "^1.16",
         "owen-it/laravel-auditing": "^14.0",
+        "resend/resend-laravel": "^1.4",
         "spatie/laravel-medialibrary": "^11.22",
         "spatie/laravel-permission": "^7.4"
     },
