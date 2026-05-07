@@ -89,7 +89,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
 
 > Goal: an authenticated user can log in, switch language, and see an empty admin shell. The skeleton is in place for everything else.
 
-- [ ] **L1.1 — Public layout & theme**
+- [x] **L1.1 — Public layout & theme** *(completed 2026-05-07, landed in L0.4 commit 4d4c8ae)*
   - Blade layout `layouts/app.blade.php` with header (logo wordmark "Recipe Hub", nav placeholder, locale switcher slot, login/register links), main slot, footer.
   - `layouts/guest.blade.php` for auth pages.
   - Tailwind config with slate + emerald palette, `@tailwindcss/forms`, `@tailwindcss/typography`.
