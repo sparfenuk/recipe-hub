@@ -103,12 +103,14 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 23 Pest feature tests (43 assertions) covering all auth flows including rate limiting.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L1.3 — Roles & permissions**
-  - `spatie/laravel-permission` published & migrated.
-  - `RoleSeeder` creates `guest`, `user`, `editor`, `admin`.
-  - New users assigned `user` role on registration.
-  - `Gate`/policy boilerplate in place.
-  - Pest test: registered user has `user` role; admin role grants admin gate.
+- [x] **L1.3 — Roles & permissions** *(completed 2026-05-07)*
+  - `spatie/laravel-permission` config & migration published, migration ran.
+  - `RoleSeeder` creates `guest`, `user`, `editor`, `admin` roles with 13 granular permissions (`recipe.view/create/update/delete/publish`, `ingredient.view/create/update/delete`, `media.upload`, `user.manage/impersonate`, `admin.access`).
+  - New users assigned `user` role on registration via `CreateNewUser` action.
+  - `Gate::before` in `AppServiceProvider` grants admin super-access to all abilities.
+  - User model implements `FilamentUser` with `canAccessPanel()` gated by `admin` role.
+  - 10 Pest tests (registered user has `user` role, admin gate, editor permissions, Filament panel access/deny, seeder idempotency).
+  - Quality gates green: Pint, Larastan level 6, Pest (33 tests, 58 assertions).
 
 - [ ] **L1.4 — Localization scaffolding**
   - `lang/en.json`, `lang/uk.json`, `lang/{en,uk}/auth.php`, `validation.php`, `passwords.php`, `pagination.php`.

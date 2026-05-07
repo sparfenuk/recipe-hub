@@ -1,8 +1,13 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Event;
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
 
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
