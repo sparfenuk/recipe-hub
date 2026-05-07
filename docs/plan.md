@@ -122,17 +122,22 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 10 Pest tests (43 tests total, 94 assertions): middleware behavior, drift-guard for JSON + PHP keys, locale switcher rendering, translated content verification.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L1.5 — Filament admin shell**
-  - Filament installed at `/admin`.
-  - Middleware forces `app()->setLocale('en')` for `/admin/*` regardless of cookie.
-  - Login gated by `admin` role.
-  - Empty dashboard with a placeholder widget.
+- [x] **L1.5 — Filament admin shell** *(completed 2026-05-07)*
+  - Filament panel at `/admin` with emerald theme, login page, auto-discovery for resources/pages/widgets.
+  - `ForceEnglish` middleware on the admin panel middleware stack forces `app()->setLocale('en')` regardless of cookie or Accept-Language header.
+  - Login gated by `admin` role via `User::canAccessPanel()` (already in place from L1.3).
+  - Default Filament widgets replaced with custom `WelcomeWidget` placeholder on the dashboard.
+  - 7 Pest tests (50 total, 105 assertions): login page access, guest redirect, role gating, forced English locale, widget rendering.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L1.6 — User profile + cabinet shell**
-  - `user_profiles` migration: `sex`, `birth_date`, `height_cm`, `weight_kg`, `activity_level`, `daily_kcal_target`, `p_pct`, `f_pct`, `c_pct`, `units_pref`, `timezone` (reserved).
-  - `User::profile()` relation, auto-created on registration.
-  - `/cabinet` route + Livewire `CabinetDashboard` skeleton (just shows name + email).
-  - `ProfileForm` Livewire component (name, avatar, units pref) with file upload + Pest test.
+- [x] **L1.6 — User profile + cabinet shell** *(completed 2026-05-07)*
+  - `user_profiles` migration with all columns (`sex`, `birth_date`, `height_cm`, `weight_kg`, `activity_level`, `daily_kcal_target`, `p_pct`/`f_pct`/`c_pct` with defaults 30/30/40, `units_pref`, `timezone`). `avatar_path` added to `users` table.
+  - `UserProfile` model with casts. `User::profile()` HasOne relation. Profile auto-created on registration in `CreateNewUser`.
+  - `/cabinet` route renders `CabinetDashboard` Livewire component (name, email, nav cards for profile/favorites/calculations).
+  - `/cabinet/profile` route renders `ProfileForm` Livewire component: name editing, avatar upload (with preview, remove, 2MB max image validation), units preference (metric/imperial).
+  - EN/UK translations for all cabinet strings (17 keys each).
+  - 13 Pest tests (63 total, 140 assertions): guest redirect, dashboard render, profile auto-creation, name update, validation, units preference, avatar upload/remove, non-image/oversized rejection, model relations, default macro splits.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 ---
 
