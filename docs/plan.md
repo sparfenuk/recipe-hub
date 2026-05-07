@@ -145,10 +145,11 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
 
 > Goal: the ingredient catalog is populated and editable. Recipes can't exist yet, but admin can browse and edit ~600 ingredients with full nutrition data.
 
-- [ ] **L2.1 — Units + UnitConverter**
-  - `units` table + seeder (`g`, `kg`, `mg`, `ml`, `l`, `tsp`, `tbsp`, `cup`, `oz`, `lb`, `piece`).
-  - `App\Services\Nutrition\UnitConverter::toGrams(amount, unit, ingredient)`: handles mass→g directly, volume→g via density, count via `default_unit`.
-  - Pest unit tests covering each conversion path with fixtures.
+- [x] **L2.1 — Units + UnitConverter** *(completed 2026-05-07)*
+  - `units` table migration + `Unit` model with `isMass()`/`isVolume()`/`isCount()` helpers.
+  - `UnitSeeder` with 11 units (`g`, `kg`, `mg`, `ml`, `l`, `tsp`, `tbsp`, `cup`, `oz`, `lb`, `piece`), idempotent via `updateOrCreate`.
+  - `App\Services\Nutrition\UnitConverter::toGrams(amount, unit, densityGPerMl, pieceWeightG)`: mass→g via factor, volume→g via factor×density, count→g via piece weight. Throws on missing density/weight.
+  - 29 Pest tests (91 total, 207 assertions). Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L2.2 — Taxonomies**
   - Migrations + seeders + Filament resources for: `ingredient_categories`, `cuisines`, `tags` (typed: diet/cuisine/misc), `allergens`, `categories` (recipe categories).
