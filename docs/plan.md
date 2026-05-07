@@ -151,9 +151,12 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - `App\Services\Nutrition\UnitConverter::toGrams(amount, unit, densityGPerMl, pieceWeightG)`: mass→g via factor, volume→g via factor×density, count→g via piece weight. Throws on missing density/weight.
   - 29 Pest tests (91 total, 207 assertions). Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L2.2 — Taxonomies**
-  - Migrations + seeders + Filament resources for: `ingredient_categories`, `cuisines`, `tags` (typed: diet/cuisine/misc), `allergens`, `categories` (recipe categories).
-  - Each resource lists / creates / edits / deletes in admin.
+- [x] **L2.2 — Taxonomies** *(completed 2026-05-07)*
+  - 5 migrations: `ingredient_categories` (id, slug, name, parent_id), `cuisines` (id, slug, name), `tags` (id, slug, name, type enum), `allergens` (id, slug, name), `categories` (id, slug, name, parent_id). All with unique slug constraints, no timestamps.
+  - 5 models: `IngredientCategory`, `Cuisine`, `Tag`, `Allergen`, `Category`. Hierarchical models support parent/child. Tag has `isDiet()`/`isCuisine()`/`isMisc()` helpers.
+  - 5 seeders (idempotent): 16 ingredient categories, 20 cuisines, 18 tags (10 diet + 8 misc), 9 allergens (from spec), 14 recipe categories.
+  - 5 Filament resources under "Taxonomies" nav group with ManageRecords modal CRUD. Tag resource has type filter + colored badges.
+  - 44 new Pest tests (135 total, 366 assertions). Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L2.3 — Ingredients CRUD (no import yet)**
   - `ingredients` migration with all nutrition columns + `density_g_per_ml`, `default_unit_id`, `is_active`, `source`.
