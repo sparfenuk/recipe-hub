@@ -158,19 +158,25 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 5 Filament resources under "Taxonomies" nav group with ManageRecords modal CRUD. Tag resource has type filter + colored badges.
   - 44 new Pest tests (135 total, 366 assertions). Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L2.3 — Ingredients CRUD (no import yet)**
-  - `ingredients` migration with all nutrition columns + `density_g_per_ml`, `default_unit_id`, `is_active`, `source`.
-  - `ingredient_aliases`, `ingredient_allergen` pivot, `ingredient_tag` pivot.
-  - Filament `IngredientResource`: form with nutrition inputs, allergens multi-select, tags multi-select, aliases repeater. List view with search + filters.
-  - Pest test: create + read + update + delete via Filament actions.
+- [x] **L2.3 — Ingredients CRUD (no import yet)** *(completed 2026-05-08)*
+  - `ingredients` table migration with all nutrition columns (`kcal_per_100g`, `protein_g`, `fat_g`, `saturated_fat_g`, `carbs_g`, `sugar_g`, `fiber_g`, `sodium_mg`), `density_g_per_ml`, `piece_weight_g`, `default_unit_id`, `is_active`, `source`, `created_by`.
+  - `ingredient_aliases` table (one-to-many), `ingredient_allergen` pivot, `ingredient_tag` pivot.
+  - `Ingredient` model with relations (category, defaultUnit, creator, aliases, allergens, tags) + `IngredientAlias` model.
+  - `IngredientFactory` for testing.
+  - Filament `IngredientResource` with full-page CRUD (List/Create/Edit): form with 3 sections (basic info, nutrition per 100g, allergens & tags), aliases repeater, auto-slug, `created_by` set on create. Table with search, category filter, active status filter, nutrition columns.
+  - 13 Pest tests (148 total, 421 assertions): CRUD, unique slug, allergens, tags, aliases, model relations, non-admin access denied, category filter, active filter, name search.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L2.4 — USDA curation script**
-  - One-time Node.js or PHP script `scripts/curate-usda.php` that:
-    - Reads `foundation_foods.csv`, `sr_legacy_foods.csv`, `food_nutrient.csv`, `nutrient.csv`.
-    - Applies filter rules (drop branded/baby/restaurant/etc., keep whole foods).
-    - Deduplicates near-identical variants.
-    - Outputs `database/seeders/data/usda-curated.csv` (~600 rows).
-  - Document the run command in `README` so it's reproducible.
+- [x] **L2.4 — USDA curation script** *(completed 2026-05-08)*
+  - PHP script `scripts/curate-usda.php`: reads USDA FoodData Central bulk CSV download (`food.csv`, `food_nutrient.csv`, `food_category.csv`).
+  - Filters by `data_type` (foundation_food + sr_legacy_food), drops categories (baby foods, fast foods, sweets, restaurant, etc.), drops keywords (prepared, restaurant, entree, commercially prepared, frozen meal, MRE).
+  - Maps 8 USDA nutrient IDs → app columns (kcal, protein, fat, sat fat, carbs, sugar, fiber, sodium). Maps USDA food categories → app `ingredient_categories` slugs.
+  - Deduplication: groups by first 3 significant words (numbers stripped), keeps ≤2 active per group, marks rest inactive. Foundation foods preferred over SR Legacy.
+  - Name normalization: ALL CAPS → title case, first letter capitalized.
+  - Outputs `database/seeders/data/usda-curated.csv` with columns: fdc_id, name, category_slug, nutrition (8 cols), is_active.
+  - Test fixtures in `tests/fixtures/usda/` (18 test rows) verify: category drops, keyword drops, branded exclusion, deduplication (4 beef ground → 2 active + 2 inactive).
+  - `storage/app/usda` added to `.gitignore` (raw USDA files too large to commit).
+  - Usage: `sail php scripts/curate-usda.php storage/app/usda`.
 
 - [ ] **L2.5 — `ingredients:import-usda` artisan command**
   - Reads the curated CSV (streaming).

@@ -1,0 +1,19 @@
+fdc_id,data_type,description,food_category_id,publication_date
+171287,foundation_food,"Milk, whole, 3.25% milkfat",100,2019-04-01
+171289,foundation_food,"Butter, salted",400,2019-04-01
+170050,sr_legacy_food,"Chicken, broilers or fryers, breast, meat only, raw",500,2019-04-01
+170051,sr_legacy_food,"Chicken, broilers or fryers, breast, meat only, cooked, roasted",500,2019-04-01
+168468,sr_legacy_food,"Rice, white, long-grain, regular, raw",2000,2019-04-01
+168917,sr_legacy_food,"Broccoli, raw",1100,2019-04-01
+170148,sr_legacy_food,"Salmon, Atlantic, wild, raw",1500,2019-04-01
+171530,sr_legacy_food,"Almonds, dry roasted",1200,2019-04-01
+173757,sr_legacy_food,"Olive oil, extra virgin",400,2019-04-01
+174230,sr_legacy_food,"Egg, whole, raw, fresh",100,2019-04-01
+999001,sr_legacy_food,"Baby food, cereal, rice, prepared",300,2019-04-01
+999002,sr_legacy_food,"Fast food, hamburger, large",2100,2019-04-01
+999003,sr_legacy_food,"Chicken, breast, commercially prepared, frozen meal",500,2019-04-01
+999004,sr_legacy_food,"Beef, ground, 80% lean meat / 20% fat, raw",1300,2019-04-01
+999005,sr_legacy_food,"Beef, ground, 85% lean meat / 15% fat, raw",1300,2019-04-01
+999006,sr_legacy_food,"Beef, ground, 90% lean meat / 10% fat, raw",1300,2019-04-01
+999007,sr_legacy_food,"Beef, ground, 93% lean meat / 7% fat, raw",1300,2019-04-01
+999008,branded_food,"Some Branded Product",1100,2019-04-01
