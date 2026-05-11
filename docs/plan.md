@@ -221,10 +221,12 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
 
 > Goal: an admin can create a recipe with ingredients, see auto-computed nutrition, and a logged-in user can see their suggested daily calorie target.
 
-- [ ] **L3.1 — Recipe schema**
-  - Migrations: `recipes`, `recipe_ingredients`, `recipe_steps`, `recipe_tag` pivot.
-  - All columns from spec section 5: status enum, difficulty enum, cached nutrition totals, slugs.
-  - Models with relationships, factories for testing.
+- [x] **L3.1 — Recipe schema** *(completed 2026-05-11)*
+  - 4 migrations: `recipes` (slug, title, summary, description, servings, times, difficulty enum, status enum, is_featured, 10 cached nutrition columns, nutrition_cached_at, published_at, soft deletes, composite index on status+published_at), `recipe_ingredients` (amount, unit_id, grams_override, note, is_optional, group_label, position), `recipe_steps` (position, body), `recipe_tag` pivot (composite PK).
+  - 3 models: `Recipe` (HasMedia with hero+gallery collections, 3 conversions, SoftDeletes, relations to author/category/cuisine/recipeIngredients/steps/tags), `RecipeIngredient` (relations to recipe/ingredient/unit), `RecipeStep` (HasMedia with step_photo collection).
+  - `RecipeFactory` with `published()`, `archived()`, `featured()` states.
+  - 22 Pest tests (205 total, 561 assertions): CRUD, relations, pivot fields, ordering, cascade deletes, soft deletes, enum validation, media collections, factory states.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L3.2 — `NutritionCalculator` service**
   - Method `totalsFor(Recipe $r): NutritionTotals` — returns kcal, P/F/C, fiber for the whole recipe and per serving.
