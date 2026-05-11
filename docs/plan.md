@@ -228,10 +228,13 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 22 Pest tests (205 total, 561 assertions): CRUD, relations, pivot fields, ordering, cascade deletes, soft deletes, enum validation, media collections, factory states.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.2 — `NutritionCalculator` service**
-  - Method `totalsFor(Recipe $r): NutritionTotals` — returns kcal, P/F/C, fiber for the whole recipe and per serving.
-  - Uses `UnitConverter` to resolve each `recipe_ingredient` to grams, then proportions per-100g nutrition.
-  - Pest tests against 3 hand-computed reference recipes (simple / with liquids / with `grams_override`). Tolerance ±1%.
+- [x] **L3.2 — `NutritionCalculator` service** *(completed 2026-05-11)*
+  - `NutritionCalculator::totalsFor(Recipe): NutritionTotals` — sums kcal, P/F/C, fiber for all non-optional ingredients, divides by servings for per-serving values.
+  - `NutritionTotals` readonly DTO with recipe totals + per-serving values.
+  - Uses `UnitConverter::toGrams()` for mass/volume/count resolution; `grams_override` bypasses conversion when set.
+  - Skips optional ingredients, handles null nutrition values gracefully.
+  - 7 Pest tests (212 total, 621 assertions): 3 hand-computed reference recipes (simple mass / volume+density / grams_override), optional ingredient skip, empty recipe, null nutrition, per-serving division. All within ±1% tolerance.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L3.3 — Nutrition recompute job**
   - `RecalculateRecipeNutrition` job dispatched on:
