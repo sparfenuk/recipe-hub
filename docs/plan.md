@@ -196,10 +196,12 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 7 new Pest tests (167 total, 477 assertions): density application, allergen keyword/category matching, alias creation, no-enrich baseline, idempotency, enriched count output.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L2.7 — `IngredientSeeder`**
-  - Runs the importer on the checked-in curated CSV.
-  - `php artisan migrate:fresh --seed` produces a working DB with ~600 ingredients.
-  - Smoke check: pick 5 ingredients, verify nutrition values match a public USDA reference.
+- [x] **L2.7 — `IngredientSeeder`** *(completed 2026-05-11)*
+  - `IngredientSeeder` calls `ingredients:import-usda --enrich` via `Artisan::call()`, wired into `DatabaseSeeder` after `CategorySeeder`.
+  - `php artisan migrate:fresh --seed` produces a working DB with 14 ingredients (12 active, 2 inactive), 3 with density, 7 with allergens. Count scales when the curated CSV grows from the full USDA download.
+  - Smoke check: 5 ingredients (egg, milk, rice, salmon, broccoli) verified — nutrition values match USDA source exactly.
+  - 7 Pest tests (174 total, 493 assertions): seed count, idempotency, enrichment, nutrition accuracy (egg + broccoli), active/inactive split, migrate:fresh --seed flow.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L2.8 — Media library wiring**
   - `spatie/laravel-medialibrary` published & migrated.

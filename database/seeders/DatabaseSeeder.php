@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call(TagSeeder::class);
         $this->call(AllergenSeeder::class);
         $this->call(CategorySeeder::class);
+        $this->call(IngredientSeeder::class);
 
         $admin = User::factory()->create([
             'name' => 'Test User',
