@@ -203,12 +203,17 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 7 Pest tests (174 total, 493 assertions): seed count, idempotency, enrichment, nutrition accuracy (egg + broccoli), active/inactive split, migrate:fresh --seed flow.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L2.8 — Media library wiring**
-  - `spatie/laravel-medialibrary` published & migrated.
-  - Conversions: `thumb` (200×200), `card` (600×400), `full` (1600w).
-  - `image-processing` queue defined; conversions run on Horizon.
-  - Ingredient model has a media collection; admin can upload an ingredient photo and see all conversions render.
-  - User avatar upload works via `ProfileForm`.
+- [x] **L2.8 — Media library wiring** *(completed 2026-05-11)*
+  - `spatie/laravel-medialibrary` migration published & ran. Config published with `queue_name = image-processing` and `default_loading_attribute_value = lazy`.
+  - `filament/spatie-laravel-media-library-plugin` installed for Filament integration.
+  - Conversions defined on models: `thumb` (200x200, nonQueued), `card` (600x400, queued), `full` (1600w, queued).
+  - Horizon `supervisor-image` added for `image-processing` queue (256MB memory, 120s timeout, 3 tries).
+  - `Ingredient` model: `HasMedia` interface + `InteractsWithMedia` trait, `photo` single-file collection with 3 conversions. Filament `IngredientResource` updated with `SpatieMediaLibraryFileUpload` form field and `SpatieMediaLibraryImageColumn` table column.
+  - `User` model: `HasMedia` interface + `InteractsWithMedia` trait, `avatar` single-file collection with `thumb` conversion.
+  - `ProfileForm` migrated from manual `Storage` to medialibrary (`addMedia`/`clearMediaCollection`). Avatar upload and removal work via medialibrary.
+  - `.env.example` updated with `MEDIA_QUEUE=image-processing`.
+  - 9 Pest tests (183 total, 513 assertions): ingredient photo collection, single-file behavior, 3 conversions, user avatar collection, single-file, thumb generation, media cleanup on delete, Filament upload, queue config.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 ---
 

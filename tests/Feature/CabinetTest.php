@@ -104,24 +104,27 @@ test('profile form can upload avatar', function () {
         ->assertSet('saved', true);
 
     $user->refresh();
-    expect($user->avatar_path)->not->toBeNull();
-    Storage::disk('public')->assertExists($user->avatar_path);
+    expect($user->getFirstMedia('avatar'))->not->toBeNull()
+        ->and($user->getFirstMediaUrl('avatar'))->not->toBeEmpty();
 });
 
 test('profile form can remove avatar', function () {
     Storage::fake('public');
 
-    $path = UploadedFile::fake()->image('old.jpg')->store('avatars', 'public');
-    $user = User::factory()->create(['avatar_path' => $path]);
+    $user = User::factory()->create();
     $user->profile()->create();
+    $user->addMedia(UploadedFile::fake()->image('old.jpg', 200, 200))
+        ->toMediaCollection('avatar');
+
+    expect($user->getFirstMedia('avatar'))->not->toBeNull();
 
     Livewire::actingAs($user)
         ->test(ProfileForm::class)
         ->call('removeAvatar')
         ->assertSet('currentAvatarUrl', null);
 
-    expect($user->fresh()->avatar_path)->toBeNull();
-    Storage::disk('public')->assertMissing($path);
+    $user->refresh();
+    expect($user->getFirstMedia('avatar'))->toBeNull();
 });
 
 test('profile form rejects non-image file', function () {

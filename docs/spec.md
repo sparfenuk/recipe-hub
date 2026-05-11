@@ -400,7 +400,7 @@ All responses use API resources (`App\Http\Resources\*`). Error format: RFC 7807
 | Job | Trigger | Queue |
 |---|---|---|
 | `RecalculateRecipeNutrition` | recipe or ingredient save | `default` |
-| `GenerateMediaConversions` | media upload | `media` |
+| `GenerateMediaConversions` | media upload | `image-processing` |
 | `SendVerificationEmail` | registration | `mail` |
 | `ImportIngredientsCsv` | admin upload | `imports` |
 | `ParsePdfRecipe` (v1.1) | admin upload | `imports` |

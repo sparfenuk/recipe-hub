@@ -10,6 +10,7 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "blade-ui-kit/blade-heroicons": "^2.7",
         "filament/filament": "^3.2",
+        "filament/spatie-laravel-media-library-plugin": "^3.3",
         "intervention/image": "^4.0",
         "laravel/fortify": "^1.36",
         "laravel/framework": "^12.0",

@@ -7,6 +7,7 @@ use App\Models\Ingredient;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -16,6 +17,7 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -80,6 +82,12 @@ class IngredientResource extends Resource
                             ->columnSpanFull(),
                         Toggle::make('is_active')
                             ->default(true),
+                        SpatieMediaLibraryFileUpload::make('photo')
+                            ->collection('photo')
+                            ->image()
+                            ->imageEditor()
+                            ->maxSize(5120)
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Nutrition per 100 g')
@@ -169,6 +177,12 @@ class IngredientResource extends Resource
     {
         return $table
             ->columns([
+                SpatieMediaLibraryImageColumn::make('photo')
+                    ->collection('photo')
+                    ->conversion('thumb')
+                    ->circular()
+                    ->defaultImageUrl(fn () => '')
+                    ->label(''),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),

@@ -5,7 +5,6 @@ namespace App\Livewire\Cabinet;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -31,9 +30,7 @@ class ProfileForm extends Component
         $user = Auth::user();
 
         $this->name = $user->name;
-        $this->currentAvatarUrl = $user->avatar_path
-            ? Storage::disk('public')->url($user->avatar_path)
-            : null;
+        $this->currentAvatarUrl = $user->getFirstMediaUrl('avatar', 'thumb') ?: null;
 
         $profile = $user->profile;
         if ($profile) {
@@ -59,18 +56,15 @@ class ProfileForm extends Component
         $user = Auth::user();
 
         $user->name = $this->name;
+        $user->save();
 
         if ($this->avatar) {
-            if ($user->avatar_path) {
-                Storage::disk('public')->delete($user->avatar_path);
-            }
+            $user->addMedia($this->avatar->getRealPath())
+                ->usingFileName($this->avatar->getClientOriginalName())
+                ->toMediaCollection('avatar');
 
-            $path = $this->avatar->store('avatars', 'public');
-            $user->avatar_path = $path;
-            $this->currentAvatarUrl = Storage::disk('public')->url($path);
+            $this->currentAvatarUrl = $user->getFirstMediaUrl('avatar', 'thumb') ?: null;
         }
-
-        $user->save();
 
         $user->profile()->updateOrCreate(
             ['user_id' => $user->id],
@@ -86,13 +80,8 @@ class ProfileForm extends Component
         /** @var User $user */
         $user = Auth::user();
 
-        if ($user->avatar_path) {
-            Storage::disk('public')->delete($user->avatar_path);
-            $user->avatar_path = null;
-            $user->save();
-            $this->currentAvatarUrl = null;
-        }
-
+        $user->clearMediaCollection('avatar');
+        $this->currentAvatarUrl = null;
         $this->avatar = null;
     }
 

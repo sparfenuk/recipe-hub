@@ -8,11 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Ingredient extends Model
+class Ingredient extends Model implements HasMedia
 {
     /** @use HasFactory<IngredientFactory> */
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'slug',
@@ -49,6 +52,29 @@ class Ingredient extends Model
             'sodium_mg' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('photo')->singleFile();
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->nonQueued()
+            ->width(200)
+            ->height(200)
+            ->sharpen(10);
+
+        $this->addMediaConversion('card')
+            ->width(600)
+            ->height(400)
+            ->sharpen(10);
+
+        $this->addMediaConversion('full')
+            ->width(1600)
+            ->sharpen(10);
     }
 
     /** @return BelongsTo<IngredientCategory, $this> */
