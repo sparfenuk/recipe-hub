@@ -178,13 +178,15 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - `storage/app/usda` added to `.gitignore` (raw USDA files too large to commit).
   - Usage: `sail php scripts/curate-usda.php storage/app/usda`.
 
-- [ ] **L2.5 — `ingredients:import-usda` artisan command**
-  - Reads the curated CSV (streaming).
-  - Maps USDA nutrient IDs to ingredient columns (1003/1004/1005/1008/1079/1093/1258/2000).
-  - Idempotent on `source = "USDA FDC #<id>"`.
-  - `--dry-run`, `--chunk=1000`, `--enrich` flags.
-  - Row-level error log to `storage/logs/usda-import-{date}.log`.
-  - Pest tests on a 5-row fixture CSV.
+- [x] **L2.5 — `ingredients:import-usda` artisan command** *(completed 2026-05-11)*
+  - `ImportUsdaIngredients` artisan command: `ingredients:import-usda {path?} {--dry-run} {--chunk=1000} {--enrich}`.
+  - Streams curated CSV line-by-line; default path `database/seeders/data/usda-curated.csv`.
+  - Idempotent upsert keyed on `source = "USDA FDC #<fdc_id>"`. Category slug → ID cached for performance.
+  - Unique slug generation with counter fallback. Transactional chunked processing.
+  - Row-level error log to `storage/logs/usda-import-{date}.log` with row numbers.
+  - 5-row fixture CSV at `tests/fixtures/usda-import.csv`.
+  - 12 Pest tests (160 total, 457 assertions): import, idempotency, dry-run, bad category, chunk option.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L2.6 — Enrichment data files**
   - `database/seeders/data/densities.json` — ~50 common items (oils, dairy, syrups, flour, sugar).
