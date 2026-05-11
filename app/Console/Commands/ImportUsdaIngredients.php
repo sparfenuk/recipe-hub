@@ -2,8 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Allergen;
 use App\Models\Ingredient;
+use App\Models\IngredientAlias;
 use App\Models\IngredientCategory;
+use App\Models\Unit;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +27,34 @@ class ImportUsdaIngredients extends Command
     /** @var array<string, int> */
     private array $categoryCache = [];
 
+    /** @var array<string, int> */
+    private array $allergenCache = [];
+
+    /** @var array<string, int> */
+    private array $unitCache = [];
+
+    /**
+     * @var list<array{keywords: list<string>, density_g_per_ml: float, default_unit: string}>
+     */
+    private array $densityRules = [];
+
+    /**
+     * @var list<array{allergen: string, keywords: list<string>}>
+     */
+    private array $allergenKeywordRules = [];
+
+    /**
+     * @var list<array{allergen: string, category_slugs: list<string>}>
+     */
+    private array $allergenCategoryRules = [];
+
+    /**
+     * @var list<array{keywords: list<string>, aliases: list<string>}>
+     */
+    private array $aliasRules = [];
+
+    private bool $enrich = false;
+
     public function handle(): int
     {
         /** @var string $path */
@@ -35,8 +66,10 @@ class ImportUsdaIngredients extends Command
             return self::FAILURE;
         }
 
-        if ($this->option('enrich')) {
-            $this->warn('Enrichment data files not yet available (see L2.6). Running without enrichment.');
+        $this->enrich = (bool) $this->option('enrich');
+
+        if ($this->enrich && ! $this->loadEnrichmentData()) {
+            return self::FAILURE;
         }
 
         $dryRun = (bool) $this->option('dry-run');
@@ -68,6 +101,7 @@ class ImportUsdaIngredients extends Command
         $updated = 0;
         $skipped = 0;
         $errors = 0;
+        $enriched = 0;
         $chunk = [];
         $rowNum = 1;
 
@@ -91,6 +125,7 @@ class ImportUsdaIngredients extends Command
                 $updated += $result['updated'];
                 $skipped += $result['skipped'];
                 $errors += $result['errors'];
+                $enriched += $result['enriched'];
                 $chunk = [];
             }
         }
@@ -101,16 +136,22 @@ class ImportUsdaIngredients extends Command
             $updated += $result['updated'];
             $skipped += $result['skipped'];
             $errors += $result['errors'];
+            $enriched += $result['enriched'];
         }
 
         fclose($handle);
 
         $this->newLine();
         $this->info('Import complete.');
-        $this->table(
-            ['Created', 'Updated', 'Skipped', 'Errors'],
-            [[$created, $updated, $skipped, $errors]],
-        );
+        $headers = ['Created', 'Updated', 'Skipped', 'Errors'];
+        $row = [$created, $updated, $skipped, $errors];
+
+        if ($this->enrich) {
+            $headers[] = 'Enriched';
+            $row[] = $enriched;
+        }
+
+        $this->table($headers, [$row]);
 
         if ($errors > 0) {
             $this->warn('See log for error details: storage/logs/usda-import-'.date('Y-m-d').'.log');
@@ -121,7 +162,7 @@ class ImportUsdaIngredients extends Command
 
     /**
      * @param  list<array{row: int, data: array<string, string>}>  $chunk
-     * @return array{created: int, updated: int, skipped: int, errors: int}
+     * @return array{created: int, updated: int, skipped: int, errors: int, enriched: int}
      */
     private function processChunk(array $chunk, bool $dryRun, string $logChannel): array
     {
@@ -129,8 +170,9 @@ class ImportUsdaIngredients extends Command
         $updated = 0;
         $skipped = 0;
         $errors = 0;
+        $enriched = 0;
 
-        $callback = function () use ($chunk, $dryRun, $logChannel, &$created, &$updated, &$errors): void {
+        $callback = function () use ($chunk, $dryRun, $logChannel, &$created, &$updated, &$errors, &$enriched): void {
             foreach ($chunk as $item) {
                 $rowNum = $item['row'];
                 $data = $item['data'];
@@ -173,9 +215,24 @@ class ImportUsdaIngredients extends Command
                     'is_active' => ($data['is_active'] ?? '1') === '1',
                 ];
 
+                if ($this->enrich) {
+                    $densityMatch = $this->matchDensity($name);
+                    if ($densityMatch !== null) {
+                        $attributes['density_g_per_ml'] = $densityMatch['density_g_per_ml'];
+                        $unitId = $this->unitCache[$densityMatch['default_unit']] ?? null;
+                        if ($unitId !== null) {
+                            $attributes['default_unit_id'] = $unitId;
+                        }
+                    }
+                }
+
                 if ($dryRun) {
                     $existing = Ingredient::where('source', $source)->exists();
-                    $this->line(($existing ? 'UPDATE' : 'CREATE')." [{$source}] {$name}");
+                    $label = $existing ? 'UPDATE' : 'CREATE';
+                    if ($this->enrich && isset($attributes['density_g_per_ml'])) {
+                        $label .= ' +density';
+                    }
+                    $this->line("{$label} [{$source}] {$name}");
                     $existing ? $updated++ : $created++;
 
                     continue;
@@ -185,11 +242,19 @@ class ImportUsdaIngredients extends Command
 
                 if ($existing) {
                     $existing->update($attributes);
+                    $ingredient = $existing;
                     $updated++;
                 } else {
                     $attributes['source'] = $source;
-                    Ingredient::create($attributes);
+                    $ingredient = Ingredient::create($attributes);
                     $created++;
+                }
+
+                if ($this->enrich) {
+                    $wasEnriched = $this->applyEnrichment($ingredient, $name, $categorySlug);
+                    if ($wasEnriched) {
+                        $enriched++;
+                    }
                 }
             }
         };
@@ -205,7 +270,151 @@ class ImportUsdaIngredients extends Command
             'updated' => $updated,
             'skipped' => $skipped,
             'errors' => $errors,
+            'enriched' => $enriched,
         ];
+    }
+
+    private function applyEnrichment(Ingredient $ingredient, string $name, string $categorySlug): bool
+    {
+        $changed = false;
+
+        $allergenIds = $this->matchAllergens($name, $categorySlug);
+        if ($allergenIds !== []) {
+            $ingredient->allergens()->syncWithoutDetaching($allergenIds);
+            $changed = true;
+        }
+
+        $aliases = $this->matchAliases($name);
+        if ($aliases !== []) {
+            foreach ($aliases as $alias) {
+                IngredientAlias::firstOrCreate([
+                    'ingredient_id' => $ingredient->id,
+                    'alias' => $alias,
+                ]);
+            }
+            $changed = true;
+        }
+
+        return $changed;
+    }
+
+    /**
+     * @return array{density_g_per_ml: float, default_unit: string}|null
+     */
+    private function matchDensity(string $name): ?array
+    {
+        $nameLower = mb_strtolower($name);
+
+        foreach ($this->densityRules as $rule) {
+            foreach ($rule['keywords'] as $keyword) {
+                if (str_contains($nameLower, mb_strtolower($keyword))) {
+                    return [
+                        'density_g_per_ml' => $rule['density_g_per_ml'],
+                        'default_unit' => $rule['default_unit'],
+                    ];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function matchAllergens(string $name, string $categorySlug): array
+    {
+        $nameLower = mb_strtolower($name);
+        $matched = [];
+
+        foreach ($this->allergenKeywordRules as $rule) {
+            $allergenId = $this->allergenCache[$rule['allergen']] ?? null;
+            if ($allergenId === null) {
+                continue;
+            }
+
+            foreach ($rule['keywords'] as $keyword) {
+                if (str_contains($nameLower, mb_strtolower($keyword))) {
+                    $matched[$allergenId] = true;
+                    break;
+                }
+            }
+        }
+
+        if ($categorySlug !== '') {
+            foreach ($this->allergenCategoryRules as $rule) {
+                if (in_array($categorySlug, $rule['category_slugs'], true)) {
+                    $allergenId = $this->allergenCache[$rule['allergen']] ?? null;
+                    if ($allergenId !== null) {
+                        $matched[$allergenId] = true;
+                    }
+                }
+            }
+        }
+
+        return array_keys($matched);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function matchAliases(string $name): array
+    {
+        $nameLower = mb_strtolower($name);
+        $aliases = [];
+
+        foreach ($this->aliasRules as $rule) {
+            foreach ($rule['keywords'] as $keyword) {
+                if (str_contains($nameLower, mb_strtolower($keyword))) {
+                    foreach ($rule['aliases'] as $alias) {
+                        $aliases[] = $alias;
+                    }
+                    break;
+                }
+            }
+        }
+
+        return $aliases;
+    }
+
+    private function loadEnrichmentData(): bool
+    {
+        $dataDir = database_path('seeders/data');
+
+        $densitiesPath = $dataDir.'/densities.json';
+        $allergenRulesPath = $dataDir.'/allergen-rules.json';
+        $aliasesPath = $dataDir.'/aliases.json';
+
+        foreach ([$densitiesPath, $allergenRulesPath, $aliasesPath] as $file) {
+            if (! file_exists($file)) {
+                $this->error("Enrichment file not found: {$file}");
+
+                return false;
+            }
+        }
+
+        /** @var array{items: list<array{keywords: list<string>, density_g_per_ml: float, default_unit: string}>} $densities */
+        $densities = json_decode((string) file_get_contents($densitiesPath), true);
+        $this->densityRules = $densities['items'];
+
+        /** @var array{by_keyword: list<array{allergen: string, keywords: list<string>}>, by_category: list<array{allergen: string, category_slugs: list<string>}>} $allergenRules */
+        $allergenRules = json_decode((string) file_get_contents($allergenRulesPath), true);
+        $this->allergenKeywordRules = $allergenRules['by_keyword'];
+        $this->allergenCategoryRules = $allergenRules['by_category'];
+
+        /** @var array{items: list<array{keywords: list<string>, aliases: list<string>}>} $aliases */
+        $aliases = json_decode((string) file_get_contents($aliasesPath), true);
+        $this->aliasRules = $aliases['items'];
+
+        $this->allergenCache = Allergen::pluck('id', 'slug')->all();
+        $this->unitCache = Unit::pluck('id', 'code')->all();
+
+        $this->info('Enrichment data loaded: '.count($this->densityRules).' density rules, '
+            .count($this->allergenKeywordRules).' allergen keyword rules, '
+            .count($this->allergenCategoryRules).' allergen category rules, '
+            .count($this->aliasRules).' alias rules.');
+
+        return true;
     }
 
     private function loadCategoryCache(): void

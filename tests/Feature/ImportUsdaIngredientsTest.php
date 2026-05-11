@@ -1,10 +1,12 @@
 <?php
 
+use App\Models\Allergen;
 use App\Models\Ingredient;
 use App\Models\IngredientCategory;
+use App\Models\Unit;
 
 beforeEach(function () {
-    foreach (['dairy', 'grains-cereals', 'meat', 'nuts-seeds', 'vegetables'] as $slug) {
+    foreach (['dairy', 'grains-cereals', 'meat', 'nuts-seeds', 'vegetables', 'seafood', 'oils-fats'] as $slug) {
         IngredientCategory::create(['slug' => $slug, 'name' => ucfirst($slug)]);
     }
 });
@@ -139,4 +141,120 @@ it('respects the chunk option', function () {
     ])->assertSuccessful();
 
     expect(Ingredient::count())->toBe(5);
+});
+
+function enrichFixturePath(): string
+{
+    return base_path('tests/fixtures/usda-import-enrich.csv');
+}
+
+function seedEnrichmentDeps(): void
+{
+    foreach (['gluten', 'lactose', 'nuts', 'soy', 'eggs', 'fish', 'shellfish', 'sesame', 'mustard'] as $slug) {
+        Allergen::create(['slug' => $slug, 'name' => ucfirst($slug)]);
+    }
+
+    Unit::create(['code' => 'g', 'name' => 'gram', 'type' => 'mass', 'to_base_factor' => 1.0]);
+    Unit::create(['code' => 'ml', 'name' => 'milliliter', 'type' => 'volume', 'to_base_factor' => 1.0]);
+}
+
+it('applies density from enrichment data', function () {
+    seedEnrichmentDeps();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+        '--enrich' => true,
+    ])->assertSuccessful();
+
+    $olive = Ingredient::where('source', 'USDA FDC #171413')->first();
+
+    expect((float) $olive->density_g_per_ml)->toBe(0.9132)
+        ->and($olive->default_unit_id)->toBe(Unit::where('code', 'ml')->first()->id);
+});
+
+it('applies allergen flags by keyword match', function () {
+    seedEnrichmentDeps();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+        '--enrich' => true,
+    ])->assertSuccessful();
+
+    $egg = Ingredient::where('source', 'USDA FDC #174230')->first();
+    $almonds = Ingredient::where('source', 'USDA FDC #171530')->first();
+
+    expect($egg->allergens->pluck('slug')->all())->toContain('eggs')
+        ->and($almonds->allergens->pluck('slug')->all())->toContain('nuts');
+});
+
+it('applies allergen flags by category match', function () {
+    seedEnrichmentDeps();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+        '--enrich' => true,
+    ])->assertSuccessful();
+
+    $salmon = Ingredient::where('source', 'USDA FDC #175168')->first();
+
+    expect($salmon->allergens->pluck('slug')->all())->toContain('fish');
+});
+
+it('applies aliases from enrichment data', function () {
+    seedEnrichmentDeps();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+        '--enrich' => true,
+    ])->assertSuccessful();
+
+    $chickpeas = Ingredient::where('source', 'USDA FDC #170285')->first();
+    $aliasNames = $chickpeas->aliases->pluck('alias')->all();
+
+    expect($aliasNames)->toContain('garbanzo beans')
+        ->and($aliasNames)->toContain('ceci beans');
+});
+
+it('does not apply enrichment without --enrich flag', function () {
+    seedEnrichmentDeps();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+    ])->assertSuccessful();
+
+    $olive = Ingredient::where('source', 'USDA FDC #171413')->first();
+    $egg = Ingredient::where('source', 'USDA FDC #174230')->first();
+
+    expect($olive->density_g_per_ml)->toBeNull()
+        ->and($egg->allergens)->toHaveCount(0);
+});
+
+it('enrichment is idempotent on re-run', function () {
+    seedEnrichmentDeps();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+        '--enrich' => true,
+    ])->assertSuccessful();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+        '--enrich' => true,
+    ])->assertSuccessful();
+
+    $egg = Ingredient::where('source', 'USDA FDC #174230')->first();
+    $chickpeas = Ingredient::where('source', 'USDA FDC #170285')->first();
+
+    expect($egg->allergens)->toHaveCount($egg->allergens->count())
+        ->and($chickpeas->aliases->pluck('alias')->unique())->toHaveCount($chickpeas->aliases->count());
+});
+
+it('reports enriched count in output', function () {
+    seedEnrichmentDeps();
+
+    $this->artisan('ingredients:import-usda', [
+        'path' => enrichFixturePath(),
+        '--enrich' => true,
+    ])->assertSuccessful()
+        ->expectsOutputToContain('Enriched');
 });

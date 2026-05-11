@@ -1,0 +1,47 @@
+{
+    "_comment": "Keyword rules for auto-flagging allergens on ingredients. Matches are case-insensitive against ingredient name. Category-based rules match the ingredient_category slug.",
+    "by_keyword": [
+        {
+            "allergen": "gluten",
+            "keywords": ["wheat", "barley", "rye", "spelt", "triticale", "semolina", "durum", "farina", "kamut", "couscous", "bulgur", "seitan", "flour, all-purpose", "flour, bread", "flour, cake", "flour, self-rising", "flour, whole wheat", "pasta", "noodle", "bread", "cracker"]
+        },
+        {
+            "allergen": "lactose",
+            "keywords": ["milk", "cream", "butter", "cheese", "yogurt", "whey", "casein", "ghee", "buttermilk", "sour cream", "ice cream", "custard", "half and half", "condensed milk", "evaporated milk", "ricotta", "mozzarella", "cheddar", "parmesan", "brie", "gouda", "feta", "mascarpone", "cottage cheese", "cream cheese"]
+        },
+        {
+            "allergen": "nuts",
+            "keywords": ["almond", "walnut", "pecan", "cashew", "pistachio", "hazelnut", "filbert", "macadamia", "brazil nut", "pine nut", "peanut", "chestnut", "praline", "marzipan", "nougat", "nut butter", "peanut butter", "almond butter", "almond flour", "almond meal", "coconut"]
+        },
+        {
+            "allergen": "soy",
+            "keywords": ["soy", "soya", "soybean", "tofu", "tempeh", "miso", "edamame", "soy sauce", "soy milk", "soy protein"]
+        },
+        {
+            "allergen": "eggs",
+            "keywords": ["egg"]
+        },
+        {
+            "allergen": "fish",
+            "keywords": ["salmon", "tuna", "cod", "halibut", "tilapia", "trout", "bass", "catfish", "sardine", "anchovy", "mackerel", "herring", "snapper", "swordfish", "mahi", "haddock", "pollock", "perch", "pike", "sole", "flounder", "grouper", "fish sauce", "fish"]
+        },
+        {
+            "allergen": "shellfish",
+            "keywords": ["shrimp", "prawn", "crab", "lobster", "crawfish", "crayfish", "clam", "mussel", "oyster", "scallop", "squid", "calamari", "octopus", "abalone", "snail", "escargot"]
+        },
+        {
+            "allergen": "sesame",
+            "keywords": ["sesame", "tahini"]
+        },
+        {
+            "allergen": "mustard",
+            "keywords": ["mustard"]
+        }
+    ],
+    "by_category": [
+        {"allergen": "fish", "category_slugs": ["seafood"]},
+        {"allergen": "shellfish", "category_slugs": ["seafood"]},
+        {"allergen": "lactose", "category_slugs": ["dairy"]},
+        {"allergen": "eggs", "category_slugs": ["dairy"]}
+    ]
+}

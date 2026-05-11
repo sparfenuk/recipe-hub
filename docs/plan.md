@@ -188,11 +188,13 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 12 Pest tests (160 total, 457 assertions): import, idempotency, dry-run, bad category, chunk option.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L2.6 — Enrichment data files**
-  - `database/seeders/data/densities.json` — ~50 common items (oils, dairy, syrups, flour, sugar).
-  - `database/seeders/data/allergen-rules.json` — keyword → allergen flag mapping.
-  - `database/seeders/data/aliases.json` — ~200 known synonym pairs.
-  - Importer applies them when run with `--enrich`.
+- [x] **L2.6 — Enrichment data files** *(completed 2026-05-11)*
+  - `database/seeders/data/densities.json` — 56 density rules for oils, dairy, syrups, flour, sugar, condiments, etc. Each entry maps keywords to `density_g_per_ml` and `default_unit`.
+  - `database/seeders/data/allergen-rules.json` — 9 keyword-based allergen rules + 4 category-based rules. Covers all 9 allergens (gluten, lactose, nuts, soy, eggs, fish, shellfish, sesame, mustard).
+  - `database/seeders/data/aliases.json` — 101 alias rules covering ~200+ synonym pairs (US/UK terms, spice names, regional variants).
+  - `ImportUsdaIngredients` `--enrich` flag now loads all three files and applies: density + default unit, allergen flags (keyword + category), aliases (via `firstOrCreate`). All idempotent.
+  - 7 new Pest tests (167 total, 477 assertions): density application, allergen keyword/category matching, alias creation, no-enrich baseline, idempotency, enriched count output.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L2.7 — `IngredientSeeder`**
   - Runs the importer on the checked-in curated CSV.

@@ -1,0 +1,6 @@
+fdc_id,name,category_slug,kcal_per_100g,protein_g,fat_g,saturated_fat_g,carbs_g,sugar_g,fiber_g,sodium_mg,is_active
+174230,"Egg, whole, raw, fresh",dairy,143,12.56,9.51,3.13,0.72,0.37,0,142,1
+171530,"Almonds, dry roasted",nuts-seeds,598,20.96,52.54,4.03,21.01,4.51,10.5,339,1
+171413,"Olive oil",oils-fats,884,0,100,13.81,0,0,0,2,1
+175168,"Salmon, Atlantic, wild, raw",seafood,142,19.84,6.34,0.98,0,0,0,44,1
+170285,"Chickpeas, mature seeds, raw",vegetables,364,19.3,6.04,0.63,60.65,10.7,17.4,24,1

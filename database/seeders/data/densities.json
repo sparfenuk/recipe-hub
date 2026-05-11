@@ -1,0 +1,70 @@
+{
+    "_comment": "Density in g/ml for common ingredients measured by volume. Sources: USDA, engineering toolbox, manufacturer data.",
+    "items": [
+        {"keywords": ["olive oil"], "density_g_per_ml": 0.9132, "default_unit": "ml"},
+        {"keywords": ["vegetable oil", "canola oil", "sunflower oil", "corn oil", "soybean oil"], "density_g_per_ml": 0.9200, "default_unit": "ml"},
+        {"keywords": ["coconut oil"], "density_g_per_ml": 0.9250, "default_unit": "ml"},
+        {"keywords": ["sesame oil"], "density_g_per_ml": 0.9200, "default_unit": "ml"},
+        {"keywords": ["avocado oil"], "density_g_per_ml": 0.9100, "default_unit": "ml"},
+        {"keywords": ["flaxseed oil", "linseed oil"], "density_g_per_ml": 0.9300, "default_unit": "ml"},
+        {"keywords": ["peanut oil"], "density_g_per_ml": 0.9140, "default_unit": "ml"},
+
+        {"keywords": ["milk, whole", "whole milk"], "density_g_per_ml": 1.0300, "default_unit": "ml"},
+        {"keywords": ["milk, reduced fat", "milk, lowfat", "milk, low fat", "milk, skim", "milk, nonfat", "milk, fat free"], "density_g_per_ml": 1.0350, "default_unit": "ml"},
+        {"keywords": ["buttermilk"], "density_g_per_ml": 1.0350, "default_unit": "ml"},
+        {"keywords": ["cream, heavy", "heavy cream", "heavy whipping cream"], "density_g_per_ml": 0.9940, "default_unit": "ml"},
+        {"keywords": ["cream, light", "light cream", "half and half"], "density_g_per_ml": 1.0120, "default_unit": "ml"},
+        {"keywords": ["sour cream"], "density_g_per_ml": 1.0130, "default_unit": "ml"},
+        {"keywords": ["yogurt"], "density_g_per_ml": 1.0300, "default_unit": "ml"},
+        {"keywords": ["condensed milk"], "density_g_per_ml": 1.2800, "default_unit": "ml"},
+        {"keywords": ["evaporated milk"], "density_g_per_ml": 1.0660, "default_unit": "ml"},
+        {"keywords": ["coconut milk"], "density_g_per_ml": 0.9650, "default_unit": "ml"},
+        {"keywords": ["coconut cream"], "density_g_per_ml": 0.9900, "default_unit": "ml"},
+
+        {"keywords": ["honey"], "density_g_per_ml": 1.4200, "default_unit": "ml"},
+        {"keywords": ["maple syrup"], "density_g_per_ml": 1.3200, "default_unit": "ml"},
+        {"keywords": ["corn syrup"], "density_g_per_ml": 1.3800, "default_unit": "ml"},
+        {"keywords": ["agave"], "density_g_per_ml": 1.3500, "default_unit": "ml"},
+        {"keywords": ["molasses"], "density_g_per_ml": 1.4200, "default_unit": "ml"},
+
+        {"keywords": ["flour, all-purpose", "flour, white", "all-purpose flour"], "density_g_per_ml": 0.5290, "default_unit": "g"},
+        {"keywords": ["flour, whole wheat", "whole wheat flour"], "density_g_per_ml": 0.5120, "default_unit": "g"},
+        {"keywords": ["flour, bread"], "density_g_per_ml": 0.5500, "default_unit": "g"},
+        {"keywords": ["flour, cake"], "density_g_per_ml": 0.4830, "default_unit": "g"},
+        {"keywords": ["flour, rice"], "density_g_per_ml": 0.5930, "default_unit": "g"},
+        {"keywords": ["flour, almond", "almond flour", "almond meal"], "density_g_per_ml": 0.4200, "default_unit": "g"},
+        {"keywords": ["flour, coconut", "coconut flour"], "density_g_per_ml": 0.5400, "default_unit": "g"},
+        {"keywords": ["cornstarch", "corn starch"], "density_g_per_ml": 0.5410, "default_unit": "g"},
+
+        {"keywords": ["sugar, granulated", "sugar, white", "sugars, granulated"], "density_g_per_ml": 0.8450, "default_unit": "g"},
+        {"keywords": ["sugar, brown", "sugars, brown"], "density_g_per_ml": 0.8300, "default_unit": "g"},
+        {"keywords": ["sugar, powdered", "sugar, confectioner", "sugars, powdered"], "density_g_per_ml": 0.5600, "default_unit": "g"},
+
+        {"keywords": ["butter"], "density_g_per_ml": 0.9110, "default_unit": "g"},
+        {"keywords": ["margarine"], "density_g_per_ml": 0.9050, "default_unit": "g"},
+        {"keywords": ["lard"], "density_g_per_ml": 0.9200, "default_unit": "g"},
+        {"keywords": ["ghee", "clarified butter"], "density_g_per_ml": 0.9050, "default_unit": "g"},
+        {"keywords": ["shortening"], "density_g_per_ml": 0.8800, "default_unit": "g"},
+
+        {"keywords": ["vinegar"], "density_g_per_ml": 1.0060, "default_unit": "ml"},
+        {"keywords": ["soy sauce"], "density_g_per_ml": 1.1700, "default_unit": "ml"},
+        {"keywords": ["fish sauce"], "density_g_per_ml": 1.1500, "default_unit": "ml"},
+        {"keywords": ["worcestershire"], "density_g_per_ml": 1.1400, "default_unit": "ml"},
+        {"keywords": ["ketchup"], "density_g_per_ml": 1.1500, "default_unit": "ml"},
+        {"keywords": ["mayonnaise"], "density_g_per_ml": 0.9100, "default_unit": "ml"},
+        {"keywords": ["mustard, prepared", "mustard, yellow"], "density_g_per_ml": 1.0500, "default_unit": "ml"},
+        {"keywords": ["tomato paste"], "density_g_per_ml": 1.1000, "default_unit": "g"},
+        {"keywords": ["tomato sauce"], "density_g_per_ml": 1.0400, "default_unit": "ml"},
+
+        {"keywords": ["water"], "density_g_per_ml": 1.0000, "default_unit": "ml"},
+        {"keywords": ["juice, lemon", "lemon juice"], "density_g_per_ml": 1.0300, "default_unit": "ml"},
+        {"keywords": ["juice, lime", "lime juice"], "density_g_per_ml": 1.0300, "default_unit": "ml"},
+        {"keywords": ["juice, orange", "orange juice"], "density_g_per_ml": 1.0400, "default_unit": "ml"},
+
+        {"keywords": ["cocoa", "cacao"], "density_g_per_ml": 0.5200, "default_unit": "g"},
+        {"keywords": ["baking powder"], "density_g_per_ml": 0.9000, "default_unit": "g"},
+        {"keywords": ["baking soda", "sodium bicarbonate"], "density_g_per_ml": 0.8700, "default_unit": "g"},
+        {"keywords": ["salt, table", "salt, iodized", "salt, sea"], "density_g_per_ml": 1.2170, "default_unit": "g"},
+        {"keywords": ["gelatin"], "density_g_per_ml": 0.7000, "default_unit": "g"}
+    ]
+}
