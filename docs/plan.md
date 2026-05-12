@@ -236,13 +236,14 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 7 Pest tests (212 total, 621 assertions): 3 hand-computed reference recipes (simple mass / volume+density / grams_override), optional ingredient skip, empty recipe, null nutrition, per-serving division. All within ±1% tolerance.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.3 — Nutrition recompute job**
-  - `RecalculateRecipeNutrition` job dispatched on:
-    - Recipe save (model observer).
-    - Recipe ingredient row change (observer).
-    - Bulk ingredient nutrition update (model observer on `Ingredient`).
-  - Stores totals + `nutrition_cached_at`.
-  - Pest test: editing an ingredient triggers a recompute on every recipe using it.
+- [x] **L3.3 — Nutrition recompute job** *(completed 2026-05-12)*
+  - `RecalculateRecipeNutrition` queued job (ShouldBeUnique by recipe ID): computes totals via `NutritionCalculator`, stores all 10 cached nutrition columns + `nutrition_cached_at`, uses `saveQuietly()` to prevent observer loops.
+  - `RecipeObserver::saved()` dispatches on every recipe create/update.
+  - `RecipeIngredientObserver::saved()`/`deleted()` dispatches when ingredient rows change.
+  - `IngredientObserver::updated()` dispatches for all recipes using the ingredient when nutrition-relevant columns change (kcal, P/F/C, fiber, density, piece weight). Non-nutrition edits (name, slug) are ignored.
+  - Observers registered in `AppServiceProvider::boot()`.
+  - 9 Pest tests (221 total, 648 assertions): dispatch on recipe create/update, ingredient row add/delete, bulk ingredient nutrition change, non-nutrition skip, job stores values + cached_at, graceful handling of deleted recipe, end-to-end integration (edit ingredient → both recipes recomputed).
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L3.4 — Filament Recipe resource**
   - Form: title, summary, description, category, cuisine, difficulty, servings, prep/cook time, status.
