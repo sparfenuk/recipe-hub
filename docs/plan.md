@@ -245,14 +245,16 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 9 Pest tests (221 total, 648 assertions): dispatch on recipe create/update, ingredient row add/delete, bulk ingredient nutrition change, non-nutrition skip, job stores values + cached_at, graceful handling of deleted recipe, end-to-end integration (edit ingredient → both recipes recomputed).
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.4 — Filament Recipe resource**
-  - Form: title, summary, description, category, cuisine, difficulty, servings, prep/cook time, status.
-  - Repeater for ingredients (ingredient picker + amount + unit + note + optional flag + group label).
-  - Repeater for steps (position auto, body, image upload).
-  - Tags multi-select.
-  - Live computed nutrition panel inside the form (read-only, refreshes after save).
-  - List view: filters by status, category, cuisine, search.
-  - Bulk actions: publish, archive, duplicate.
+- [x] **L3.4 — Filament Recipe resource** *(completed 2026-05-12)*
+  - `RecipeResource` with full-page CRUD (List/Create/Edit) under "Catalog" nav group.
+  - Form: 5 sections — Basic info (title with auto-slug, summary, description rich editor, category, cuisine, difficulty, servings, prep/cook time, status, featured toggle), Ingredients (repeater with ingredient picker + amount + unit + note + optional flag + group label, reorderable/collapsible/cloneable), Steps (repeater with body + step photo upload via medialibrary, reorderable/collapsible), Tags (multi-select), Nutrition (read-only per-serving + total values, auto-refreshes after save via synchronous recompute).
+  - `total_time_min` auto-computed from `prep_time_min + cook_time_min` on create/edit. `published_at` auto-set when status changes to published.
+  - List view: title (searchable), status/difficulty badges with colors, category, cuisine, kcal/serving, servings, featured, author, created_at. Filters: status, category, cuisine. Default sort: newest first.
+  - Row actions: edit, duplicate (with unique slug generation), delete. Bulk actions: publish (sets published_at), archive, duplicate, delete.
+  - `duplicateRecipe()` copies recipe, ingredients, steps, and tags with draft status and unique slug (handles soft-deleted slug collisions).
+  - `getEloquentQuery()` includes soft-deleted records; edit page shows force-delete and restore actions.
+  - 22 Pest tests (243 total, 752 assertions): CRUD, soft delete, slug uniqueness, published_at on publish, total_time_min on create/edit, tags, status/category/cuisine filters, title search, bulk publish/archive, duplicate with slug collision, non-admin denied, nutrition section render, ingredient/step repeater save, nutrition recompute after save.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L3.5 — Recipe media**
   - Hero photo + gallery via medialibrary.
