@@ -297,13 +297,20 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
 
 > Goal: a visitor can browse a recipe, save it, and use the calculator to scale ingredients to a target. This is the MVP money-shot.
 
-- [ ] **L4.1 — Recipe detail page**
-  - `/recipes/{slug}` route.
-  - Hero photo, title, meta (servings, prep, cook, difficulty, cuisine, tags).
-  - Ingredient list with amounts and units.
-  - Numbered step list with optional step photos.
-  - Nutrition panel (per serving + per 100 g) — placeholder until L4.7 charts.
-  - Print button (placeholder for L5.2).
+- [x] **L4.1 — Recipe detail page** *(completed 2026-05-13)*
+  - `/recipes/{slug}` route → `RecipeDetail` Livewire component.
+  - Hero photo (full conversion), title, summary, meta badges (prep/cook/total time, servings, difficulty, cuisine, category).
+  - Ingredient list grouped by `group_label`, showing amount + unit + name + note + optional flag.
+  - Numbered step list with optional step photos (card conversion).
+  - Tags displayed as emerald badges.
+  - Nutrition panel: per-serving (kcal, P/F/C, fiber) + entire-recipe totals.
+  - Gallery section for additional recipe photos.
+  - Print button (placeholder for L5.2), author card.
+  - Breadcrumb navigation back to catalog.
+  - Step body escaped via `nl2br(e())` to prevent XSS (Textarea field, not RichEditor).
+  - EN/UK translations for 15 new keys.
+  - 18 Pest tests (309 total, 915 assertions): page load, title/summary, meta badges, ingredients, optional ingredients, notes, steps, nutrition panel, tags, category/cuisine, author, 404 for draft/archived/non-existent, breadcrumb, public access, group labels, print button.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L4.2 — Favorites**
   - `favorites` table (composite PK), model relation.
