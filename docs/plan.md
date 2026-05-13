@@ -322,11 +322,16 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 21 Pest tests (330 total, 960 assertions): favorite/unfavorite toggle, guest redirect, initial state, detail page integration, auth guard, list/filter/sort, unfavorite from list, unpublished exclusion, relation tests, cascade cleanup, dashboard link, duplicate prevention.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.3 — Calculator: scale by servings**
-  - `PortionCalculator` Livewire component embedded on recipe detail.
-  - Input: target servings (number, default = recipe's servings).
-  - Output: scaled ingredient quantities + new totals (kcal, P/F/C, fiber).
-  - Updates live as input changes (`wire:model.live.debounce`).
+- [x] **L4.3 — Calculator: scale by servings** *(completed 2026-05-13)*
+  - `PortionCalculator` Livewire component embedded on recipe detail page, replacing the static nutrition panel.
+  - Input: target servings (number input with +/- buttons, default = recipe's servings).
+  - Output: scaled ingredient quantities (grouped, with optional flag) + scaled nutrition totals (per serving constant, totals scale linearly).
+  - Updates live as input changes (`wire:model.live.debounce.300ms`).
+  - Reset link appears when servings differ from original, bounds enforced (1-100).
+  - Relations eager-loaded via `loadMissing` to prevent N+1 on Livewire rehydration.
+  - EN/UK translations for 7 calculator keys.
+  - 16 Pest tests (346 total, 998 assertions): default render, scaling, nutrition totals, per-serving constancy, increment/decrement/reset, bounds, grouping, optional ingredients, null handling, embed check, label change, fractional scaling.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L4.4 — Calculator: scale by total kcal**
   - Mode selector tabs: Servings / Calories / % of daily.

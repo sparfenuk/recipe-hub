@@ -197,70 +197,10 @@
             @endif
         </div>
 
-        {{-- Right column: Nutrition + Actions --}}
+        {{-- Right column: Calculator + Actions --}}
         <aside class="space-y-6">
-            {{-- Nutrition panel --}}
-            @if ($recipe->nutrition_cached_at)
-                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                        {{ __('recipes.nutrition_per_serving') }}
-                    </h2>
-
-                    <div class="mt-4 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-600">{{ __('recipes.calories') }}</span>
-                            <span class="text-lg font-bold text-slate-900">{{ number_format((float) $recipe->kcal_per_serving, 0) }} {{ __('recipes.kcal') }}</span>
-                        </div>
-                        <div class="h-px bg-slate-100"></div>
-
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-600">{{ __('recipes.protein') }}</span>
-                            <span class="font-semibold text-slate-700">{{ number_format((float) $recipe->protein_per_serving_g, 1) }}g</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-600">{{ __('recipes.fat') }}</span>
-                            <span class="font-semibold text-slate-700">{{ number_format((float) $recipe->fat_per_serving_g, 1) }}g</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-600">{{ __('recipes.carbs') }}</span>
-                            <span class="font-semibold text-slate-700">{{ number_format((float) $recipe->carbs_per_serving_g, 1) }}g</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-600">{{ __('recipes.fiber') }}</span>
-                            <span class="font-semibold text-slate-700">{{ number_format((float) $recipe->fiber_per_serving_g, 1) }}g</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 h-px bg-slate-100"></div>
-
-                    <h2 class="mt-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-                        {{ __('recipes.nutrition_total') }}
-                    </h2>
-
-                    <div class="mt-3 space-y-2 text-sm">
-                        <div class="flex items-center justify-between text-slate-600">
-                            <span>{{ __('recipes.calories') }}</span>
-                            <span class="font-medium">{{ number_format((float) $recipe->total_kcal, 0) }} {{ __('recipes.kcal') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between text-slate-600">
-                            <span>{{ __('recipes.protein') }}</span>
-                            <span class="font-medium">{{ number_format((float) $recipe->total_protein_g, 1) }}g</span>
-                        </div>
-                        <div class="flex items-center justify-between text-slate-600">
-                            <span>{{ __('recipes.fat') }}</span>
-                            <span class="font-medium">{{ number_format((float) $recipe->total_fat_g, 1) }}g</span>
-                        </div>
-                        <div class="flex items-center justify-between text-slate-600">
-                            <span>{{ __('recipes.carbs') }}</span>
-                            <span class="font-medium">{{ number_format((float) $recipe->total_carbs_g, 1) }}g</span>
-                        </div>
-                        <div class="flex items-center justify-between text-slate-600">
-                            <span>{{ __('recipes.fiber') }}</span>
-                            <span class="font-medium">{{ number_format((float) $recipe->total_fiber_g, 1) }}g</span>
-                        </div>
-                    </div>
-                </div>
-            @endif
+            {{-- Portion calculator (replaces static nutrition panel) --}}
+            <livewire:portion-calculator :recipe="$recipe" />
 
             {{-- Favorite button --}}
             <livewire:favorite-button :recipe-id="$recipe->id" />
