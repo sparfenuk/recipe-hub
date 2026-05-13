@@ -24,5 +24,9 @@ return [
     'total_daily_pct' => ':pct% денної норми',
     'save_calculation' => 'Зберегти розрахунок',
     'saved' => 'Розрахунок збережено!',
+    'chart_macro_split' => 'Розподіл макронутрієнтів',
+    'chart_vs_target' => 'Факт vs Ціль',
+    'actual' => 'Факт',
+    'target' => 'Ціль',
 
 ];

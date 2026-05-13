@@ -15,6 +15,7 @@ use Livewire\Component;
 /**
  * @property-read int|null $dailyKcalTarget
  * @property-read bool $isScaled
+ * @property-read array{protein_g: float, fat_g: float, carbs_g: float}|null $macroTargets
  */
 class PortionCalculator extends Component
 {
@@ -110,6 +111,27 @@ class PortionCalculator extends Component
         $user = Auth::user();
 
         return $user?->profile?->daily_kcal_target;
+    }
+
+    /** @return array{protein_g: float, fat_g: float, carbs_g: float}|null */
+    #[Computed]
+    public function macroTargets(): ?array
+    {
+        $kcal = $this->dailyKcalTarget;
+
+        if (! $kcal) {
+            return null;
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+        $profile = $user->profile;
+
+        return [
+            'protein_g' => round($kcal * ($profile->p_pct ?? 30) / 100 / 4, 1),
+            'fat_g' => round($kcal * ($profile->f_pct ?? 30) / 100 / 9, 1),
+            'carbs_g' => round($kcal * ($profile->c_pct ?? 40) / 100 / 4, 1),
+        ];
     }
 
     /** @return Collection<int, mixed> */

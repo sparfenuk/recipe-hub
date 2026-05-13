@@ -24,5 +24,9 @@ return [
     'total_daily_pct' => ':pct% of daily intake',
     'save_calculation' => 'Save calculation',
     'saved' => 'Calculation saved!',
+    'chart_macro_split' => 'Macro Split',
+    'chart_vs_target' => 'Actual vs Target',
+    'actual' => 'Actual',
+    'target' => 'Target',
 
 ];

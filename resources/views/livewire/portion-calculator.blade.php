@@ -236,6 +236,47 @@
                 </div>
             </div>
         </div>
+
+        {{-- Charts --}}
+        @if ($nutrition['kcal'] > 0)
+            @php
+                $targets = $this->macroTargets;
+                $chartData = [
+                    'protein_g' => $nutrition['protein_g'],
+                    'fat_g' => $nutrition['fat_g'],
+                    'carbs_g' => $nutrition['carbs_g'],
+                    'targets' => $targets,
+                    'labels' => [
+                        'protein' => __('recipes.protein'),
+                        'fat' => __('recipes.fat'),
+                        'carbs' => __('recipes.carbs'),
+                        'kcal_unit' => __('recipes.kcal'),
+                        'actual' => __('calculator.actual'),
+                        'target' => __('calculator.target'),
+                    ],
+                ];
+            @endphp
+
+            <div class="border-t border-slate-100 px-5 py-4">
+                <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    {{ __('calculator.chart_macro_split') }}
+                </h3>
+
+                <div
+                    x-data="nutritionCharts(@js($chartData))"
+                    wire:key="charts-{{ md5(json_encode($chartData)) }}"
+                >
+                    <div x-ref="donut" wire:ignore class="mt-3"></div>
+
+                    @if ($targets)
+                        <h3 class="mt-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                            {{ __('calculator.chart_vs_target') }}
+                        </h3>
+                        <div x-ref="bar" wire:ignore class="mt-3"></div>
+                    @endif
+                </div>
+            </div>
+        @endif
     @endif
 
     {{-- Save button --}}

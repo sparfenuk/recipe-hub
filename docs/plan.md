@@ -364,11 +364,16 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 18 Pest tests (386 total, 1067 assertions): save button visibility (auth/guest/not-scaled), save creates record (servings/kcal modes), totals JSON, guest/not-scaled guards, history page auth/load/empty-state, delete own/other-user, dashboard link, save-then-list integration, cascade deletes (recipe + user).
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.7 — Charts**
-  - ApexCharts wrapper component (Alpine).
-  - Donut: kcal split into P/F/C grams × 4/9/4.
-  - Bar: actual macros vs user target (only if logged in with target set).
-  - Charts react to calculator updates.
+- [x] **L4.7 — Charts** *(completed 2026-05-13)*
+  - `resources/js/charts.js` — Alpine.js component wrapping ApexCharts with `init()`/`destroy()` lifecycle for proper cleanup.
+  - Donut chart: macro split showing kcal contribution from protein (×4), fat (×9), carbs (×4). Center label shows total kcal. Colors: emerald/amber/indigo.
+  - Bar chart: actual macros (g) vs user's daily target (computed from `daily_kcal_target × p_pct/f_pct/c_pct`). Only rendered for authenticated users with daily target set.
+  - `macroTargets()` computed property on PortionCalculator: derives target grams from user's profile percentage split.
+  - Charts react to calculator updates via `wire:key` (md5 of chart data). `wire:ignore` on chart containers prevents Livewire morph from breaking ApexCharts DOM.
+  - Registered in `app.js` as `Alpine.data('nutritionCharts', ...)`.
+  - EN/UK translations: 4 keys (`chart_macro_split`, `chart_vs_target`, `actual`, `target`).
+  - 13 Pest tests (399 total, 1092 assertions): chart rendering conditions (nutrition/no-nutrition/zero-kcal), Alpine component presence, bar chart visibility (guest/no-target/with-target), macroTargets computed (null/values/correct-math), scaled nutrition reactivity across modes.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L4.8 — Ingredient autocomplete**
   - `IngredientAutocomplete` Livewire component (debounced search via Scout).
