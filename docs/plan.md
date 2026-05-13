@@ -268,7 +268,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - "Use suggested" button writes the value to the user's daily target. Manual override allowed.
   - Pest tests on the BMR formula and the form action.
 
-- [ ] **L3.7 — Cabinet: macro targets**
+- [x] **L3.7 — Cabinet: macro targets** *(completed 2026-05-13)*
   - `MacroTargetForm` Livewire component on the same page.
   - Inputs: P %, F %, C %. Live validation: must sum to 100. Defaults to 30/30/40.
   - Saves to `user_profiles`.
