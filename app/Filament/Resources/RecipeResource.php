@@ -26,6 +26,7 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -115,6 +116,24 @@ class RecipeResource extends Resource
                             ->required(),
                         Toggle::make('is_featured')
                             ->default(false),
+                    ]),
+
+                Section::make('Media')
+                    ->schema([
+                        SpatieMediaLibraryFileUpload::make('hero')
+                            ->collection('hero')
+                            ->image()
+                            ->imageEditor()
+                            ->maxSize(5120)
+                            ->columnSpanFull(),
+                        SpatieMediaLibraryFileUpload::make('gallery')
+                            ->collection('gallery')
+                            ->image()
+                            ->multiple()
+                            ->reorderable()
+                            ->maxFiles(10)
+                            ->maxSize(5120)
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Ingredients')
@@ -261,6 +280,12 @@ class RecipeResource extends Resource
     {
         return $table
             ->columns([
+                SpatieMediaLibraryImageColumn::make('hero')
+                    ->collection('hero')
+                    ->conversion('thumb')
+                    ->circular()
+                    ->defaultImageUrl(url('/images/recipe-placeholder.svg'))
+                    ->label(''),
                 TextColumn::make('title')
                     ->searchable()
                     ->sortable()
@@ -385,7 +410,7 @@ class RecipeResource extends Resource
 
     public static function duplicateRecipe(Recipe $recipe): Recipe
     {
-        $recipe->loadMissing('recipeIngredients', 'steps', 'tags');
+        $recipe->loadMissing('recipeIngredients', 'steps', 'tags', 'media');
 
         $clone = $recipe->replicate();
         $clone->title = $recipe->title.' (Copy)';
@@ -416,6 +441,10 @@ class RecipeResource extends Resource
         }
 
         $clone->tags()->sync($recipe->tags->pluck('id'));
+
+        foreach ($recipe->media as $media) {
+            $media->copy($clone, $media->collection_name);
+        }
 
         return $clone;
     }
