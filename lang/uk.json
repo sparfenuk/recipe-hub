@@ -45,5 +45,9 @@
     "If you did not request a password reset, no further action is required.": "Якщо ви не запитували скидання пароля, жодних дій не потрібно.",
     "Welcome to :app!": "Ласкаво просимо до :app!",
     "Your account has been created successfully. You can now browse recipes, save favorites, and use the portion calculator.": "Ваш акаунт успішно створено. Тепер ви можете переглядати рецепти, зберігати обрані та користуватися калькулятором порцій.",
-    "Start Browsing": "Почати перегляд"
+    "Start Browsing": "Почати перегляд",
+    "Too Many Requests": "Забагато запитів",
+    "You have made too many requests. Please wait a moment and try again.": "Ви зробили забагато запитів. Будь ласка, зачекайте хвилину і спробуйте знову.",
+    "Go Back": "Повернутися",
+    "Too many requests. Please wait before saving again.": "Забагато запитів. Будь ласка, зачекайте перед повторним збереженням."
 }

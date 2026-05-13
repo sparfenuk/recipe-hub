@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -198,6 +199,14 @@ class PortionCalculator extends Component
         if (! Auth::check() || ! $this->isScaled) {
             return;
         }
+
+        $key = 'calculator:'.Auth::id();
+        if (RateLimiter::tooManyAttempts($key, 60)) {
+            $this->addError('save', __('Too many requests. Please wait before saving again.'));
+
+            return;
+        }
+        RateLimiter::hit($key, 60);
 
         if (! in_array($this->mode, ['servings', 'kcal', 'daily_pct'], true)) {
             return;

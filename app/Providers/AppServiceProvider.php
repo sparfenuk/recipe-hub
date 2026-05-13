@@ -6,7 +6,10 @@ use App\Models\Ingredient;
 use App\Models\RecipeIngredient;
 use App\Observers\IngredientObserver;
 use App\Observers\RecipeIngredientObserver;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -36,6 +39,19 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return null;
+        });
+
+        $this->configureRateLimiting();
+    }
+
+    private function configureRateLimiting(): void
+    {
+        RateLimiter::for('auth', fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
+
+        RateLimiter::for('api', function (Request $request): Limit {
+            return $request->user()
+                ? Limit::perMinute(60)->by($request->user()->id)
+                : Limit::perMinute(30)->by($request->ip());
         });
     }
 }

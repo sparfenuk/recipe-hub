@@ -45,5 +45,9 @@
     "If you did not request a password reset, no further action is required.": "If you did not request a password reset, no further action is required.",
     "Welcome to :app!": "Welcome to :app!",
     "Your account has been created successfully. You can now browse recipes, save favorites, and use the portion calculator.": "Your account has been created successfully. You can now browse recipes, save favorites, and use the portion calculator.",
-    "Start Browsing": "Start Browsing"
+    "Start Browsing": "Start Browsing",
+    "Too Many Requests": "Too Many Requests",
+    "You have made too many requests. Please wait a moment and try again.": "You have made too many requests. Please wait a moment and try again.",
+    "Go Back": "Go Back",
+    "Too many requests. Please wait before saving again.": "Too many requests. Please wait before saving again."
 }

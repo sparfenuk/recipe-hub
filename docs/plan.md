@@ -425,11 +425,13 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 17 Pest tests (487 total, 1345 assertions): audit creation for recipes/ingredients/users/taxonomies, old/new values on update, soft delete audit, password exclusion, Filament page access + filters (event/model type), non-admin denied, prune command (delete old/keep recent/custom retention), schedule verification.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.5 — Rate limiting**
-  - Auth routes: 5 req/min per IP.
-  - Calculator endpoint: 60 req/min per user.
-  - API: 60/min per token, 30/min per IP for unauth.
-  - 429 responses use the localized error page.
+- [x] **L5.5 — Rate limiting** *(completed 2026-05-13)*
+  - `auth` rate limiter (5 req/min per IP) applied to all Fortify routes via config middleware. Covers login, registration, password reset, email verification.
+  - Calculator `saveCalculation()` rate limited at 60/min per user via manual `RateLimiter` calls in the Livewire component. Error message shown on limit hit.
+  - `api` rate limiter defined (60/min per token, 30/min per IP for guests) and applied to API middleware stack in `bootstrap/app.php` for future L6.1 use.
+  - Localized 429 error page (`resources/views/errors/429.blade.php`) with EN/UK translations (4 keys).
+  - 13 Pest tests (500 total, 1374 assertions): auth throttle on registration/password-reset/login, 5-request allowance, 429 page render (EN/UK), calculator rate limit (hit/allow), limiter definitions, API limiter auth/guest limits, translation drift guard.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L5.6 — Backups**
   - `spatie/laravel-backup` configured to push DB + storage to off-server S3-compatible bucket nightly.
