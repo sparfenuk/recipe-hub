@@ -284,7 +284,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Sort: newest, lowest calories, shortest prep, most-favorited.
   - Filter sidebar uses `wire:model.live.debounce`.
 
-- [ ] **L3.10 — MeiliSearch wiring**
+- [x] **L3.10 — MeiliSearch wiring** *(completed 2026-05-13)*
   - Scout configured for `Recipe` and `Ingredient` models.
   - Indexed fields: title, summary, description, ingredient names (denormalized).
   - Reindex command works locally + on first deploy.
