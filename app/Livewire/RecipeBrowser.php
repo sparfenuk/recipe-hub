@@ -32,12 +32,15 @@ class RecipeBrowser extends Component
 
     public string $sort = 'newest';
 
+    public string $search = '';
+
     /** @var array<string, array<string, mixed>> */
     protected $queryString = [
         'category_id' => ['except' => null, 'as' => 'category'],
         'cuisine_id' => ['except' => null, 'as' => 'cuisine'],
         'max_kcal' => ['except' => null],
         'max_prep_time' => ['except' => null],
+        'search' => ['except' => '', 'as' => 'q'],
         'sort' => ['except' => 'newest'],
     ];
 
@@ -76,6 +79,11 @@ class RecipeBrowser extends Component
         $this->resetPage();
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
     public function clearFilters(): void
     {
         $this->category_id = null;
@@ -85,6 +93,7 @@ class RecipeBrowser extends Component
         $this->diet_tags = [];
         $this->exclude_allergens = [];
         $this->sort = 'newest';
+        $this->search = '';
         $this->resetPage();
     }
 
@@ -95,7 +104,8 @@ class RecipeBrowser extends Component
             || $this->max_kcal !== null
             || $this->max_prep_time !== null
             || $this->diet_tags !== []
-            || $this->exclude_allergens !== [];
+            || $this->exclude_allergens !== []
+            || $this->search !== '';
     }
 
     public function render(): View
@@ -133,8 +143,13 @@ class RecipeBrowser extends Component
             });
         }
 
+        if ($this->search !== '') {
+            $ids = Recipe::search($this->search)->keys();
+            $query->whereIn('id', $ids);
+        }
+
         return $query
-            ->when($this->sort === 'newest', fn ($q) => $q->orderByDesc('published_at'))
+            ->when($this->search === '' && $this->sort === 'newest', fn ($q) => $q->orderByDesc('published_at'))
             ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderBy('kcal_per_serving'))
             ->when($this->sort === 'shortest_prep', fn ($q) => $q->orderBy('prep_time_min'))
             ->paginate(12);

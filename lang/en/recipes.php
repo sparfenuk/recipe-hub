@@ -20,6 +20,7 @@ return [
     'sort_shortest_prep' => 'Shortest prep',
     'results_count' => '{0} No recipes|{1} :count recipe|[2,*] :count recipes',
     'no_recipes' => 'No recipes found.',
+    'search_placeholder' => 'Search recipes...',
     'kcal_serving' => 'kcal/srv',
     'min' => 'min',
 

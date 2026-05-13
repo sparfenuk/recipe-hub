@@ -279,7 +279,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Pagination.
   - Basic filters: category, cuisine.
 
-- [ ] **L3.9 — Catalog filters v2**
+- [x] **L3.9 — Catalog filters v2** *(completed 2026-05-13)*
   - Add filters: max kcal/serving, max prep time, diet tags, allergens (auto-applied from logged-in user's profile).
   - Sort: newest, lowest calories, shortest prep, most-favorited.
   - Filter sidebar uses `wire:model.live.debounce`.

@@ -20,6 +20,7 @@ return [
     'sort_shortest_prep' => 'Найшвидші',
     'results_count' => '{0} Рецептів не знайдено|{1} :count рецепт|[2,4] :count рецепти|[5,*] :count рецептів',
     'no_recipes' => 'Рецептів не знайдено.',
+    'search_placeholder' => 'Пошук рецептів...',
     'kcal_serving' => 'ккал/порц',
     'min' => 'хв',
 

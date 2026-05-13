@@ -1,7 +1,18 @@
 <div>
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-slate-900">{{ __('recipes.catalog') }}</h1>
-        <p class="mt-1 text-sm text-slate-500">{{ __('recipes.catalog_desc') }}</p>
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">{{ __('recipes.catalog') }}</h1>
+            <p class="mt-1 text-sm text-slate-500">{{ __('recipes.catalog_desc') }}</p>
+        </div>
+        <div class="relative w-full sm:w-72">
+            <x-heroicon-o-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+                type="search"
+                wire:model.live.debounce.400ms="search"
+                placeholder="{{ __('recipes.search_placeholder') }}"
+                class="block w-full rounded-lg border-slate-300 pl-9 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+            >
+        </div>
     </div>
 
     <div class="lg:grid lg:grid-cols-4 lg:gap-8">
