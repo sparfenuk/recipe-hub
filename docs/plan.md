@@ -256,7 +256,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 22 Pest tests (243 total, 752 assertions): CRUD, soft delete, slug uniqueness, published_at on publish, total_time_min on create/edit, tags, status/category/cuisine filters, title search, bulk publish/archive, duplicate with slug collision, non-admin denied, nutrition section render, ingredient/step repeater save, nutrition recompute after save.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.5 — Recipe media**
+- [x] **L3.5 — Recipe media** *(completed 2026-05-13)*
   - Hero photo + gallery via medialibrary.
   - Step photos already covered by L3.4.
   - Filament uploader with drag-drop multi-file for the gallery.
