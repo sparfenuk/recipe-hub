@@ -11,14 +11,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Recipe extends Model implements HasMedia
+class Recipe extends Model implements AuditableContract, HasMedia
 {
     /** @use HasFactory<RecipeFactory> */
-    use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
+    use Auditable, HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $fillable = [
         'slug',

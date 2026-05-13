@@ -417,10 +417,13 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 28 Pest tests (470 total, 1297 assertions): meta tags on landing/catalog/detail, OG tags, Twitter cards, hreflang, canonical, JSON-LD (type, times, ingredients, steps, nutrition, author), sitemap (content type, static pages, published/draft filtering, hreflang, XML structure), robots.txt (allows, disallows, sitemap ref).
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.4 — Audit log**
-  - `owen-it/laravel-auditing` enabled on `Recipe`, `Ingredient`, `User`, taxonomies.
-  - Filament page lists audits with filtering by user / model / action.
-  - 90-day retention via scheduled prune job.
+- [x] **L5.4 — Audit log** *(completed 2026-05-13)*
+  - `owen-it/laravel-auditing` config + migration published and ran. `console` auditing enabled so artisan/test events are tracked.
+  - `Auditable` interface + trait added to 8 models: `User` (with password/remember_token exclusion), `Recipe`, `Ingredient`, `Category`, `IngredientCategory`, `Cuisine`, `Tag`, `Allergen`.
+  - Filament `AuditResource` under "System" nav group: read-only list page with date, user, event (color-coded badges), model type, ID. Toggleable columns for old/new values, URL, IP. Filters by event type, model type, and user.
+  - `audits:prune` artisan command with `--days` option (default 90). Scheduled daily via `routes/console.php`.
+  - 17 Pest tests (487 total, 1345 assertions): audit creation for recipes/ingredients/users/taxonomies, old/new values on update, soft delete audit, password exclusion, Filament page access + filters (event/model type), non-admin denied, prune command (delete old/keep recent/custom retention), schedule verification.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L5.5 — Rate limiting**
   - Auth routes: 5 req/min per IP.

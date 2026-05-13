@@ -10,14 +10,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Scout\Searchable;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Ingredient extends Model implements HasMedia
+class Ingredient extends Model implements AuditableContract, HasMedia
 {
     /** @use HasFactory<IngredientFactory> */
-    use HasFactory, InteractsWithMedia, Searchable;
+    use Auditable, HasFactory, InteractsWithMedia, Searchable;
 
     protected $fillable = [
         'slug',
