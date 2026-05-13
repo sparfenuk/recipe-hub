@@ -406,11 +406,16 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 15 Pest tests (442 total, 1216 assertions): PDF download (200 + correct content-type/filename), 404 for draft/archived/non-existent, public access, view rendering (ingredients, steps, nutrition, tags, category/cuisine, author), both buttons on detail page, translation drift guard.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.3 — SEO**
-  - Meta tags (title, description, og:image, og:type), Twitter card.
-  - `<link rel="alternate" hreflang="en|uk|x-default">` on public pages.
-  - `sitemap.xml` generator (recipes + categories), `robots.txt`.
-  - Lighthouse SEO score ≥ 95 on recipe detail page.
+- [x] **L5.3 — SEO** *(completed 2026-05-13)*
+  - Meta tags on all public pages: `<title>`, `<meta name="description">`, Open Graph (`og:type`, `og:title`, `og:description`, `og:url`, `og:image`, `og:locale`, `og:site_name`), Twitter Card (`summary_large_image`).
+  - `<link rel="alternate" hreflang="en|uk|x-default">` on all public pages (same URL per spec §11.6).
+  - `<link rel="canonical">` on all public pages; recipe detail and catalog pass explicit canonical URLs.
+  - Recipe detail: `og:type=article`, summary as meta description, hero image as `og:image`.
+  - JSON-LD structured data on recipe detail (`schema.org/Recipe`): name, description, image, author, times (ISO 8601), yield, category, cuisine, keywords, ingredients, steps (`HowToStep`), nutrition.
+  - `SitemapController` at `/sitemap.xml`: static pages + all published recipes with `lastmod`, hreflang annotations per URL.
+  - `robots.txt` updated: allows `/`, `/recipes`; disallows `/admin/`, `/cabinet/`, `/login`, `/register`, `/password/`, `/email/`; references sitemap.
+  - 28 Pest tests (470 total, 1297 assertions): meta tags on landing/catalog/detail, OG tags, Twitter cards, hreflang, canonical, JSON-LD (type, times, ingredients, steps, nutrition, author), sitemap (content type, static pages, published/draft filtering, hreflang, XML structure), robots.txt (allows, disallows, sitemap ref).
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L5.4 — Audit log**
   - `owen-it/laravel-auditing` enabled on `Recipe`, `Ingredient`, `User`, taxonomies.

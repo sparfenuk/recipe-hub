@@ -1,4 +1,7 @@
-<x-layouts.app title="Recipe Hub — Your Personal Recipe & Nutrition Calculator">
+<x-layouts.app
+    title="Recipe Hub — Your Personal Recipe & Nutrition Calculator"
+    :canonical-url="url('/')"
+>
     <div class="flex flex-col items-center justify-center py-16 text-center sm:py-24">
         <x-heroicon-o-fire class="h-16 w-16 text-emerald-500" />
 

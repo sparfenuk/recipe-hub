@@ -141,7 +141,9 @@ class RecipeBrowser extends Component
             'dietTags' => Tag::where('type', 'diet')->orderBy('name')->get(),
             'allergens' => Allergen::orderBy('name')->get(),
         ])->layout('components.layouts.app', [
-            'title' => __('recipes.catalog'),
+            'title' => __('recipes.catalog').' — '.config('app.name'),
+            'metaDescription' => __('recipes.catalog_desc'),
+            'canonicalUrl' => route('recipes.index'),
         ]);
     }
 

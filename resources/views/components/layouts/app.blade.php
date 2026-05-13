@@ -6,6 +6,34 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $title ?? config('app.name', 'Recipe Hub') }}</title>
+    <meta name="description" content="{{ $metaDescription ?? __('Browse curated recipes with full nutritional data. Scale ingredients to your daily calorie target with the built-in portion calculator.') }}">
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="{{ $ogType ?? 'website' }}">
+    <meta property="og:title" content="{{ $title ?? config('app.name', 'Recipe Hub') }}">
+    <meta property="og:description" content="{{ $metaDescription ?? __('Browse curated recipes with full nutritional data. Scale ingredients to your daily calorie target with the built-in portion calculator.') }}">
+    <meta property="og:url" content="{{ $canonicalUrl ?? request()->url() }}">
+    <meta property="og:locale" content="{{ app()->getLocale() === 'uk' ? 'uk_UA' : 'en_US' }}">
+    <meta property="og:site_name" content="{{ config('app.name', 'Recipe Hub') }}">
+    @if (! empty($ogImage))
+        <meta property="og:image" content="{{ $ogImage }}">
+    @endif
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $title ?? config('app.name', 'Recipe Hub') }}">
+    <meta name="twitter:description" content="{{ $metaDescription ?? __('Browse curated recipes with full nutritional data. Scale ingredients to your daily calorie target with the built-in portion calculator.') }}">
+    @if (! empty($ogImage))
+        <meta name="twitter:image" content="{{ $ogImage }}">
+    @endif
+
+    {{-- hreflang --}}
+    <link rel="alternate" hreflang="en" href="{{ $canonicalUrl ?? request()->url() }}">
+    <link rel="alternate" hreflang="uk" href="{{ $canonicalUrl ?? request()->url() }}">
+    <link rel="alternate" hreflang="x-default" href="{{ $canonicalUrl ?? request()->url() }}">
+
+    {{-- Canonical --}}
+    <link rel="canonical" href="{{ $canonicalUrl ?? request()->url() }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles

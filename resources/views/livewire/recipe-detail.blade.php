@@ -237,4 +237,77 @@
             @endif
         </aside>
     </div>
+
+    {{-- JSON-LD structured data --}}
+    @php
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Recipe',
+            'name' => $recipe->title,
+            'url' => route('recipes.show', $recipe->slug),
+        ];
+        if ($recipe->summary) {
+            $jsonLd['description'] = $recipe->summary;
+        }
+        $heroUrl = $recipe->getFirstMediaUrl('hero', 'full');
+        if ($heroUrl) {
+            $jsonLd['image'] = $heroUrl;
+        }
+        if ($recipe->author) {
+            $jsonLd['author'] = ['@type' => 'Person', 'name' => $recipe->author->name];
+        }
+        if ($recipe->published_at) {
+            $jsonLd['datePublished'] = $recipe->published_at->toIso8601String();
+        }
+        if ($recipe->prep_time_min) {
+            $jsonLd['prepTime'] = 'PT'.$recipe->prep_time_min.'M';
+        }
+        if ($recipe->cook_time_min) {
+            $jsonLd['cookTime'] = 'PT'.$recipe->cook_time_min.'M';
+        }
+        if ($recipe->total_time_min) {
+            $jsonLd['totalTime'] = 'PT'.$recipe->total_time_min.'M';
+        }
+        if ($recipe->servings) {
+            $jsonLd['recipeYield'] = $recipe->servings.' servings';
+        }
+        if ($recipe->category) {
+            $jsonLd['recipeCategory'] = $recipe->category->name;
+        }
+        if ($recipe->cuisine) {
+            $jsonLd['recipeCuisine'] = $recipe->cuisine->name;
+        }
+        if ($recipe->tags->isNotEmpty()) {
+            $jsonLd['keywords'] = $recipe->tags->pluck('name')->implode(', ');
+        }
+        $jsonLd['recipeIngredient'] = $recipe->recipeIngredients->map(function ($ri) {
+            $parts = [];
+            if ($ri->amount) {
+                $parts[] = rtrim(rtrim(number_format((float) $ri->amount, 3), '0'), '.');
+            }
+            if ($ri->unit) {
+                $parts[] = $ri->unit->code;
+            }
+            if ($ri->ingredient) {
+                $parts[] = $ri->ingredient->name;
+            }
+            return implode(' ', $parts);
+        })->values()->all();
+        $jsonLd['recipeInstructions'] = $recipe->steps->map(fn ($step) => [
+            '@type' => 'HowToStep',
+            'position' => $step->position,
+            'text' => trim(strip_tags($step->body)),
+        ])->values()->all();
+        if ($recipe->kcal_per_serving) {
+            $jsonLd['nutrition'] = [
+                '@type' => 'NutritionInformation',
+                'calories' => $recipe->kcal_per_serving.' kcal',
+                'proteinContent' => $recipe->protein_per_serving_g.'g',
+                'fatContent' => $recipe->fat_per_serving_g.'g',
+                'carbohydrateContent' => $recipe->carbs_per_serving_g.'g',
+                'fiberContent' => $recipe->fiber_per_serving_g.'g',
+            ];
+        }
+    @endphp
+    <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
 </div>

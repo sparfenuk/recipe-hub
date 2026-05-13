@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\RecipePdfController;
+use App\Http\Controllers\SitemapController;
 use App\Livewire\Cabinet\CalculationHistory;
 use App\Livewire\Cabinet\Dashboard;
 use App\Livewire\Cabinet\FavoritesList;
@@ -12,7 +13,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
+
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/recipes', RecipeBrowser::class)->name('recipes.index');
 Route::get('/recipes/{slug}', RecipeDetail::class)->name('recipes.show');
