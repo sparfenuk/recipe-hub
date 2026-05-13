@@ -23,6 +23,12 @@ class HealthForm extends Component
 
     public ?int $daily_kcal_target = null;
 
+    public int $p_pct = 30;
+
+    public int $f_pct = 30;
+
+    public int $c_pct = 40;
+
     public ?int $suggested_kcal = null;
 
     public bool $saved = false;
@@ -42,6 +48,9 @@ class HealthForm extends Component
             $this->weight_kg = $profile->weight_kg !== null ? (string) $profile->weight_kg : null;
             $this->activity_level = $profile->activity_level;
             $this->daily_kcal_target = $profile->daily_kcal_target;
+            $this->p_pct = $profile->p_pct ?? 30;
+            $this->f_pct = $profile->f_pct ?? 30;
+            $this->c_pct = $profile->c_pct ?? 40;
         }
 
         $this->computeSuggested();
@@ -57,6 +66,9 @@ class HealthForm extends Component
             'weight_kg' => ['nullable', 'numeric', 'min:20', 'max:500'],
             'activity_level' => ['nullable', 'in:sedentary,lightly_active,moderately_active,very_active,extremely_active'],
             'daily_kcal_target' => ['nullable', 'integer', 'min:500', 'max:10000'],
+            'p_pct' => ['required', 'integer', 'min:0', 'max:100'],
+            'f_pct' => ['required', 'integer', 'min:0', 'max:100'],
+            'c_pct' => ['required', 'integer', 'min:0', 'max:100'],
         ];
     }
 
@@ -74,9 +86,20 @@ class HealthForm extends Component
         }
     }
 
+    public function macroSum(): int
+    {
+        return $this->p_pct + $this->f_pct + $this->c_pct;
+    }
+
     public function save(): void
     {
         $this->validate();
+
+        if ($this->macroSum() !== 100) {
+            $this->addError('p_pct', __('cabinet.macro_sum_error'));
+
+            return;
+        }
 
         /** @var User $user */
         $user = Auth::user();
@@ -90,6 +113,9 @@ class HealthForm extends Component
                 'weight_kg' => $this->weight_kg ?: null,
                 'activity_level' => $this->activity_level,
                 'daily_kcal_target' => $this->daily_kcal_target,
+                'p_pct' => $this->p_pct,
+                'f_pct' => $this->f_pct,
+                'c_pct' => $this->c_pct,
             ],
         );
 

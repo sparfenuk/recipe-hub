@@ -114,6 +114,55 @@
                 </div>
             </div>
 
+            {{-- Macro targets --}}
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('cabinet.macro_targets') }}</h2>
+                <p class="mt-1 text-xs text-slate-400">{{ __('cabinet.macro_targets_desc') }}</p>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                    {{-- Protein --}}
+                    <div>
+                        <label for="p_pct" class="block text-sm font-medium text-slate-700">{{ __('cabinet.protein') }}</label>
+                        <div class="relative mt-1">
+                            <input type="number" id="p_pct" wire:model.live.debounce.300ms="p_pct" min="0" max="100" class="block w-full rounded-lg border-slate-300 pr-8 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">%</span>
+                        </div>
+                    </div>
+
+                    {{-- Fat --}}
+                    <div>
+                        <label for="f_pct" class="block text-sm font-medium text-slate-700">{{ __('cabinet.fat') }}</label>
+                        <div class="relative mt-1">
+                            <input type="number" id="f_pct" wire:model.live.debounce.300ms="f_pct" min="0" max="100" class="block w-full rounded-lg border-slate-300 pr-8 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">%</span>
+                        </div>
+                    </div>
+
+                    {{-- Carbs --}}
+                    <div>
+                        <label for="c_pct" class="block text-sm font-medium text-slate-700">{{ __('cabinet.carbs') }}</label>
+                        <div class="relative mt-1">
+                            <input type="number" id="c_pct" wire:model.live.debounce.300ms="c_pct" min="0" max="100" class="block w-full rounded-lg border-slate-300 pr-8 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Sum indicator --}}
+                <div class="mt-3 flex items-center gap-2">
+                    <span class="text-sm font-medium {{ $this->macroSum() === 100 ? 'text-emerald-600' : 'text-red-600' }}">
+                        {{ __('cabinet.macro_sum', ['sum' => $this->macroSum()]) }}
+                    </span>
+                    @if ($this->macroSum() === 100)
+                        <x-heroicon-o-check-circle class="h-4 w-4 text-emerald-500" />
+                    @else
+                        <x-heroicon-o-exclamation-circle class="h-4 w-4 text-red-500" />
+                    @endif
+                </div>
+
+                @error('p_pct') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             {{-- Submit --}}
             <div class="flex items-center justify-end gap-3 border-t border-slate-200 pt-6">
                 <a href="{{ route('cabinet') }}" class="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">

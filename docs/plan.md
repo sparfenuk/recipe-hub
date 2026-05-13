@@ -261,7 +261,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Step photos already covered by L3.4.
   - Filament uploader with drag-drop multi-file for the gallery.
 
-- [ ] **L3.6 — Cabinet: health profile**
+- [x] **L3.6 — Cabinet: health profile** *(completed 2026-05-13)*
   - `HealthForm` Livewire component on `/cabinet/health`.
   - Inputs: sex, birth date, height, weight, activity level (sedentary → very active).
   - Live BMR via Mifflin-St Jeor → suggested daily kcal target shown beside the form.
