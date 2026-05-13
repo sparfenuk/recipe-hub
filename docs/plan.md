@@ -343,10 +343,15 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 13 new Pest tests (359 total, 1020 assertions): mode tabs, mode switching, kcal scaling, scale factor, nutrition totals, per-serving updates, edge cases (null/zero), invalid mode rejection, reset, daily_pct placeholder, original kcal hint, total label.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.5 — Calculator: % of daily intake**
-  - Daily-percent mode: input 5–100 %, pulls user's daily kcal target from profile.
-  - If user not logged in or no target set: show inline prompt "Set your daily target to use this mode" with a link.
-  - Same scaling math as L4.4.
+- [x] **L4.5 — Calculator: % of daily intake** *(completed 2026-05-13)*
+  - Daily-percent mode: input 5–100%, pulls user's `daily_kcal_target` from profile via `#[Computed]` property.
+  - If user not logged in or no target set: inline prompt with link to `/cabinet/health` to set daily target.
+  - Scale factor = `(daily_target * pct / 100) / recipe_total_kcal`, same per-serving recalculation as kcal mode.
+  - Guards aligned: `isScaled` and `dailyPctScaleFactor` both enforce 5–100 range.
+  - Computed property memoization via `$this->dailyKcalTarget` property access (not method call).
+  - EN/UK translations for 6 new keys (daily_pct input, hints, target info, labels).
+  - 9 new Pest tests (368 total, 1033 assertions): input display with/without target, scaling math, ingredient scaling, edge cases (below minimum, no target, guest user), label, per-serving recalculation.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L4.6 — Calculator history**
   - `calculator_sessions` table.

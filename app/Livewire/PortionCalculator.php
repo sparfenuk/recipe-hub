@@ -4,11 +4,14 @@ namespace App\Livewire;
 
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
+/** @property-read int|null $dailyKcalTarget */
 class PortionCalculator extends Component
 {
     public Recipe $recipe;
@@ -20,6 +23,8 @@ class PortionCalculator extends Component
     public ?int $targetServings = null;
 
     public ?float $targetKcal = null;
+
+    public ?int $targetDailyPct = null;
 
     public function mount(Recipe $recipe): void
     {
@@ -42,6 +47,7 @@ class PortionCalculator extends Component
     {
         return match ($this->mode) {
             'kcal' => $this->kcalScaleFactor(),
+            'daily_pct' => $this->dailyPctScaleFactor(),
             default => $this->servingsScaleFactor(),
         };
     }
@@ -64,6 +70,32 @@ class PortionCalculator extends Component
         }
 
         return $this->targetKcal / $totalKcal;
+    }
+
+    private function dailyPctScaleFactor(): float
+    {
+        $dailyTarget = $this->dailyKcalTarget;
+
+        if (! $dailyTarget || ! $this->targetDailyPct || $this->targetDailyPct < 5 || $this->targetDailyPct > 100) {
+            return 1.0;
+        }
+
+        $totalKcal = (float) $this->recipe->total_kcal;
+
+        if ($totalKcal <= 0) {
+            return 1.0;
+        }
+
+        return ($dailyTarget * $this->targetDailyPct / 100) / $totalKcal;
+    }
+
+    #[Computed]
+    public function dailyKcalTarget(): ?int
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        return $user?->profile?->daily_kcal_target;
     }
 
     /** @return Collection<int, mixed> */
@@ -129,6 +161,7 @@ class PortionCalculator extends Component
     {
         $this->targetServings = $this->originalServings;
         $this->targetKcal = null;
+        $this->targetDailyPct = null;
     }
 
     public function resetServings(): void
@@ -151,6 +184,7 @@ class PortionCalculator extends Component
     {
         return match ($this->mode) {
             'kcal' => $this->targetKcal !== null && $this->targetKcal > 0,
+            'daily_pct' => $this->targetDailyPct !== null && $this->targetDailyPct >= 5 && $this->targetDailyPct <= 100,
             default => $this->targetServings !== $this->originalServings,
         };
     }

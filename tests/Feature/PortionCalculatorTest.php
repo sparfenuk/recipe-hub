@@ -465,7 +465,7 @@ test('setMode rejects invalid mode', function () {
         ->assertSet('mode', 'servings');
 });
 
-test('resetCalculator restores both servings and clears kcal', function () {
+test('resetCalculator restores all inputs', function () {
     $recipe = Recipe::factory()->published()->create([
         'author_id' => $this->author->id,
         'servings' => 4,
@@ -479,10 +479,11 @@ test('resetCalculator restores both servings and clears kcal', function () {
         ->set('targetKcal', 500)
         ->call('resetCalculator')
         ->assertSet('targetServings', 4)
-        ->assertSet('targetKcal', null);
+        ->assertSet('targetKcal', null)
+        ->assertSet('targetDailyPct', null);
 });
 
-test('daily_pct tab shows placeholder hint', function () {
+test('daily_pct shows prompt when user has no daily target', function () {
     $recipe = Recipe::factory()->published()->create([
         'author_id' => $this->author->id,
         'servings' => 4,
@@ -490,7 +491,8 @@ test('daily_pct tab shows placeholder hint', function () {
 
     Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
         ->call('setMode', 'daily_pct')
-        ->assertSee(__('calculator.daily_pct_hint'));
+        ->assertSee(__('calculator.daily_pct_no_target'))
+        ->assertSee(__('calculator.set_daily_target'));
 });
 
 test('kcal mode shows original recipe kcal hint', function () {
@@ -518,4 +520,197 @@ test('total label changes to scaled total in kcal mode', function () {
         ->call('setMode', 'kcal')
         ->set('targetKcal', 500)
         ->assertSee(__('calculator.total_scaled'));
+});
+
+// --- Daily % mode tests ---
+
+test('daily_pct mode shows input when user has daily target', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+    $user->profile()->create(['daily_kcal_target' => 2000]);
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe])
+        ->call('setMode', 'daily_pct')
+        ->assertSee(__('calculator.target_daily_pct'))
+        ->assertSee(__('calculator.daily_target_info', ['kcal' => '2,000']));
+});
+
+test('daily_pct mode scales by percentage of daily target', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+    $user->profile()->create(['daily_kcal_target' => 2000]);
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 1000,
+        'total_protein_g' => 50,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 30);
+
+    $nutrition = $component->get('scaledNutrition');
+    expect($nutrition['kcal'])->toBe(600.0)
+        ->and($nutrition['protein_g'])->toBe(30.0);
+});
+
+test('daily_pct scale factor is (daily_target * pct / 100) / total_kcal', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+    $user->profile()->create(['daily_kcal_target' => 2000]);
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 500, 'nutrition_cached_at' => now()]);
+
+    $component = Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 25);
+
+    expect($component->get('scaleFactor'))->toBe(1.0);
+});
+
+test('daily_pct mode scales ingredients', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+    $user->profile()->create(['daily_kcal_target' => 2000]);
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $ingredient = Ingredient::factory()->create(['name' => 'Pasta']);
+    RecipeIngredient::create([
+        'recipe_id' => $recipe->id,
+        'ingredient_id' => $ingredient->id,
+        'unit_id' => $this->unit->id,
+        'amount' => 200,
+        'position' => 1,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    $component = Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 50);
+
+    $ingredients = collect($component->get('scaledIngredients'));
+    expect($ingredients[0]['amount'])->toBe(200.0);
+});
+
+test('daily_pct returns factor 1 when pct below minimum', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+    $user->profile()->create(['daily_kcal_target' => 2000]);
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    $component = Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 3);
+
+    expect($component->get('scaleFactor'))->toBe(1.0);
+});
+
+test('daily_pct returns factor 1 when no daily target set', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    $component = Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 30);
+
+    expect($component->get('scaleFactor'))->toBe(1.0);
+});
+
+test('daily_pct returns factor 1 for guest user', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 30);
+
+    expect($component->get('scaleFactor'))->toBe(1.0);
+});
+
+test('daily_pct total label shows percentage', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+    $user->profile()->create(['daily_kcal_target' => 2000]);
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 40)
+        ->assertSee(__('calculator.total_daily_pct', ['pct' => 40]));
+});
+
+test('daily_pct per-serving values are recalculated', function () {
+    $user = User::factory()->create();
+    $user->assignRole('user');
+    $user->profile()->create(['daily_kcal_target' => 2000]);
+
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 1000,
+        'kcal_per_serving' => 250,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::actingAs($user)
+        ->test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'daily_pct')
+        ->set('targetDailyPct', 50);
+
+    $nutrition = $component->get('scaledNutrition');
+    expect($nutrition['kcal_per_serving'])->toBe(250.0);
 });

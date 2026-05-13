@@ -92,11 +92,40 @@
             </div>
 
         @elseif ($this->mode === 'daily_pct')
-            {{-- Daily % placeholder --}}
-            <div class="rounded-lg bg-slate-50 p-4 text-center">
-                <x-heroicon-o-chart-pie class="mx-auto h-8 w-8 text-slate-300" />
-                <p class="mt-2 text-sm text-slate-500">{{ __('calculator.daily_pct_hint') }}</p>
-            </div>
+            {{-- Daily % input --}}
+            @if ($this->dailyKcalTarget)
+                <label class="block text-sm font-medium text-slate-700" for="target-daily-pct">
+                    {{ __('calculator.target_daily_pct') }}
+                </label>
+                <div class="mt-2">
+                    <div class="relative">
+                        <input
+                            id="target-daily-pct"
+                            type="number"
+                            wire:model.live.debounce.300ms="targetDailyPct"
+                            min="5"
+                            max="100"
+                            step="5"
+                            placeholder="{{ __('calculator.daily_pct_placeholder') }}"
+                            class="block w-full rounded-lg border-slate-200 pr-8 text-lg font-semibold text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                        >
+                        <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
+                            %
+                        </span>
+                    </div>
+                    <p class="mt-1.5 text-xs text-slate-500">
+                        {{ __('calculator.daily_target_info', ['kcal' => number_format($this->dailyKcalTarget)]) }}
+                    </p>
+                </div>
+            @else
+                <div class="rounded-lg bg-slate-50 p-4 text-center">
+                    <x-heroicon-o-chart-pie class="mx-auto h-8 w-8 text-slate-300" />
+                    <p class="mt-2 text-sm text-slate-500">{{ __('calculator.daily_pct_no_target') }}</p>
+                    <a href="{{ route('cabinet.health') }}" class="mt-2 inline-block text-sm font-medium text-emerald-600 hover:underline">
+                        {{ __('calculator.set_daily_target') }}
+                    </a>
+                </div>
+            @endif
         @endif
     </div>
 
@@ -173,7 +202,9 @@
             <div class="mt-4 h-px bg-slate-100"></div>
 
             <h3 class="mt-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-                @if ($this->mode === 'kcal' && $this->isScaled)
+                @if ($this->mode === 'daily_pct' && $this->isScaled)
+                    {{ __('calculator.total_daily_pct', ['pct' => $this->targetDailyPct]) }}
+                @elseif ($this->mode === 'kcal' && $this->isScaled)
                     {{ __('calculator.total_scaled') }}
                 @elseif ($this->mode === 'servings' && $this->isScaled)
                     {{ __('calculator.total_for_servings', ['servings' => $this->targetServings]) }}
