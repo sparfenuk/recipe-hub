@@ -273,7 +273,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Inputs: P %, F %, C %. Live validation: must sum to 100. Defaults to 30/30/40.
   - Saves to `user_profiles`.
 
-- [ ] **L3.8 — Public catalog v1**
+- [x] **L3.8 — Public catalog v1** *(completed 2026-05-13)*
   - `/recipes` route + `RecipeBrowser` Livewire component.
   - Lists published recipes with hero photo, title, kcal/serving, prep time.
   - Pagination.

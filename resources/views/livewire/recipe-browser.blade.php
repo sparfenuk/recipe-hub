@@ -7,43 +7,99 @@
     <div class="lg:grid lg:grid-cols-4 lg:gap-8">
         {{-- Filters sidebar --}}
         <aside class="mb-6 lg:mb-0">
-            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('recipes.filters') }}</h2>
+            <div class="space-y-4">
+                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('recipes.filters') }}</h2>
 
-                <div class="mt-4 space-y-4">
-                    {{-- Category --}}
-                    <div>
-                        <label for="category_id" class="block text-sm font-medium text-slate-700">{{ __('recipes.category') }}</label>
-                        <select id="category_id" wire:model.live="category_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">{{ __('recipes.all_categories') }}</option>
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </select>
+                    <div class="mt-4 space-y-4">
+                        {{-- Category --}}
+                        <div>
+                            <label for="category_id" class="block text-sm font-medium text-slate-700">{{ __('recipes.category') }}</label>
+                            <select id="category_id" wire:model.live="category_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">{{ __('recipes.all_categories') }}</option>
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Cuisine --}}
+                        <div>
+                            <label for="cuisine_id" class="block text-sm font-medium text-slate-700">{{ __('recipes.cuisine') }}</label>
+                            <select id="cuisine_id" wire:model.live="cuisine_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">{{ __('recipes.all_cuisines') }}</option>
+                                @foreach ($cuisines as $cuisine)
+                                    <option value="{{ $cuisine->id }}">{{ $cuisine->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Max kcal --}}
+                        <div>
+                            <label for="max_kcal" class="block text-sm font-medium text-slate-700">{{ __('recipes.max_kcal') }}</label>
+                            <input type="number" id="max_kcal" wire:model.live.debounce.500ms="max_kcal" min="0" placeholder="{{ __('recipes.any') }}" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        </div>
+
+                        {{-- Max prep time --}}
+                        <div>
+                            <label for="max_prep_time" class="block text-sm font-medium text-slate-700">{{ __('recipes.max_prep_time') }}</label>
+                            <input type="number" id="max_prep_time" wire:model.live.debounce.500ms="max_prep_time" min="0" placeholder="{{ __('recipes.any') }}" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        </div>
                     </div>
-
-                    {{-- Cuisine --}}
-                    <div>
-                        <label for="cuisine_id" class="block text-sm font-medium text-slate-700">{{ __('recipes.cuisine') }}</label>
-                        <select id="cuisine_id" wire:model.live="cuisine_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                            <option value="">{{ __('recipes.all_cuisines') }}</option>
-                            @foreach ($cuisines as $cuisine)
-                                <option value="{{ $cuisine->id }}">{{ $cuisine->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    @if ($category_id || $cuisine_id)
-                        <button wire:click="clearFilters" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">
-                            {{ __('recipes.clear_filters') }}
-                        </button>
-                    @endif
                 </div>
+
+                {{-- Diet tags --}}
+                @if ($dietTags->isNotEmpty())
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('recipes.diet_tags') }}</h3>
+                        <div class="mt-3 space-y-2">
+                            @foreach ($dietTags as $tag)
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" wire:model.live="diet_tags" value="{{ $tag->id }}" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    <span class="text-slate-700">{{ $tag->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Exclude allergens --}}
+                @if ($allergens->isNotEmpty())
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('recipes.exclude_allergens') }}</h3>
+                        <div class="mt-3 space-y-2">
+                            @foreach ($allergens as $allergen)
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" wire:model.live="exclude_allergens" value="{{ $allergen->id }}" class="rounded border-slate-300 text-red-600 focus:ring-red-500">
+                                    <span class="text-slate-700">{{ $allergen->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if ($this->hasActiveFilters())
+                    <button wire:click="clearFilters" class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-emerald-600 shadow-sm transition hover:bg-emerald-50">
+                        {{ __('recipes.clear_filters') }}
+                    </button>
+                @endif
             </div>
         </aside>
 
         {{-- Recipe grid --}}
         <div class="lg:col-span-3">
+            {{-- Sort bar --}}
+            <div class="mb-4 flex items-center justify-between">
+                <p class="text-sm text-slate-500">
+                    {{ trans_choice('recipes.results_count', $recipes->total(), ['count' => $recipes->total()]) }}
+                </p>
+                <select wire:model.live="sort" class="rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                    <option value="newest">{{ __('recipes.sort_newest') }}</option>
+                    <option value="lowest_kcal">{{ __('recipes.sort_lowest_kcal') }}</option>
+                    <option value="shortest_prep">{{ __('recipes.sort_shortest_prep') }}</option>
+                </select>
+            </div>
+
             @if ($recipes->isEmpty())
                 <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 py-16 text-center">
                     <x-heroicon-o-book-open class="h-12 w-12 text-slate-300" />
