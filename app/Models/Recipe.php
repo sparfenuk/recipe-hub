@@ -133,6 +133,12 @@ class Recipe extends Model implements HasMedia
         return $this->belongsToMany(Tag::class, 'recipe_tag');
     }
 
+    /** @return BelongsToMany<User, $this> */
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites')->withPivot('created_at');
+    }
+
     /** @param  Builder<static>  $query
      *  @return Builder<static> */
     public function makeAllSearchableUsing(Builder $query): Builder

@@ -1,23 +1,12 @@
 <div>
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-slate-900">{{ __('recipes.catalog') }}</h1>
-            <p class="mt-1 text-sm text-slate-500">{{ __('recipes.catalog_desc') }}</p>
-        </div>
-        <div class="relative w-full sm:w-72">
-            <x-heroicon-o-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-                type="search"
-                wire:model.live.debounce.400ms="search"
-                placeholder="{{ __('recipes.search_placeholder') }}"
-                class="block w-full rounded-lg border-slate-300 pl-9 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
-            >
-        </div>
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-900">{{ __('recipes.catalog') }}</h1>
+        <p class="mt-1 text-sm text-slate-500">{{ __('recipes.catalog_desc') }}</p>
     </div>
 
-    <div class="lg:grid lg:grid-cols-4 lg:gap-8">
+    <div class="lg:flex lg:gap-8">
         {{-- Filters sidebar --}}
-        <aside class="mb-6 lg:mb-0">
+        <aside class="mb-6 shrink-0 lg:mb-0 lg:w-64">
             <div class="space-y-4">
                 <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('recipes.filters') }}</h2>
@@ -98,7 +87,7 @@
         </aside>
 
         {{-- Recipe grid --}}
-        <div class="lg:col-span-3">
+        <div class="mx-auto w-full max-w-4xl">
             {{-- Sort bar --}}
             <div class="mb-4 flex items-center justify-between">
                 <p class="text-sm text-slate-500">

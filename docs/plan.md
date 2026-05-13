@@ -312,10 +312,15 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 18 Pest tests (309 total, 915 assertions): page load, title/summary, meta badges, ingredients, optional ingredients, notes, steps, nutrition panel, tags, category/cuisine, author, 404 for draft/archived/non-existent, breadcrumb, public access, group labels, print button.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.2 — Favorites**
-  - `favorites` table (composite PK), model relation.
-  - `FavoriteButton` Livewire component (optimistic toggle, login redirect for guests).
-  - `/cabinet/favorites` page lists saved recipes with quick filters.
+- [x] **L4.2 — Favorites** *(completed 2026-05-13)*
+  - `favorites` table (composite PK on `user_id`, `recipe_id` with cascade deletes), `created_at` timestamp.
+  - `User::favorites()` BelongsToMany and `Recipe::favoritedBy()` BelongsToMany relations.
+  - `FavoriteButton` Livewire component on recipe detail page: toggle with login redirect for guests, dispatches `favorite-toggled` event.
+  - `/cabinet/favorites` page (`FavoritesList` Livewire component): lists saved published recipes with search (via Scout), sort (newest/oldest/A-Z/lowest kcal), pagination, unfavorite with confirm dialog.
+  - Dashboard favorites placeholder replaced with real navigation card linking to favorites page.
+  - EN/UK translations for 10 new keys (cabinet + recipes domains).
+  - 21 Pest tests (330 total, 960 assertions): favorite/unfavorite toggle, guest redirect, initial state, detail page integration, auth guard, list/filter/sort, unfavorite from list, unpublished exclusion, relation tests, cascade cleanup, dashboard link, duplicate prevention.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L4.3 — Calculator: scale by servings**
   - `PortionCalculator` Livewire component embedded on recipe detail.

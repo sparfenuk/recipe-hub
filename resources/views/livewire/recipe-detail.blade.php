@@ -262,6 +262,9 @@
                 </div>
             @endif
 
+            {{-- Favorite button --}}
+            <livewire:favorite-button :recipe-id="$recipe->id" />
+
             {{-- Print button placeholder --}}
             <button
                 type="button"

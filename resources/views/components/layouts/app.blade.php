@@ -24,6 +24,23 @@
                 {{ $nav ?? '' }}
             </nav>
 
+            {{-- Header search --}}
+            <div
+                class="hidden md:block"
+                x-data="{ q: new URLSearchParams(window.location.search).get('q') || '' }"
+                x-on:keydown.enter.prevent="if (q.trim()) window.location.href = '{{ route('recipes.index') }}?q=' + encodeURIComponent(q.trim()); else window.location.href = '{{ route('recipes.index') }}';"
+            >
+                <div class="relative w-64">
+                    <x-heroicon-o-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="search"
+                        x-model="q"
+                        placeholder="{{ __('recipes.search_placeholder') }}"
+                        class="block w-full rounded-lg border-slate-300 pl-9 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                    >
+                </div>
+            </div>
+
             {{-- Desktop right side: locale switcher + auth --}}
             <div class="hidden items-center gap-3 md:flex">
                 <livewire:locale-switcher />
@@ -73,6 +90,22 @@
             x-cloak
             class="border-t border-slate-200 bg-white md:hidden"
         >
+            <div
+                class="px-4 pt-3"
+                x-data="{ q: new URLSearchParams(window.location.search).get('q') || '' }"
+                x-on:keydown.enter.prevent="if (q.trim()) window.location.href = '{{ route('recipes.index') }}?q=' + encodeURIComponent(q.trim()); else window.location.href = '{{ route('recipes.index') }}';"
+            >
+                <div class="relative">
+                    <x-heroicon-o-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="search"
+                        x-model="q"
+                        placeholder="{{ __('recipes.search_placeholder') }}"
+                        class="block w-full rounded-lg border-slate-300 pl-9 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                    >
+                </div>
+            </div>
+
             <nav class="space-y-1 px-4 py-3 text-sm font-medium text-slate-600">
                 {{ $nav ?? '' }}
             </nav>

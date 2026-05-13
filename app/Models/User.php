@@ -7,6 +7,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -71,6 +72,12 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     public function profile(): HasOne
     {
         return $this->hasOne(UserProfile::class);
+    }
+
+    /** @return BelongsToMany<Recipe, $this> */
+    public function favorites(): BelongsToMany
+    {
+        return $this->belongsToMany(Recipe::class, 'favorites')->withPivot('created_at');
     }
 
     public function canAccessPanel(Panel $panel): bool
