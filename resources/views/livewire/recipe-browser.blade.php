@@ -48,6 +48,15 @@
                     </div>
                 </div>
 
+                {{-- Ingredient filters --}}
+                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ __('recipes.ingredients') }}</h3>
+                    <div class="mt-3 space-y-4">
+                        <livewire:ingredient-autocomplete mode="include" />
+                        <livewire:ingredient-autocomplete mode="exclude" />
+                    </div>
+                </div>
+
                 {{-- Diet tags --}}
                 @if ($dietTags->isNotEmpty())
                     <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

@@ -9,6 +9,7 @@ use App\Models\Recipe;
 use App\Models\Tag;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -33,6 +34,12 @@ class RecipeBrowser extends Component
     public string $sort = 'newest';
 
     public string $search = '';
+
+    /** @var array<int> */
+    public array $include_ingredients = [];
+
+    /** @var array<int> */
+    public array $exclude_ingredients = [];
 
     /** @var array<string, array<string, mixed>> */
     protected $queryString = [
@@ -84,6 +91,18 @@ class RecipeBrowser extends Component
         $this->resetPage();
     }
 
+    /** @param  array<int>  $ids */
+    #[On('ingredient-filter-updated')]
+    public function onIngredientFilterUpdated(string $mode, array $ids): void
+    {
+        if ($mode === 'include') {
+            $this->include_ingredients = $ids;
+        } else {
+            $this->exclude_ingredients = $ids;
+        }
+        $this->resetPage();
+    }
+
     public function clearFilters(): void
     {
         $this->category_id = null;
@@ -92,8 +111,11 @@ class RecipeBrowser extends Component
         $this->max_prep_time = null;
         $this->diet_tags = [];
         $this->exclude_allergens = [];
+        $this->include_ingredients = [];
+        $this->exclude_ingredients = [];
         $this->sort = 'newest';
         $this->search = '';
+        $this->dispatch('clear-ingredient-filters');
         $this->resetPage();
     }
 
@@ -105,6 +127,8 @@ class RecipeBrowser extends Component
             || $this->max_prep_time !== null
             || $this->diet_tags !== []
             || $this->exclude_allergens !== []
+            || $this->include_ingredients !== []
+            || $this->exclude_ingredients !== []
             || $this->search !== '';
     }
 
@@ -141,6 +165,16 @@ class RecipeBrowser extends Component
                     $q2->whereHas('allergens', fn ($q3) => $q3->whereIn('allergens.id', $this->exclude_allergens));
                 });
             });
+        }
+
+        if ($this->include_ingredients !== []) {
+            foreach ($this->include_ingredients as $ingredientId) {
+                $query->whereHas('recipeIngredients', fn ($q) => $q->where('ingredient_id', $ingredientId));
+            }
+        }
+
+        if ($this->exclude_ingredients !== []) {
+            $query->whereDoesntHave('recipeIngredients', fn ($q) => $q->whereIn('ingredient_id', $this->exclude_ingredients));
         }
 
         if ($this->search !== '') {

@@ -48,5 +48,9 @@ return [
     'author' => 'Author',
     'gallery' => 'Gallery',
     'step_photo' => 'Step :number photo',
+    'include_ingredients' => 'With ingredients',
+    'exclude_ingredients' => 'Without ingredients',
+    'ingredient_search_placeholder' => 'Search ingredients...',
+    'no_ingredients_found' => 'No ingredients found.',
 
 ];

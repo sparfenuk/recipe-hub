@@ -48,5 +48,9 @@ return [
     'author' => 'Автор',
     'gallery' => 'Галерея',
     'step_photo' => 'Фото кроку :number',
+    'include_ingredients' => 'З інгредієнтами',
+    'exclude_ingredients' => 'Без інгредієнтів',
+    'ingredient_search_placeholder' => 'Пошук інгредієнтів...',
+    'no_ingredients_found' => 'Інгредієнтів не знайдено.',
 
 ];
