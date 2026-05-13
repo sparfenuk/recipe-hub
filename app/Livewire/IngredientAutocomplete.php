@@ -17,11 +17,6 @@ class IngredientAutocomplete extends Component
     /** @var array<int, string> */
     public array $selected = [];
 
-    public function updatedQuery(): void
-    {
-        // Results are computed in render()
-    }
-
     public function selectIngredient(int $id, string $name): void
     {
         if (! isset($this->selected[$id])) {

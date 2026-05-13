@@ -95,11 +95,11 @@ class RecipeBrowser extends Component
     #[On('ingredient-filter-updated')]
     public function onIngredientFilterUpdated(string $mode, array $ids): void
     {
-        if ($mode === 'include') {
-            $this->include_ingredients = $ids;
-        } else {
-            $this->exclude_ingredients = $ids;
-        }
+        match ($mode) {
+            'include' => $this->include_ingredients = $ids,
+            'exclude' => $this->exclude_ingredients = $ids,
+            default => null,
+        };
         $this->resetPage();
     }
 

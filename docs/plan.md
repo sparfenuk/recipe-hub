@@ -375,10 +375,14 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 13 Pest tests (399 total, 1092 assertions): chart rendering conditions (nutrition/no-nutrition/zero-kcal), Alpine component presence, bar chart visibility (guest/no-target/with-target), macroTargets computed (null/values/correct-math), scaled nutrition reactivity across modes.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.8 — Ingredient autocomplete**
-  - `IngredientAutocomplete` Livewire component (debounced search via Scout).
-  - Used in catalog filter sidebar (include / exclude ingredient).
-  - Used as a fallback in admin recipe form if Filament's default picker is sluggish.
+- [x] **L4.8 — Ingredient autocomplete** *(completed 2026-05-13)*
+  - `IngredientAutocomplete` Livewire component (debounced search via Scout, 2+ char minimum, top 10 active results).
+  - Two instances in catalog filter sidebar: include (green chips) and exclude (red chips) ingredient filtering.
+  - `RecipeBrowser` handles `ingredient-filter-updated` event: include uses AND logic (all selected must be present), exclude uses OR logic (any selected excludes recipe).
+  - Selected chips with remove button, loading spinner, escape-to-close, click-outside-to-close.
+  - EN/UK translations for 4 new keys.
+  - 17 Pest tests (417 total, 1129 assertions): both modes render, search results, inactive exclusion, selection/removal/duplicate/clear events, selected excluded from results, recipe browser include/exclude/AND filtering, event handling, clear filters, active filters check, sidebar embedding.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 ---
 
