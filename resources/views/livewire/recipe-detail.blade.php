@@ -1,6 +1,6 @@
 <div>
     {{-- Breadcrumb --}}
-    <nav class="mb-6 text-sm text-slate-500">
+    <nav class="mb-6 text-sm text-slate-500 print:hidden">
         <a href="{{ route('recipes.index') }}" class="transition-colors hover:text-emerald-600">{{ __('recipes.catalog') }}</a>
         <span class="mx-2">/</span>
         <span class="text-slate-900">{{ $recipe->title }}</span>
@@ -200,20 +200,33 @@
         {{-- Right column: Calculator + Actions --}}
         <aside class="space-y-6">
             {{-- Portion calculator (replaces static nutrition panel) --}}
-            <livewire:portion-calculator :recipe="$recipe" />
+            <div class="print:hidden">
+                <livewire:portion-calculator :recipe="$recipe" />
+            </div>
 
             {{-- Favorite button --}}
-            <livewire:favorite-button :recipe-id="$recipe->id" />
+            <div class="print:hidden">
+                <livewire:favorite-button :recipe-id="$recipe->id" />
+            </div>
 
-            {{-- Print button placeholder --}}
-            <button
-                type="button"
-                onclick="window.print()"
-                class="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
-            >
-                <x-heroicon-o-printer class="h-4 w-4" />
-                {{ __('recipes.print') }}
-            </button>
+            {{-- Print / PDF buttons --}}
+            <div class="flex gap-2 print:hidden">
+                <button
+                    type="button"
+                    onclick="window.print()"
+                    class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                >
+                    <x-heroicon-o-printer class="h-4 w-4" />
+                    {{ __('recipes.print') }}
+                </button>
+                <a
+                    href="{{ route('recipes.pdf', $recipe->slug) }}"
+                    class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                >
+                    <x-heroicon-o-arrow-down-tray class="h-4 w-4" />
+                    {{ __('recipes.download_pdf') }}
+                </a>
+            </div>
 
             {{-- Author --}}
             @if ($recipe->author)

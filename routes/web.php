@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RecipePdfController;
 use App\Livewire\Cabinet\CalculationHistory;
 use App\Livewire\Cabinet\Dashboard;
 use App\Livewire\Cabinet\FavoritesList;
@@ -15,6 +16,7 @@ Route::get('/', function () {
 
 Route::get('/recipes', RecipeBrowser::class)->name('recipes.index');
 Route::get('/recipes/{slug}', RecipeDetail::class)->name('recipes.show');
+Route::get('/recipes/{slug}/pdf', RecipePdfController::class)->middleware('throttle:10,1')->name('recipes.pdf');
 
 Route::middleware(['auth', 'verified'])->prefix('cabinet')->group(function () {
     Route::get('/', Dashboard::class)->name('cabinet');

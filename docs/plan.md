@@ -398,10 +398,13 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 10 Pest tests (427 total, 1188 assertions): locale capture on verify/reset/welcome dispatch, Ukrainian email body for all 3 notification types, English body, welcome URL, translation key drift guard.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.2 — Print + PDF**
-  - Print stylesheet: hides nav/footer, expands all sections, B&W friendly.
-  - PDF export via `barryvdh/laravel-dompdf` for a recipe page.
-  - "Print / PDF" buttons on recipe detail.
+- [x] **L5.2 — Print + PDF** *(completed 2026-05-13)*
+  - Print stylesheet via `@media print` in `app.css`: hides header, footer, breadcrumb, calculator, favorite button, and action buttons. B&W friendly with no shadows/borders, proper page breaks.
+  - `RecipePdfController` generates PDF via `barryvdh/laravel-dompdf` at `GET /recipes/{slug}/pdf` with throttle middleware (10/min). Standalone Blade template with inline styles: recipe title, meta, tags, ingredients (grouped), numbered steps, and nutrition table (per-serving + total).
+  - Recipe detail page updated: Print button (`window.print()`) + PDF download link side by side. Breadcrumb, calculator, favorite button, and action buttons hidden in print via `print:hidden`.
+  - EN/UK translations updated: `print` shortened to "Print"/"Друк", `download_pdf` added.
+  - 15 Pest tests (442 total, 1216 assertions): PDF download (200 + correct content-type/filename), 404 for draft/archived/non-existent, public access, view rendering (ingredients, steps, nutrition, tags, category/cuisine, author), both buttons on detail page, translation drift guard.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L5.3 — SEO**
   - Meta tags (title, description, og:image, og:type), Twitter card.
