@@ -333,10 +333,15 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 16 Pest tests (346 total, 998 assertions): default render, scaling, nutrition totals, per-serving constancy, increment/decrement/reset, bounds, grouping, optional ingredients, null handling, embed check, label change, fractional scaling.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.4 — Calculator: scale by total kcal**
-  - Mode selector tabs: Servings / Calories / % of daily.
-  - Calorie mode: input kcal, scale factor = target / current_total, ingredients scaled accordingly.
-  - Display rounded scaled amounts.
+- [x] **L4.4 — Calculator: scale by total kcal** *(completed 2026-05-13)*
+  - Mode selector tabs: Servings / Calories / % of Daily — tab switcher with active highlight.
+  - Calorie mode: input target kcal with placeholder showing original total, scale factor = target / current_total, ingredients and nutrition totals scaled accordingly.
+  - Per-serving values recalculated in kcal mode (total/servings) since total amount changes while servings count stays constant.
+  - Daily % tab shows placeholder hint (implementation deferred to L4.5).
+  - `resetCalculator()` restores servings and clears kcal target.
+  - EN/UK translations for 10 new calculator keys (modes, kcal input, hints).
+  - 13 new Pest tests (359 total, 1020 assertions): mode tabs, mode switching, kcal scaling, scale factor, nutrition totals, per-serving updates, edge cases (null/zero), invalid mode rejection, reset, daily_pct placeholder, original kcal hint, total label.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L4.5 — Calculator: % of daily intake**
   - Daily-percent mode: input 5–100 %, pulls user's daily kcal target from profile.

@@ -157,7 +157,7 @@ test('reset restores original servings', function () {
         ->assertSet('targetServings', 4);
 });
 
-test('calculator shows reset link only when scaled', function () {
+test('calculator shows reset link only when scaled in servings mode', function () {
     $recipe = Recipe::factory()->published()->create([
         'author_id' => $this->author->id,
         'servings' => 4,
@@ -296,4 +296,226 @@ test('fractional scaling produces correct amounts', function () {
 
     $ingredients = collect($component->get('scaledIngredients'));
     expect($ingredients[0]['amount'])->toBe(75.0);
+});
+
+// --- Calorie mode tests ---
+
+test('mode tabs are displayed', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
+        ->assertSee(__('calculator.mode_servings'))
+        ->assertSee(__('calculator.mode_kcal'))
+        ->assertSee(__('calculator.mode_daily_pct'));
+});
+
+test('switching to kcal mode shows calorie input', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
+        ->call('setMode', 'kcal')
+        ->assertSet('mode', 'kcal')
+        ->assertSee(__('calculator.target_kcal'));
+});
+
+test('kcal mode scales ingredients by calorie ratio', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $ingredient = Ingredient::factory()->create(['name' => 'Rice']);
+    RecipeIngredient::create([
+        'recipe_id' => $recipe->id,
+        'ingredient_id' => $ingredient->id,
+        'unit_id' => $this->unit->id,
+        'amount' => 400,
+        'position' => 1,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 1000,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 500);
+
+    $ingredients = collect($component->get('scaledIngredients'));
+    expect($ingredients[0]['amount'])->toBe(200.0);
+});
+
+test('kcal mode scale factor is target / total', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 2,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 800,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 1200);
+
+    expect($component->get('scaleFactor'))->toBe(1.5);
+});
+
+test('kcal mode scales nutrition totals correctly', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 2,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 1000,
+        'total_protein_g' => 50,
+        'total_fat_g' => 40,
+        'total_carbs_g' => 120,
+        'total_fiber_g' => 10,
+        'kcal_per_serving' => 500,
+        'protein_per_serving_g' => 25,
+        'fat_per_serving_g' => 20,
+        'carbs_per_serving_g' => 60,
+        'fiber_per_serving_g' => 5,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 500);
+
+    $nutrition = $component->get('scaledNutrition');
+    expect($nutrition['kcal'])->toBe(500.0)
+        ->and($nutrition['protein_g'])->toBe(25.0)
+        ->and($nutrition['fat_g'])->toBe(20.0)
+        ->and($nutrition['carbs_g'])->toBe(60.0)
+        ->and($nutrition['fiber_g'])->toBe(5.0);
+});
+
+test('kcal mode updates per-serving values', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 2000,
+        'total_protein_g' => 100,
+        'kcal_per_serving' => 500,
+        'protein_per_serving_g' => 25,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 1000);
+
+    $nutrition = $component->get('scaledNutrition');
+    expect($nutrition['kcal_per_serving'])->toBe(250.0)
+        ->and($nutrition['protein_per_serving_g'])->toBe(12.5);
+});
+
+test('kcal mode returns factor 1 when no target set', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal');
+
+    expect($component->get('scaleFactor'))->toBe(1.0);
+});
+
+test('kcal mode returns factor 1 when recipe has zero kcal', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 0, 'nutrition_cached_at' => now()]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 500);
+
+    expect($component->get('scaleFactor'))->toBe(1.0);
+});
+
+test('setMode rejects invalid mode', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
+        ->call('setMode', 'invalid')
+        ->assertSet('mode', 'servings');
+});
+
+test('resetCalculator restores both servings and clears kcal', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->set('targetServings', 10)
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 500)
+        ->call('resetCalculator')
+        ->assertSet('targetServings', 4)
+        ->assertSet('targetKcal', null);
+});
+
+test('daily_pct tab shows placeholder hint', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
+        ->call('setMode', 'daily_pct')
+        ->assertSee(__('calculator.daily_pct_hint'));
+});
+
+test('kcal mode shows original recipe kcal hint', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1500, 'nutrition_cached_at' => now()]);
+
+    Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->assertSee(__('calculator.original_kcal', ['kcal' => '1,500']));
+});
+
+test('total label changes to scaled total in kcal mode', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    $recipe->updateQuietly(['total_kcal' => 1000, 'nutrition_cached_at' => now()]);
+
+    Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 500)
+        ->assertSee(__('calculator.total_scaled'));
 });
