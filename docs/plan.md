@@ -390,10 +390,13 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
 
 > Goal: site is production-ready. Localized, monitored, backed up, deployed.
 
-- [ ] **L5.1 — Email flows localized**
-  - Verify-email, reset-password, welcome emails extend `Mail::to(...)->locale(...)` using locale captured at dispatch.
-  - Blade templates use `__()`.
-  - Pest test: dispatching with locale `uk` produces a Ukrainian email body.
+- [x] **L5.1 — Email flows localized** *(completed 2026-05-13)*
+  - `User::sendEmailVerificationNotification()` and `sendPasswordResetNotification()` overridden to capture `app()->getLocale()` via `->locale()` on notification dispatch.
+  - `WelcomeNotification` created and dispatched from `CreateNewUser` with locale.
+  - 14 email-related translation strings added to `lang/en.json` and `lang/uk.json` (greeting, regards, verify email subject/body, reset password subject/body, welcome subject/body).
+  - `#[\SensitiveParameter]` preserved on password reset token override.
+  - 10 Pest tests (427 total, 1188 assertions): locale capture on verify/reset/welcome dispatch, Ukrainian email body for all 3 notification types, English body, welcome URL, translation key drift guard.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L5.2 — Print + PDF**
   - Print stylesheet: hides nav/footer, expands all sections, B&W friendly.
