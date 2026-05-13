@@ -149,6 +149,7 @@ class RecipeBrowser extends Component
         }
 
         return $query
+            ->with('media')
             ->when($this->search === '' && $this->sort === 'newest', fn ($q) => $q->orderByDesc('published_at'))
             ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderBy('kcal_per_serving'))
             ->when($this->sort === 'shortest_prep', fn ($q) => $q->orderBy('prep_time_min'))

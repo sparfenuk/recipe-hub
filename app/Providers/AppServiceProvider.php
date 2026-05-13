@@ -3,11 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Ingredient;
-use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Observers\IngredientObserver;
 use App\Observers\RecipeIngredientObserver;
-use App\Observers\RecipeObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,7 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Recipe::observe(RecipeObserver::class);
         RecipeIngredient::observe(RecipeIngredientObserver::class);
         Ingredient::observe(IngredientObserver::class);
 

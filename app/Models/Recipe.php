@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\RecipeFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -130,6 +131,13 @@ class Recipe extends Model implements HasMedia
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'recipe_tag');
+    }
+
+    /** @param  Builder<static>  $query
+     *  @return Builder<static> */
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('recipeIngredients.ingredient');
     }
 
     public function shouldBeSearchable(): bool

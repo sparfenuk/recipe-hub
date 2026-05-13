@@ -145,11 +145,9 @@ class RecipeResource extends Resource
                             ->schema([
                                 Select::make('ingredient_id')
                                     ->label('Ingredient')
-                                    ->options(fn () => Ingredient::query()
-                                        ->where('is_active', true)
-                                        ->orderBy('name')
-                                        ->pluck('name', 'id'))
+                                    ->relationship('ingredient', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
                                     ->searchable()
+                                    ->preload(false)
                                     ->required()
                                     ->columnSpan(2),
                                 TextInput::make('amount')

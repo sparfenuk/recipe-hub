@@ -16,29 +16,6 @@ beforeEach(function () {
     $this->gram = Unit::where('code', 'g')->firstOrFail();
 });
 
-it('dispatches recompute job when recipe is created', function () {
-    Queue::fake();
-
-    $recipe = Recipe::factory()->create();
-
-    Queue::assertPushed(
-        RecalculateRecipeNutrition::class,
-        fn (RecalculateRecipeNutrition $job) => $job->recipeId === $recipe->id
-    );
-});
-
-it('dispatches recompute job when recipe is updated', function () {
-    $recipe = Recipe::factory()->create(['servings' => 4]);
-
-    Queue::fake();
-    $recipe->update(['servings' => 8]);
-
-    Queue::assertPushed(
-        RecalculateRecipeNutrition::class,
-        fn (RecalculateRecipeNutrition $job) => $job->recipeId === $recipe->id
-    );
-});
-
 it('dispatches recompute job when recipe ingredient is added', function () {
     $recipe = Recipe::factory()->create();
     $ingredient = Ingredient::factory()->create();

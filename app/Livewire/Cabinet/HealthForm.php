@@ -132,20 +132,35 @@ class HealthForm extends Component
 
     private function computeSuggested(): void
     {
-        if ($this->sex && $this->birth_date && $this->height_cm && $this->weight_kg && $this->activity_level) {
+        if (! in_array($this->sex, ['male', 'female'], true)
+            || ! $this->birth_date
+            || ! $this->height_cm
+            || ! $this->weight_kg
+            || ! in_array($this->activity_level, array_keys(BmrCalculator::ACTIVITY_LEVELS), true)
+        ) {
+            $this->suggested_kcal = null;
+
+            return;
+        }
+
+        try {
             $age = Carbon::parse($this->birth_date)->age;
+        } catch (\Exception) {
+            $this->suggested_kcal = null;
 
-            if ($age > 0) {
-                $this->suggested_kcal = BmrCalculator::tdee(
-                    $this->sex,
-                    (float) $this->weight_kg,
-                    (float) $this->height_cm,
-                    $age,
-                    $this->activity_level,
-                );
+            return;
+        }
 
-                return;
-            }
+        if ($age > 0) {
+            $this->suggested_kcal = BmrCalculator::tdee(
+                $this->sex,
+                (float) $this->weight_kg,
+                (float) $this->height_cm,
+                $age,
+                $this->activity_level,
+            );
+
+            return;
         }
 
         $this->suggested_kcal = null;
