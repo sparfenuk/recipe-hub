@@ -237,4 +237,28 @@
             </div>
         </div>
     @endif
+
+    {{-- Save button --}}
+    @auth
+        @if ($this->isScaled)
+            <div class="border-t border-slate-100 px-5 py-4">
+                @if ($this->saved)
+                    <p class="text-center text-sm font-medium text-emerald-600">
+                        <x-heroicon-o-check-circle class="inline h-4 w-4" />
+                        {{ __('calculator.saved') }}
+                    </p>
+                @else
+                    <button
+                        wire:click="saveCalculation"
+                        wire:loading.attr="disabled"
+                        type="button"
+                        class="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                        <x-heroicon-o-bookmark class="h-4 w-4" />
+                        {{ __('calculator.save_calculation') }}
+                    </button>
+                @endif
+            </div>
+        @endif
+    @endauth
 </div>

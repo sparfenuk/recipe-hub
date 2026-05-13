@@ -22,5 +22,7 @@ return [
     'total_for_servings' => 'Всього на :servings порцій',
     'total_scaled' => 'Масштабований підсумок',
     'total_daily_pct' => ':pct% денної норми',
+    'save_calculation' => 'Зберегти розрахунок',
+    'saved' => 'Розрахунок збережено!',
 
 ];

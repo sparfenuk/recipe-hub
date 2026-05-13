@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\CalculatorSession;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Models\User;
@@ -11,7 +12,10 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-/** @property-read int|null $dailyKcalTarget */
+/**
+ * @property-read int|null $dailyKcalTarget
+ * @property-read bool $isScaled
+ */
 class PortionCalculator extends Component
 {
     public Recipe $recipe;
@@ -25,6 +29,8 @@ class PortionCalculator extends Component
     public ?float $targetKcal = null;
 
     public ?int $targetDailyPct = null;
+
+    public bool $saved = false;
 
     public function mount(Recipe $recipe): void
     {
@@ -40,6 +46,14 @@ class PortionCalculator extends Component
         }
 
         $this->mode = $mode;
+        $this->saved = false;
+    }
+
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['targetServings', 'targetKcal', 'targetDailyPct'], true)) {
+            $this->saved = false;
+        }
     }
 
     #[Computed]
@@ -155,6 +169,34 @@ class PortionCalculator extends Component
             'carbs_per_serving_g' => round($totalCarbs / $servings, 2),
             'fiber_per_serving_g' => round($totalFiber / $servings, 2),
         ];
+    }
+
+    public function saveCalculation(): void
+    {
+        if (! Auth::check() || ! $this->isScaled) {
+            return;
+        }
+
+        if (! in_array($this->mode, ['servings', 'kcal', 'daily_pct'], true)) {
+            return;
+        }
+
+        $inputValue = match ($this->mode) {
+            'kcal' => $this->targetKcal ?? 0,
+            'daily_pct' => $this->targetDailyPct ?? 0,
+            default => $this->targetServings ?? $this->originalServings,
+        };
+
+        CalculatorSession::create([
+            'user_id' => Auth::id(),
+            'recipe_id' => $this->recipe->id,
+            'mode' => $this->mode,
+            'input_value' => $inputValue,
+            'scale_factor' => $this->scaleFactor(),
+            'totals' => $this->scaledNutrition(),
+        ]);
+
+        $this->saved = true;
     }
 
     public function resetCalculator(): void

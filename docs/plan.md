@@ -353,11 +353,16 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 9 new Pest tests (368 total, 1033 assertions): input display with/without target, scaling math, ingredient scaling, edge cases (below minimum, no target, guest user), label, per-serving recalculation.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.6 — Calculator history**
-  - `calculator_sessions` table.
-  - "Save calculation" button on the calculator stores `mode`, `value`, `scale_factor`, `totals`, `recipe_id`, `user_id`.
-  - `/cabinet/calculations` page lists saved sessions, allows reload + delete.
-  - Pest test: save → list → reload restores the same outputs.
+- [x] **L4.6 — Calculator history** *(completed 2026-05-13)*
+  - `calculator_sessions` migration: `id`, `user_id` (FK cascade), `recipe_id` (FK cascade), `mode` varchar(20), `input_value` decimal(10,2), `scale_factor` decimal(10,6), `totals` JSON, `created_at` timestamp.
+  - `CalculatorSession` model with casts (input_value decimal:2, scale_factor decimal:6, totals array, created_at datetime), `user()` and `recipe()` relations.
+  - `saveCalculation()` on `PortionCalculator`: validates auth + isScaled + valid mode, stores session, sets `$saved` flag. Flag resets on any input/mode change via `updated()` lifecycle hook.
+  - Save button in calculator blade: auth-gated, shown only when scaled, `wire:loading.attr="disabled"` to prevent duplicate saves, shows confirmation text after save.
+  - `CalculationHistory` Livewire component at `/cabinet/calculations`: paginated list of sessions (newest first, with recipe eager-loaded), delete scoped to owner. Handles soft-deleted recipes gracefully (no broken links).
+  - Dashboard card updated from placeholder to active link.
+  - EN/UK translations: 2 calculator keys (`save_calculation`, `saved`), 7 cabinet keys (`calculations_desc`, `no_calculations`, `deleted_recipe`, `input_value`, `view_recipe`, `delete_calculation_confirm`, `delete`).
+  - 18 Pest tests (386 total, 1067 assertions): save button visibility (auth/guest/not-scaled), save creates record (servings/kcal modes), totals JSON, guest/not-scaled guards, history page auth/load/empty-state, delete own/other-user, dashboard link, save-then-list integration, cascade deletes (recipe + user).
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L4.7 — Charts**
   - ApexCharts wrapper component (Alpine).

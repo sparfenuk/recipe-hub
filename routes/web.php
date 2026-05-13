@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Cabinet\CalculationHistory;
 use App\Livewire\Cabinet\Dashboard;
 use App\Livewire\Cabinet\FavoritesList;
 use App\Livewire\Cabinet\HealthForm;
@@ -20,4 +21,5 @@ Route::middleware(['auth', 'verified'])->prefix('cabinet')->group(function () {
     Route::get('/profile', ProfileForm::class)->name('cabinet.profile');
     Route::get('/health', HealthForm::class)->name('cabinet.health');
     Route::get('/favorites', FavoritesList::class)->name('cabinet.favorites');
+    Route::get('/calculations', CalculationHistory::class)->name('cabinet.calculations');
 });

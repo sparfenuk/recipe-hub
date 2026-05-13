@@ -52,15 +52,16 @@
             <x-heroicon-o-chevron-right class="ml-auto mt-0.5 h-5 w-5 shrink-0 text-slate-300 transition group-hover:text-emerald-500" />
         </a>
 
-        {{-- Calculations (placeholder) --}}
-        <div class="flex items-start gap-4 rounded-xl border border-dashed border-slate-200 bg-white/60 p-5">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-400">
+        {{-- Calculations --}}
+        <a href="{{ route('cabinet.calculations') }}" class="group flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition group-hover:bg-emerald-100">
                 <x-heroicon-o-calculator class="h-5 w-5" />
             </div>
             <div class="min-w-0">
-                <h2 class="font-semibold text-slate-400">{{ __('cabinet.calculations') }}</h2>
-                <p class="mt-0.5 text-sm leading-snug text-slate-400">{{ __('cabinet.coming_soon') }}</p>
+                <h2 class="font-semibold text-slate-900">{{ __('cabinet.calculations') }}</h2>
+                <p class="mt-0.5 text-sm leading-snug text-slate-500">{{ __('cabinet.calculations_desc') }}</p>
             </div>
-        </div>
+            <x-heroicon-o-chevron-right class="ml-auto mt-0.5 h-5 w-5 shrink-0 text-slate-300 transition group-hover:text-emerald-500" />
+        </a>
     </div>
 </div>

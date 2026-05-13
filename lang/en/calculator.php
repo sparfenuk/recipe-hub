@@ -22,5 +22,7 @@ return [
     'total_for_servings' => 'Total for :servings servings',
     'total_scaled' => 'Scaled total',
     'total_daily_pct' => ':pct% of daily intake',
+    'save_calculation' => 'Save calculation',
+    'saved' => 'Calculation saved!',
 
 ];
