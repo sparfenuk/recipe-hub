@@ -3,20 +3,24 @@
 namespace App\Models;
 
 use Database\Factories\RecipeFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Recipe extends Model implements HasMedia
+class Recipe extends Model implements AuditableContract, HasMedia
 {
     /** @use HasFactory<RecipeFactory> */
-    use HasFactory, InteractsWithMedia, SoftDeletes;
+    use Auditable, HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $fillable = [
         'slug',
@@ -129,5 +133,38 @@ class Recipe extends Model implements HasMedia
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'recipe_tag');
+    }
+
+    /** @return BelongsToMany<User, $this> */
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites')->withPivot('created_at');
+    }
+
+    /** @param  Builder<static>  $query
+     *  @return Builder<static> */
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('recipeIngredients.ingredient');
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === 'published';
+    }
+
+    /** @return array<string, mixed> */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'summary' => $this->summary,
+            'description' => strip_tags((string) $this->description),
+            'ingredient_names' => $this->recipeIngredients
+                ->map(fn (RecipeIngredient $ri) => $ri->ingredient?->name)
+                ->filter()
+                ->implode(', '),
+        ];
     }
 }

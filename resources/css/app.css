@@ -18,3 +18,48 @@
 [x-cloak] {
     display: none !important;
 }
+
+@media print {
+    header, footer, .print\:hidden {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+
+    main {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    a {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+
+    .rounded-2xl, .rounded-xl, .rounded-lg, .rounded-full {
+        border-radius: 0 !important;
+    }
+
+    .shadow-sm, .shadow {
+        box-shadow: none !important;
+    }
+
+    img {
+        max-width: 100% !important;
+        page-break-inside: avoid;
+    }
+
+    section, li {
+        page-break-inside: avoid;
+    }
+
+    h1, h2, h3 {
+        page-break-after: avoid;
+    }
+}

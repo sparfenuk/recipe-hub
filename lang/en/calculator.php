@@ -2,4 +2,31 @@
 
 return [
 
+    'title' => 'Portion Calculator',
+    'mode_servings' => 'Servings',
+    'mode_kcal' => 'Calories',
+    'mode_daily_pct' => '% of Daily',
+    'target_servings' => 'Servings',
+    'target_kcal' => 'Target calories',
+    'target_daily_pct' => 'Percentage of daily intake',
+    'kcal_placeholder' => 'e.g. :kcal',
+    'daily_pct_placeholder' => 'e.g. 30',
+    'original_kcal' => 'Original recipe: :kcal kcal',
+    'daily_target_info' => 'Your daily target: :kcal kcal',
+    'daily_pct_no_target' => 'Set your daily calorie target to use this mode.',
+    'set_daily_target' => 'Set daily target',
+    'decrease' => 'Decrease servings',
+    'increase' => 'Increase servings',
+    'reset' => 'Reset to :servings',
+    'scaled_ingredients' => 'Ingredients',
+    'total_for_servings' => 'Total for :servings servings',
+    'total_scaled' => 'Scaled total',
+    'total_daily_pct' => ':pct% of daily intake',
+    'save_calculation' => 'Save calculation',
+    'saved' => 'Calculation saved!',
+    'chart_macro_split' => 'Macro Split',
+    'chart_vs_target' => 'Actual vs Target',
+    'actual' => 'Actual',
+    'target' => 'Target',
+
 ];

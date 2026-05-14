@@ -3,19 +3,23 @@
 namespace App\Models;
 
 use Database\Factories\IngredientFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Scout\Searchable;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Ingredient extends Model implements HasMedia
+class Ingredient extends Model implements AuditableContract, HasMedia
 {
     /** @use HasFactory<IngredientFactory> */
-    use HasFactory, InteractsWithMedia;
+    use Auditable, HasFactory, InteractsWithMedia, Searchable;
 
     protected $fillable = [
         'slug',
@@ -111,5 +115,27 @@ class Ingredient extends Model implements HasMedia
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'ingredient_tag');
+    }
+
+    /** @param  Builder<static>  $query
+     *  @return Builder<static> */
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('aliases');
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->is_active;
+    }
+
+    /** @return array<string, mixed> */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'aliases' => $this->aliases->pluck('name')->implode(', '),
+        ];
     }
 }

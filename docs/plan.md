@@ -228,57 +228,63 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - 22 Pest tests (205 total, 561 assertions): CRUD, relations, pivot fields, ordering, cascade deletes, soft deletes, enum validation, media collections, factory states.
   - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.2 — `NutritionCalculator` service**
-  - Method `totalsFor(Recipe $r): NutritionTotals` — returns kcal, P/F/C, fiber for the whole recipe and per serving.
-  - Uses `UnitConverter` to resolve each `recipe_ingredient` to grams, then proportions per-100g nutrition.
-  - Pest tests against 3 hand-computed reference recipes (simple / with liquids / with `grams_override`). Tolerance ±1%.
+- [x] **L3.2 — `NutritionCalculator` service** *(completed 2026-05-11)*
+  - `NutritionCalculator::totalsFor(Recipe): NutritionTotals` — sums kcal, P/F/C, fiber for all non-optional ingredients, divides by servings for per-serving values.
+  - `NutritionTotals` readonly DTO with recipe totals + per-serving values.
+  - Uses `UnitConverter::toGrams()` for mass/volume/count resolution; `grams_override` bypasses conversion when set.
+  - Skips optional ingredients, handles null nutrition values gracefully.
+  - 7 Pest tests (212 total, 621 assertions): 3 hand-computed reference recipes (simple mass / volume+density / grams_override), optional ingredient skip, empty recipe, null nutrition, per-serving division. All within ±1% tolerance.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.3 — Nutrition recompute job**
-  - `RecalculateRecipeNutrition` job dispatched on:
-    - Recipe save (model observer).
-    - Recipe ingredient row change (observer).
-    - Bulk ingredient nutrition update (model observer on `Ingredient`).
-  - Stores totals + `nutrition_cached_at`.
-  - Pest test: editing an ingredient triggers a recompute on every recipe using it.
+- [x] **L3.3 — Nutrition recompute job** *(completed 2026-05-12)*
+  - `RecalculateRecipeNutrition` queued job (ShouldBeUnique by recipe ID): computes totals via `NutritionCalculator`, stores all 10 cached nutrition columns + `nutrition_cached_at`, uses `saveQuietly()` to prevent observer loops.
+  - `RecipeObserver::saved()` dispatches on every recipe create/update.
+  - `RecipeIngredientObserver::saved()`/`deleted()` dispatches when ingredient rows change.
+  - `IngredientObserver::updated()` dispatches for all recipes using the ingredient when nutrition-relevant columns change (kcal, P/F/C, fiber, density, piece weight). Non-nutrition edits (name, slug) are ignored.
+  - Observers registered in `AppServiceProvider::boot()`.
+  - 9 Pest tests (221 total, 648 assertions): dispatch on recipe create/update, ingredient row add/delete, bulk ingredient nutrition change, non-nutrition skip, job stores values + cached_at, graceful handling of deleted recipe, end-to-end integration (edit ingredient → both recipes recomputed).
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.4 — Filament Recipe resource**
-  - Form: title, summary, description, category, cuisine, difficulty, servings, prep/cook time, status.
-  - Repeater for ingredients (ingredient picker + amount + unit + note + optional flag + group label).
-  - Repeater for steps (position auto, body, image upload).
-  - Tags multi-select.
-  - Live computed nutrition panel inside the form (read-only, refreshes after save).
-  - List view: filters by status, category, cuisine, search.
-  - Bulk actions: publish, archive, duplicate.
+- [x] **L3.4 — Filament Recipe resource** *(completed 2026-05-12)*
+  - `RecipeResource` with full-page CRUD (List/Create/Edit) under "Catalog" nav group.
+  - Form: 5 sections — Basic info (title with auto-slug, summary, description rich editor, category, cuisine, difficulty, servings, prep/cook time, status, featured toggle), Ingredients (repeater with ingredient picker + amount + unit + note + optional flag + group label, reorderable/collapsible/cloneable), Steps (repeater with body + step photo upload via medialibrary, reorderable/collapsible), Tags (multi-select), Nutrition (read-only per-serving + total values, auto-refreshes after save via synchronous recompute).
+  - `total_time_min` auto-computed from `prep_time_min + cook_time_min` on create/edit. `published_at` auto-set when status changes to published.
+  - List view: title (searchable), status/difficulty badges with colors, category, cuisine, kcal/serving, servings, featured, author, created_at. Filters: status, category, cuisine. Default sort: newest first.
+  - Row actions: edit, duplicate (with unique slug generation), delete. Bulk actions: publish (sets published_at), archive, duplicate, delete.
+  - `duplicateRecipe()` copies recipe, ingredients, steps, and tags with draft status and unique slug (handles soft-deleted slug collisions).
+  - `getEloquentQuery()` includes soft-deleted records; edit page shows force-delete and restore actions.
+  - 22 Pest tests (243 total, 752 assertions): CRUD, soft delete, slug uniqueness, published_at on publish, total_time_min on create/edit, tags, status/category/cuisine filters, title search, bulk publish/archive, duplicate with slug collision, non-admin denied, nutrition section render, ingredient/step repeater save, nutrition recompute after save.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L3.5 — Recipe media**
+- [x] **L3.5 — Recipe media** *(completed 2026-05-13)*
   - Hero photo + gallery via medialibrary.
   - Step photos already covered by L3.4.
   - Filament uploader with drag-drop multi-file for the gallery.
 
-- [ ] **L3.6 — Cabinet: health profile**
+- [x] **L3.6 — Cabinet: health profile** *(completed 2026-05-13)*
   - `HealthForm` Livewire component on `/cabinet/health`.
   - Inputs: sex, birth date, height, weight, activity level (sedentary → very active).
   - Live BMR via Mifflin-St Jeor → suggested daily kcal target shown beside the form.
   - "Use suggested" button writes the value to the user's daily target. Manual override allowed.
   - Pest tests on the BMR formula and the form action.
 
-- [ ] **L3.7 — Cabinet: macro targets**
+- [x] **L3.7 — Cabinet: macro targets** *(completed 2026-05-13)*
   - `MacroTargetForm` Livewire component on the same page.
   - Inputs: P %, F %, C %. Live validation: must sum to 100. Defaults to 30/30/40.
   - Saves to `user_profiles`.
 
-- [ ] **L3.8 — Public catalog v1**
+- [x] **L3.8 — Public catalog v1** *(completed 2026-05-13)*
   - `/recipes` route + `RecipeBrowser` Livewire component.
   - Lists published recipes with hero photo, title, kcal/serving, prep time.
   - Pagination.
   - Basic filters: category, cuisine.
 
-- [ ] **L3.9 — Catalog filters v2**
+- [x] **L3.9 — Catalog filters v2** *(completed 2026-05-13)*
   - Add filters: max kcal/serving, max prep time, diet tags, allergens (auto-applied from logged-in user's profile).
   - Sort: newest, lowest calories, shortest prep, most-favorited.
   - Filter sidebar uses `wire:model.live.debounce`.
 
-- [ ] **L3.10 — MeiliSearch wiring**
+- [x] **L3.10 — MeiliSearch wiring** *(completed 2026-05-13)*
   - Scout configured for `Recipe` and `Ingredient` models.
   - Indexed fields: title, summary, description, ingredient names (denormalized).
   - Reindex command works locally + on first deploy.
@@ -291,51 +297,92 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
 
 > Goal: a visitor can browse a recipe, save it, and use the calculator to scale ingredients to a target. This is the MVP money-shot.
 
-- [ ] **L4.1 — Recipe detail page**
-  - `/recipes/{slug}` route.
-  - Hero photo, title, meta (servings, prep, cook, difficulty, cuisine, tags).
-  - Ingredient list with amounts and units.
-  - Numbered step list with optional step photos.
-  - Nutrition panel (per serving + per 100 g) — placeholder until L4.7 charts.
-  - Print button (placeholder for L5.2).
+- [x] **L4.1 — Recipe detail page** *(completed 2026-05-13)*
+  - `/recipes/{slug}` route → `RecipeDetail` Livewire component.
+  - Hero photo (full conversion), title, summary, meta badges (prep/cook/total time, servings, difficulty, cuisine, category).
+  - Ingredient list grouped by `group_label`, showing amount + unit + name + note + optional flag.
+  - Numbered step list with optional step photos (card conversion).
+  - Tags displayed as emerald badges.
+  - Nutrition panel: per-serving (kcal, P/F/C, fiber) + entire-recipe totals.
+  - Gallery section for additional recipe photos.
+  - Print button (placeholder for L5.2), author card.
+  - Breadcrumb navigation back to catalog.
+  - Step body escaped via `nl2br(e())` to prevent XSS (Textarea field, not RichEditor).
+  - EN/UK translations for 15 new keys.
+  - 18 Pest tests (309 total, 915 assertions): page load, title/summary, meta badges, ingredients, optional ingredients, notes, steps, nutrition panel, tags, category/cuisine, author, 404 for draft/archived/non-existent, breadcrumb, public access, group labels, print button.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.2 — Favorites**
-  - `favorites` table (composite PK), model relation.
-  - `FavoriteButton` Livewire component (optimistic toggle, login redirect for guests).
-  - `/cabinet/favorites` page lists saved recipes with quick filters.
+- [x] **L4.2 — Favorites** *(completed 2026-05-13)*
+  - `favorites` table (composite PK on `user_id`, `recipe_id` with cascade deletes), `created_at` timestamp.
+  - `User::favorites()` BelongsToMany and `Recipe::favoritedBy()` BelongsToMany relations.
+  - `FavoriteButton` Livewire component on recipe detail page: toggle with login redirect for guests, dispatches `favorite-toggled` event.
+  - `/cabinet/favorites` page (`FavoritesList` Livewire component): lists saved published recipes with search (via Scout), sort (newest/oldest/A-Z/lowest kcal), pagination, unfavorite with confirm dialog.
+  - Dashboard favorites placeholder replaced with real navigation card linking to favorites page.
+  - EN/UK translations for 10 new keys (cabinet + recipes domains).
+  - 21 Pest tests (330 total, 960 assertions): favorite/unfavorite toggle, guest redirect, initial state, detail page integration, auth guard, list/filter/sort, unfavorite from list, unpublished exclusion, relation tests, cascade cleanup, dashboard link, duplicate prevention.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.3 — Calculator: scale by servings**
-  - `PortionCalculator` Livewire component embedded on recipe detail.
-  - Input: target servings (number, default = recipe's servings).
-  - Output: scaled ingredient quantities + new totals (kcal, P/F/C, fiber).
-  - Updates live as input changes (`wire:model.live.debounce`).
+- [x] **L4.3 — Calculator: scale by servings** *(completed 2026-05-13)*
+  - `PortionCalculator` Livewire component embedded on recipe detail page, replacing the static nutrition panel.
+  - Input: target servings (number input with +/- buttons, default = recipe's servings).
+  - Output: scaled ingredient quantities (grouped, with optional flag) + scaled nutrition totals (per serving constant, totals scale linearly).
+  - Updates live as input changes (`wire:model.live.debounce.300ms`).
+  - Reset link appears when servings differ from original, bounds enforced (1-100).
+  - Relations eager-loaded via `loadMissing` to prevent N+1 on Livewire rehydration.
+  - EN/UK translations for 7 calculator keys.
+  - 16 Pest tests (346 total, 998 assertions): default render, scaling, nutrition totals, per-serving constancy, increment/decrement/reset, bounds, grouping, optional ingredients, null handling, embed check, label change, fractional scaling.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.4 — Calculator: scale by total kcal**
-  - Mode selector tabs: Servings / Calories / % of daily.
-  - Calorie mode: input kcal, scale factor = target / current_total, ingredients scaled accordingly.
-  - Display rounded scaled amounts.
+- [x] **L4.4 — Calculator: scale by total kcal** *(completed 2026-05-13)*
+  - Mode selector tabs: Servings / Calories / % of Daily — tab switcher with active highlight.
+  - Calorie mode: input target kcal with placeholder showing original total, scale factor = target / current_total, ingredients and nutrition totals scaled accordingly.
+  - Per-serving values recalculated in kcal mode (total/servings) since total amount changes while servings count stays constant.
+  - Daily % tab shows placeholder hint (implementation deferred to L4.5).
+  - `resetCalculator()` restores servings and clears kcal target.
+  - EN/UK translations for 10 new calculator keys (modes, kcal input, hints).
+  - 13 new Pest tests (359 total, 1020 assertions): mode tabs, mode switching, kcal scaling, scale factor, nutrition totals, per-serving updates, edge cases (null/zero), invalid mode rejection, reset, daily_pct placeholder, original kcal hint, total label.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.5 — Calculator: % of daily intake**
-  - Daily-percent mode: input 5–100 %, pulls user's daily kcal target from profile.
-  - If user not logged in or no target set: show inline prompt "Set your daily target to use this mode" with a link.
-  - Same scaling math as L4.4.
+- [x] **L4.5 — Calculator: % of daily intake** *(completed 2026-05-13)*
+  - Daily-percent mode: input 5–100%, pulls user's `daily_kcal_target` from profile via `#[Computed]` property.
+  - If user not logged in or no target set: inline prompt with link to `/cabinet/health` to set daily target.
+  - Scale factor = `(daily_target * pct / 100) / recipe_total_kcal`, same per-serving recalculation as kcal mode.
+  - Guards aligned: `isScaled` and `dailyPctScaleFactor` both enforce 5–100 range.
+  - Computed property memoization via `$this->dailyKcalTarget` property access (not method call).
+  - EN/UK translations for 6 new keys (daily_pct input, hints, target info, labels).
+  - 9 new Pest tests (368 total, 1033 assertions): input display with/without target, scaling math, ingredient scaling, edge cases (below minimum, no target, guest user), label, per-serving recalculation.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.6 — Calculator history**
-  - `calculator_sessions` table.
-  - "Save calculation" button on the calculator stores `mode`, `value`, `scale_factor`, `totals`, `recipe_id`, `user_id`.
-  - `/cabinet/calculations` page lists saved sessions, allows reload + delete.
-  - Pest test: save → list → reload restores the same outputs.
+- [x] **L4.6 — Calculator history** *(completed 2026-05-13)*
+  - `calculator_sessions` migration: `id`, `user_id` (FK cascade), `recipe_id` (FK cascade), `mode` varchar(20), `input_value` decimal(10,2), `scale_factor` decimal(10,6), `totals` JSON, `created_at` timestamp.
+  - `CalculatorSession` model with casts (input_value decimal:2, scale_factor decimal:6, totals array, created_at datetime), `user()` and `recipe()` relations.
+  - `saveCalculation()` on `PortionCalculator`: validates auth + isScaled + valid mode, stores session, sets `$saved` flag. Flag resets on any input/mode change via `updated()` lifecycle hook.
+  - Save button in calculator blade: auth-gated, shown only when scaled, `wire:loading.attr="disabled"` to prevent duplicate saves, shows confirmation text after save.
+  - `CalculationHistory` Livewire component at `/cabinet/calculations`: paginated list of sessions (newest first, with recipe eager-loaded), delete scoped to owner. Handles soft-deleted recipes gracefully (no broken links).
+  - Dashboard card updated from placeholder to active link.
+  - EN/UK translations: 2 calculator keys (`save_calculation`, `saved`), 7 cabinet keys (`calculations_desc`, `no_calculations`, `deleted_recipe`, `input_value`, `view_recipe`, `delete_calculation_confirm`, `delete`).
+  - 18 Pest tests (386 total, 1067 assertions): save button visibility (auth/guest/not-scaled), save creates record (servings/kcal modes), totals JSON, guest/not-scaled guards, history page auth/load/empty-state, delete own/other-user, dashboard link, save-then-list integration, cascade deletes (recipe + user).
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.7 — Charts**
-  - ApexCharts wrapper component (Alpine).
-  - Donut: kcal split into P/F/C grams × 4/9/4.
-  - Bar: actual macros vs user target (only if logged in with target set).
-  - Charts react to calculator updates.
+- [x] **L4.7 — Charts** *(completed 2026-05-13)*
+  - `resources/js/charts.js` — Alpine.js component wrapping ApexCharts with `init()`/`destroy()` lifecycle for proper cleanup.
+  - Donut chart: macro split showing kcal contribution from protein (×4), fat (×9), carbs (×4). Center label shows total kcal. Colors: emerald/amber/indigo.
+  - Bar chart: actual macros (g) vs user's daily target (computed from `daily_kcal_target × p_pct/f_pct/c_pct`). Only rendered for authenticated users with daily target set.
+  - `macroTargets()` computed property on PortionCalculator: derives target grams from user's profile percentage split.
+  - Charts react to calculator updates via `wire:key` (md5 of chart data). `wire:ignore` on chart containers prevents Livewire morph from breaking ApexCharts DOM.
+  - Registered in `app.js` as `Alpine.data('nutritionCharts', ...)`.
+  - EN/UK translations: 4 keys (`chart_macro_split`, `chart_vs_target`, `actual`, `target`).
+  - 13 Pest tests (399 total, 1092 assertions): chart rendering conditions (nutrition/no-nutrition/zero-kcal), Alpine component presence, bar chart visibility (guest/no-target/with-target), macroTargets computed (null/values/correct-math), scaled nutrition reactivity across modes.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L4.8 — Ingredient autocomplete**
-  - `IngredientAutocomplete` Livewire component (debounced search via Scout).
-  - Used in catalog filter sidebar (include / exclude ingredient).
-  - Used as a fallback in admin recipe form if Filament's default picker is sluggish.
+- [x] **L4.8 — Ingredient autocomplete** *(completed 2026-05-13)*
+  - `IngredientAutocomplete` Livewire component (debounced search via Scout, 2+ char minimum, top 10 active results).
+  - Two instances in catalog filter sidebar: include (green chips) and exclude (red chips) ingredient filtering.
+  - `RecipeBrowser` handles `ingredient-filter-updated` event: include uses AND logic (all selected must be present), exclude uses OR logic (any selected excludes recipe).
+  - Selected chips with remove button, loading spinner, escape-to-close, click-outside-to-close.
+  - EN/UK translations for 4 new keys.
+  - 17 Pest tests (417 total, 1129 assertions): both modes render, search results, inactive exclusion, selection/removal/duplicate/clear events, selected excluded from results, recipe browser include/exclude/AND filtering, event handling, clear filters, active filters check, sidebar embedding.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 ---
 
@@ -343,32 +390,48 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
 
 > Goal: site is production-ready. Localized, monitored, backed up, deployed.
 
-- [ ] **L5.1 — Email flows localized**
-  - Verify-email, reset-password, welcome emails extend `Mail::to(...)->locale(...)` using locale captured at dispatch.
-  - Blade templates use `__()`.
-  - Pest test: dispatching with locale `uk` produces a Ukrainian email body.
+- [x] **L5.1 — Email flows localized** *(completed 2026-05-13)*
+  - `User::sendEmailVerificationNotification()` and `sendPasswordResetNotification()` overridden to capture `app()->getLocale()` via `->locale()` on notification dispatch.
+  - `WelcomeNotification` created and dispatched from `CreateNewUser` with locale.
+  - 14 email-related translation strings added to `lang/en.json` and `lang/uk.json` (greeting, regards, verify email subject/body, reset password subject/body, welcome subject/body).
+  - `#[\SensitiveParameter]` preserved on password reset token override.
+  - 10 Pest tests (427 total, 1188 assertions): locale capture on verify/reset/welcome dispatch, Ukrainian email body for all 3 notification types, English body, welcome URL, translation key drift guard.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.2 — Print + PDF**
-  - Print stylesheet: hides nav/footer, expands all sections, B&W friendly.
-  - PDF export via `barryvdh/laravel-dompdf` for a recipe page.
-  - "Print / PDF" buttons on recipe detail.
+- [x] **L5.2 — Print + PDF** *(completed 2026-05-13)*
+  - Print stylesheet via `@media print` in `app.css`: hides header, footer, breadcrumb, calculator, favorite button, and action buttons. B&W friendly with no shadows/borders, proper page breaks.
+  - `RecipePdfController` generates PDF via `barryvdh/laravel-dompdf` at `GET /recipes/{slug}/pdf` with throttle middleware (10/min). Standalone Blade template with inline styles: recipe title, meta, tags, ingredients (grouped), numbered steps, and nutrition table (per-serving + total).
+  - Recipe detail page updated: Print button (`window.print()`) + PDF download link side by side. Breadcrumb, calculator, favorite button, and action buttons hidden in print via `print:hidden`.
+  - EN/UK translations updated: `print` shortened to "Print"/"Друк", `download_pdf` added.
+  - 15 Pest tests (442 total, 1216 assertions): PDF download (200 + correct content-type/filename), 404 for draft/archived/non-existent, public access, view rendering (ingredients, steps, nutrition, tags, category/cuisine, author), both buttons on detail page, translation drift guard.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.3 — SEO**
-  - Meta tags (title, description, og:image, og:type), Twitter card.
-  - `<link rel="alternate" hreflang="en|uk|x-default">` on public pages.
-  - `sitemap.xml` generator (recipes + categories), `robots.txt`.
-  - Lighthouse SEO score ≥ 95 on recipe detail page.
+- [x] **L5.3 — SEO** *(completed 2026-05-13)*
+  - Meta tags on all public pages: `<title>`, `<meta name="description">`, Open Graph (`og:type`, `og:title`, `og:description`, `og:url`, `og:image`, `og:locale`, `og:site_name`), Twitter Card (`summary_large_image`).
+  - `<link rel="alternate" hreflang="en|uk|x-default">` on all public pages (same URL per spec §11.6).
+  - `<link rel="canonical">` on all public pages; recipe detail and catalog pass explicit canonical URLs.
+  - Recipe detail: `og:type=article`, summary as meta description, hero image as `og:image`.
+  - JSON-LD structured data on recipe detail (`schema.org/Recipe`): name, description, image, author, times (ISO 8601), yield, category, cuisine, keywords, ingredients, steps (`HowToStep`), nutrition.
+  - `SitemapController` at `/sitemap.xml`: static pages + all published recipes with `lastmod`, hreflang annotations per URL.
+  - `robots.txt` updated: allows `/`, `/recipes`; disallows `/admin/`, `/cabinet/`, `/login`, `/register`, `/password/`, `/email/`; references sitemap.
+  - 28 Pest tests (470 total, 1297 assertions): meta tags on landing/catalog/detail, OG tags, Twitter cards, hreflang, canonical, JSON-LD (type, times, ingredients, steps, nutrition, author), sitemap (content type, static pages, published/draft filtering, hreflang, XML structure), robots.txt (allows, disallows, sitemap ref).
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.4 — Audit log**
-  - `owen-it/laravel-auditing` enabled on `Recipe`, `Ingredient`, `User`, taxonomies.
-  - Filament page lists audits with filtering by user / model / action.
-  - 90-day retention via scheduled prune job.
+- [x] **L5.4 — Audit log** *(completed 2026-05-13)*
+  - `owen-it/laravel-auditing` config + migration published and ran. `console` auditing enabled so artisan/test events are tracked.
+  - `Auditable` interface + trait added to 8 models: `User` (with password/remember_token exclusion), `Recipe`, `Ingredient`, `Category`, `IngredientCategory`, `Cuisine`, `Tag`, `Allergen`.
+  - Filament `AuditResource` under "System" nav group: read-only list page with date, user, event (color-coded badges), model type, ID. Toggleable columns for old/new values, URL, IP. Filters by event type, model type, and user.
+  - `audits:prune` artisan command with `--days` option (default 90). Scheduled daily via `routes/console.php`.
+  - 17 Pest tests (487 total, 1345 assertions): audit creation for recipes/ingredients/users/taxonomies, old/new values on update, soft delete audit, password exclusion, Filament page access + filters (event/model type), non-admin denied, prune command (delete old/keep recent/custom retention), schedule verification.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
-- [ ] **L5.5 — Rate limiting**
-  - Auth routes: 5 req/min per IP.
-  - Calculator endpoint: 60 req/min per user.
-  - API: 60/min per token, 30/min per IP for unauth.
-  - 429 responses use the localized error page.
+- [x] **L5.5 — Rate limiting** *(completed 2026-05-13)*
+  - `auth` rate limiter (5 req/min per IP) applied to all Fortify routes via config middleware. Covers login, registration, password reset, email verification.
+  - Calculator `saveCalculation()` rate limited at 60/min per user via manual `RateLimiter` calls in the Livewire component. Error message shown on limit hit.
+  - `api` rate limiter defined (60/min per token, 30/min per IP for guests) and applied to API middleware stack in `bootstrap/app.php` for future L6.1 use.
+  - Localized 429 error page (`resources/views/errors/429.blade.php`) with EN/UK translations (4 keys).
+  - 13 Pest tests (500 total, 1374 assertions): auth throttle on registration/password-reset/login, 5-request allowance, 429 page render (EN/UK), calculator rate limit (hit/allow), limiter definitions, API limiter auth/guest limits, translation drift guard.
+  - Quality gates green: Pint, Larastan level 6, Pest.
 
 - [ ] **L5.6 — Backups**
   - `spatie/laravel-backup` configured to push DB + storage to off-server S3-compatible bucket nightly.

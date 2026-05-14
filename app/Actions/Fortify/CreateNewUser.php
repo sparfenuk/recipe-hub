@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -42,6 +43,7 @@ class CreateNewUser implements CreatesNewUsers
 
         $user->assignRole('user');
         $user->profile()->create();
+        $user->notify((new WelcomeNotification)->locale(app()->getLocale()));
 
         return $user;
     }

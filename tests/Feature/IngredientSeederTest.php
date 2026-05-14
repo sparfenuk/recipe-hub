@@ -28,8 +28,8 @@ it('is idempotent — re-seeding does not duplicate', function () {
 it('applies enrichment data (densities, allergens)', function () {
     $this->seed(IngredientSeeder::class);
 
-    expect(Ingredient::whereNotNull('density_g_per_ml')->count())->toBeGreaterThan(0);
-    expect(Ingredient::whereHas('allergens')->count())->toBeGreaterThan(0);
+    expect(Ingredient::whereNotNull('density_g_per_ml')->count())->toBeGreaterThan(0)
+        ->and(Ingredient::whereHas('allergens')->count())->toBeGreaterThan(0);
 });
 
 it('stores correct nutrition for egg', function () {
