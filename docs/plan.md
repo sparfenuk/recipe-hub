@@ -291,6 +291,20 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Search bar in catalog header → filters list to matching recipes.
   - Pest test: search returns expected recipe.
 
+- [x] **L3.11 — Translatable content infrastructure** *(completed 2026-05-14)*
+  - `spatie/laravel-translatable` + `filament/spatie-laravel-translatable-plugin` installed.
+  - Migration converts `recipes.title` / `summary` / `description`, `recipe_steps.body`, and `units.name` from scalar columns to MySQL JSON (`{"uk": "...", "en": "..."}`) with backfill from existing EN values; reversible.
+  - `Recipe`, `RecipeStep`, `Unit` models use `HasTranslations` trait with `$translatable` arrays.
+  - `AppServiceProvider` configures fallback chain `uk → any` via `Translatable::fallback('uk', fallbackAny: true)`.
+  - `RecipeResource` opts in via the plugin's `Translatable` trait; List/Create/Edit pages mount the `LocaleSwitcher` action so admins can author both locales side-by-side. `defaultLocales(['uk', 'en'])` in the panel provider.
+  - `UnitSeeder` rewritten with bilingual short names and a new `taste` unit (`type=count`, `to_base_factor=0`) for "за смаком" recipe lines.
+  - Scout `toSearchableArray` indexes both locales (`title_en`/`title_uk`, etc.). Filament title column uses custom `searchable(query:)` and `sortable(query:)` closures that hit `title->en` / `title->uk` via Laravel's JSON path operator.
+  - Public Blade views unchanged: `$recipe->title`, `$step->body`, `$ri->unit->name` resolve to the active locale via the translatable accessor automatically.
+  - Slug stays English-only for URL stability (`Str::slug($recipe->getTranslation('title', 'en'))`).
+  - Quality gates green: Pint, Larastan level 6, Pest (501 tests, 1384 assertions).
+  - Spec §11.6 + §17.1 + CLAUDE.md updated to reflect the new policy; ban on `spatie/laravel-translatable` lifted.
+  - Ingredient name i18n is **deferred** — currently EN-only, will be addressed in a follow-up that also updates the USDA importer.
+
 ---
 
 ## Layer 4 — User-facing interactions

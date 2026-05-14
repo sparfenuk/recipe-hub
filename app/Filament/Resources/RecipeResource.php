@@ -18,6 +18,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
@@ -37,6 +38,8 @@ use Illuminate\Support\Str;
 
 class RecipeResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Recipe::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
@@ -158,8 +161,10 @@ class RecipeResource extends Resource
                                 Select::make('unit_id')
                                     ->label('Unit')
                                     ->options(fn () => Unit::query()
-                                        ->orderBy('name')
-                                        ->pluck('name', 'id'))
+                                        ->orderBy('code')
+                                        ->get()
+                                        ->mapWithKeys(fn (Unit $u) => [$u->id => $u->name])
+                                        ->all())
                                     ->searchable()
                                     ->required(),
                                 TextInput::make('note')
@@ -285,8 +290,13 @@ class RecipeResource extends Resource
                     ->defaultImageUrl(url('/images/recipe-placeholder.svg'))
                     ->label(''),
                 TextColumn::make('title')
-                    ->searchable()
-                    ->sortable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where(function (Builder $q) use ($search): void {
+                            $q->where('title->en', 'like', "%{$search}%")
+                                ->orWhere('title->uk', 'like', "%{$search}%");
+                        });
+                    })
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('title->'.app()->getLocale(), $direction))
                     ->limit(40),
                 TextColumn::make('status')
                     ->badge()
@@ -411,12 +421,17 @@ class RecipeResource extends Resource
         $recipe->loadMissing('recipeIngredients', 'steps', 'tags', 'media');
 
         $clone = $recipe->replicate();
-        $clone->title = $recipe->title.' (Copy)';
+
+        foreach ($recipe->getTranslations('title') as $locale => $value) {
+            $clone->setTranslation('title', $locale, $value.' (Copy)');
+        }
+
         $clone->status = 'draft';
         $clone->published_at = null;
         $clone->nutrition_cached_at = null;
 
-        $baseSlug = Str::slug($clone->title);
+        $baseSlug = Str::slug($recipe->getTranslation('title', 'en', false) ?: $recipe->getTranslation('title', 'uk'));
+        $baseSlug = $baseSlug !== '' ? $baseSlug.'-copy' : 'copy';
         $slug = $baseSlug;
         $counter = 1;
 
@@ -435,7 +450,10 @@ class RecipeResource extends Resource
         }
 
         foreach ($recipe->steps as $step) {
-            $clone->steps()->create($step->only(['position', 'body']));
+            $clone->steps()->create([
+                'position' => $step->position,
+                'body' => $step->getTranslations('body'),
+            ]);
         }
 
         $clone->tags()->sync($recipe->tags->pluck('id'));

@@ -6,9 +6,12 @@ use App\Filament\Resources\RecipeResource;
 use App\Jobs\RecalculateRecipeNutrition;
 use App\Models\Recipe;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\CreateRecord\Concerns\Translatable;
 
 class CreateRecipe extends CreateRecord
 {
+    use Translatable;
+
     protected static string $resource = RecipeResource::class;
 
     /** @param  array<string, mixed>  $data */

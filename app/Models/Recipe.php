@@ -16,11 +16,15 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Translatable\HasTranslations;
 
 class Recipe extends Model implements AuditableContract, HasMedia
 {
     /** @use HasFactory<RecipeFactory> */
-    use Auditable, HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
+    use Auditable, HasFactory, HasTranslations, InteractsWithMedia, Searchable, SoftDeletes;
+
+    /** @var array<int, string> */
+    public array $translatable = ['title', 'summary', 'description'];
 
     protected $fillable = [
         'slug',
@@ -158,9 +162,12 @@ class Recipe extends Model implements AuditableContract, HasMedia
     {
         return [
             'id' => $this->id,
-            'title' => $this->title,
-            'summary' => $this->summary,
-            'description' => strip_tags((string) $this->description),
+            'title_en' => $this->getTranslation('title', 'en', false),
+            'title_uk' => $this->getTranslation('title', 'uk', false),
+            'summary_en' => $this->getTranslation('summary', 'en', false),
+            'summary_uk' => $this->getTranslation('summary', 'uk', false),
+            'description_en' => strip_tags((string) $this->getTranslation('description', 'en', false)),
+            'description_uk' => strip_tags((string) $this->getTranslation('description', 'uk', false)),
             'ingredient_names' => $this->recipeIngredients
                 ->map(fn (RecipeIngredient $ri) => $ri->ingredient?->name)
                 ->filter()

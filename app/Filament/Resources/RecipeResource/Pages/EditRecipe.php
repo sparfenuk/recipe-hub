@@ -7,14 +7,18 @@ use App\Jobs\RecalculateRecipeNutrition;
 use App\Models\Recipe;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\EditRecord\Concerns\Translatable;
 
 class EditRecipe extends EditRecord
 {
+    use Translatable;
+
     protected static string $resource = RecipeResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
+            Actions\LocaleSwitcher::make(),
             Actions\DeleteAction::make(),
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),

@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class Unit extends Model
 {
+    use HasTranslations;
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -14,6 +17,9 @@ class Unit extends Model
         'type',
         'to_base_factor',
     ];
+
+    /** @var array<int, string> */
+    public array $translatable = ['name'];
 
     protected function casts(): array
     {

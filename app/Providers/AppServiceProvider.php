@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Translatable\Translatable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -40,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
 
             return null;
         });
+
+        app(Translatable::class)->fallback('uk', fallbackAny: true);
 
         $this->configureRateLimiting();
     }

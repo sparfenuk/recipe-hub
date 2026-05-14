@@ -15,15 +15,17 @@ class RecipeFactory extends Factory
     /** @return array<string, mixed> */
     public function definition(): array
     {
-        $title = fake()->unique()->sentence(3);
+        $titleEn = fake()->unique()->sentence(3);
+        $summaryEn = fake()->sentence(10);
+        $descriptionEn = fake()->paragraphs(2, true);
         $prep = fake()->numberBetween(5, 60);
         $cook = fake()->numberBetween(10, 120);
 
         return [
-            'slug' => Str::slug($title),
-            'title' => $title,
-            'summary' => fake()->sentence(10),
-            'description' => fake()->paragraphs(2, true),
+            'slug' => Str::slug($titleEn),
+            'title' => ['en' => $titleEn, 'uk' => $titleEn],
+            'summary' => ['en' => $summaryEn, 'uk' => $summaryEn],
+            'description' => ['en' => $descriptionEn, 'uk' => $descriptionEn],
             'servings' => fake()->numberBetween(1, 8),
             'prep_time_min' => $prep,
             'cook_time_min' => $cook,

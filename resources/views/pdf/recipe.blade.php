@@ -205,7 +205,7 @@
                         <strong>{{ rtrim(rtrim(number_format((float) $ri->amount, 3), '0'), '.') }}</strong>
                     @endif
                     @if ($ri->unit)
-                        {{ $ri->unit->code }}
+                        {{ $ri->unit->name }}
                     @endif
                     {{ $ri->ingredient?->name }}
                     @if ($ri->note)

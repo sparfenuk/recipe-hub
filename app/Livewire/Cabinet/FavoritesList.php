@@ -68,7 +68,7 @@ class FavoritesList extends Component
         return $query
             ->when($this->sort === 'newest', fn ($q) => $q->orderByDesc('favorites.created_at'))
             ->when($this->sort === 'oldest', fn ($q) => $q->orderBy('favorites.created_at'))
-            ->when($this->sort === 'alpha', fn ($q) => $q->orderBy('recipes.title'))
+            ->when($this->sort === 'alpha', fn ($q) => $q->orderBy('recipes.title->'.app()->getLocale()))
             ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderBy('recipes.kcal_per_serving'))
             ->paginate(12);
     }

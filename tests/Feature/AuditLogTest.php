@@ -50,7 +50,8 @@ test('recipe creation generates audit record', function () {
         ->first();
 
     expect($audit)->not->toBeNull()
-        ->and($audit->new_values)->toHaveKey('title', 'Test Recipe');
+        ->and($audit->new_values)->toHaveKey('title')
+        ->and(json_decode((string) $audit->new_values['title'], true))->toMatchArray(['en' => 'Test Recipe']);
 });
 
 test('recipe update generates audit with old and new values', function () {
@@ -64,8 +65,10 @@ test('recipe update generates audit with old and new values', function () {
         ->first();
 
     expect($audit)->not->toBeNull()
-        ->and($audit->old_values)->toHaveKey('title', 'Old Title')
-        ->and($audit->new_values)->toHaveKey('title', 'New Title');
+        ->and($audit->old_values)->toHaveKey('title')
+        ->and($audit->new_values)->toHaveKey('title')
+        ->and(json_decode((string) $audit->old_values['title'], true))->toMatchArray(['en' => 'Old Title'])
+        ->and(json_decode((string) $audit->new_values['title'], true))->toMatchArray(['en' => 'New Title']);
 });
 
 test('recipe soft delete generates audit', function () {

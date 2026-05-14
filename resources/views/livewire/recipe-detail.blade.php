@@ -122,7 +122,7 @@
                                                 {{ rtrim(rtrim(number_format((float) $ri->amount, 3), '0'), '.') }}
                                             @endif
                                             @if ($ri->unit)
-                                                {{ $ri->unit->code }}
+                                                {{ $ri->unit->name }}
                                             @endif
                                             {{ $ri->ingredient?->name }}
                                         </span>
@@ -286,7 +286,7 @@
                 $parts[] = rtrim(rtrim(number_format((float) $ri->amount, 3), '0'), '.');
             }
             if ($ri->unit) {
-                $parts[] = $ri->unit->code;
+                $parts[] = $ri->unit->name;
             }
             if ($ri->ingredient) {
                 $parts[] = $ri->ingredient->name;

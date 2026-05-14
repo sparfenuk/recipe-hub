@@ -7,16 +7,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Translatable\HasTranslations;
 
 class RecipeStep extends Model implements HasMedia
 {
-    use InteractsWithMedia;
+    use HasTranslations, InteractsWithMedia;
 
     protected $fillable = [
         'recipe_id',
         'position',
         'body',
     ];
+
+    /** @var array<int, string> */
+    public array $translatable = ['body'];
 
     /** @return array<string, string> */
     protected function casts(): array
