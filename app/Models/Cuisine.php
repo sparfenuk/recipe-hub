@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 class Cuisine extends Model implements AuditableContract
 {
-    use Auditable;
+    use Auditable, HasTranslations;
 
     public $timestamps = false;
 
@@ -16,4 +17,7 @@ class Cuisine extends Model implements AuditableContract
         'slug',
         'name',
     ];
+
+    /** @var array<int, string> */
+    public array $translatable = ['name'];
 }

@@ -168,8 +168,12 @@ class Recipe extends Model implements AuditableContract, HasMedia
             'summary_uk' => $this->getTranslation('summary', 'uk', false),
             'description_en' => strip_tags((string) $this->getTranslation('description', 'en', false)),
             'description_uk' => strip_tags((string) $this->getTranslation('description', 'uk', false)),
-            'ingredient_names' => $this->recipeIngredients
-                ->map(fn (RecipeIngredient $ri) => $ri->ingredient?->name)
+            'ingredient_names_en' => $this->recipeIngredients
+                ->map(fn (RecipeIngredient $ri) => $ri->ingredient?->getTranslation('name', 'en', false))
+                ->filter()
+                ->implode(', '),
+            'ingredient_names_uk' => $this->recipeIngredients
+                ->map(fn (RecipeIngredient $ri) => $ri->ingredient?->getTranslation('name', 'uk', false))
                 ->filter()
                 ->implode(', '),
         ];

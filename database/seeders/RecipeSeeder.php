@@ -158,6 +158,10 @@ class RecipeSeeder extends Seeder
         }
 
         $this->command?->info("RecipeSeeder: created {$created}, skipped {$skipped} (slug existed), missing images {$missingImages}.");
+
+        // Recipe::create runs inside withoutEvents above, so Scout's observer never fires.
+        // Bulk-index after the seed so /recipes search works on a fresh seed.
+        Recipe::makeAllSearchable();
     }
 
     private function resolveCategory(string $jsonCategory): Category
@@ -250,7 +254,9 @@ class RecipeSeeder extends Seeder
 
     private function resolveIngredient(string $nameEn, string $nameUk): Ingredient
     {
-        $ingredient = Ingredient::whereRaw('LOWER(name) = ?', [mb_strtolower($nameEn)])->first();
+        $ingredient = Ingredient::whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) = ?', [mb_strtolower($nameEn)])
+            ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.uk"))) = ?', [mb_strtolower($nameUk)])
+            ->first();
 
         if (! $ingredient) {
             $aliasMatch = IngredientAlias::whereRaw('LOWER(alias) = ?', [mb_strtolower($nameEn)])->first();
@@ -263,7 +269,7 @@ class RecipeSeeder extends Seeder
 
         $this->unmatchedIngredientsLog[] = sprintf('stub created: en="%s" uk="%s"', $nameEn, $nameUk);
 
-        $base = Str::slug($nameEn);
+        $base = Str::slug($nameEn !== '' ? $nameEn : $nameUk);
         $slug = $base !== '' ? $base : 'ingredient-'.Str::random(6);
         $counter = 1;
 
@@ -271,10 +277,15 @@ class RecipeSeeder extends Seeder
             $slug = $base.'-'.++$counter;
         }
 
+        $names = array_filter([
+            'en' => $nameEn !== '' ? $nameEn : $nameUk,
+            'uk' => $nameUk !== '' ? $nameUk : $nameEn,
+        ], fn (string $value): bool => $value !== '');
+
         /** @var Ingredient $stub */
         $stub = Ingredient::create([
             'slug' => $slug,
-            'name' => $nameEn !== '' ? $nameEn : $nameUk,
+            'name' => $names,
             'source' => 'RecipeSeeder fixture (no USDA match)',
             'is_active' => true,
         ]);

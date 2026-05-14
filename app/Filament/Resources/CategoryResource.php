@@ -7,6 +7,7 @@ use App\Models\Category;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -14,10 +15,13 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Category::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
@@ -47,7 +51,8 @@ class CategoryResource extends Resource
                     ->unique(ignoreRecord: true),
                 Select::make('parent_id')
                     ->label('Parent category')
-                    ->relationship('parent', 'name')
+                    ->relationship('parent', 'slug')
+                    ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->name)
                     ->searchable()
                     ->preload()
                     ->nullable(),
@@ -58,11 +63,16 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('name')
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $q) use ($search): void {
+                        $q->where('name->en', 'like', "%{$search}%")
+                            ->orWhere('name->uk', 'like', "%{$search}%");
+                    }))
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('name->'.app()->getLocale(), $direction)),
                 TextColumn::make('slug')->sortable(),
                 TextColumn::make('parent.name')->label('Parent')->placeholder('--'),
             ])
-            ->defaultSort('name')
+            ->defaultSort('slug')
             ->actions([
                 EditAction::make(),
                 DeleteAction::make(),

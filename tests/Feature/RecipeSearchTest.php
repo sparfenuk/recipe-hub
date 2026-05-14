@@ -89,7 +89,7 @@ test('recipe model has searchable array with expected fields', function () {
 
     $array = $recipe->toSearchableArray();
 
-    expect($array)->toHaveKeys(['id', 'title_en', 'title_uk', 'summary_en', 'summary_uk', 'description_en', 'description_uk', 'ingredient_names'])
+    expect($array)->toHaveKeys(['id', 'title_en', 'title_uk', 'summary_en', 'summary_uk', 'description_en', 'description_uk', 'ingredient_names_en', 'ingredient_names_uk'])
         ->and($array['title_en'])->toBe('Test Recipe')
         ->and($array['summary_en'])->toBe('A test summary')
         ->and($array['description_en'])->toBe('Test description');

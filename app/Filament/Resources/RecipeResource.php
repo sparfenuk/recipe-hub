@@ -3,8 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RecipeResource\Pages;
+use App\Models\Category;
+use App\Models\Cuisine;
 use App\Models\Ingredient;
 use App\Models\Recipe;
+use App\Models\Tag;
 use App\Models\Unit;
 use Carbon\Carbon;
 use Filament\Forms\Components\Fieldset;
@@ -74,13 +77,15 @@ class RecipeResource extends Resource
                             ->columnSpanFull(),
                         Select::make('category_id')
                             ->label('Category')
-                            ->relationship('category', 'name')
+                            ->relationship('category', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->name)
                             ->searchable()
                             ->preload()
                             ->nullable(),
                         Select::make('cuisine_id')
                             ->label('Cuisine')
-                            ->relationship('cuisine', 'name')
+                            ->relationship('cuisine', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Cuisine $record): string => $record->name)
                             ->searchable()
                             ->preload()
                             ->nullable(),
@@ -148,7 +153,24 @@ class RecipeResource extends Resource
                             ->schema([
                                 Select::make('ingredient_id')
                                     ->label('Ingredient')
-                                    ->relationship('ingredient', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
+                                    ->relationship(
+                                        name: 'ingredient',
+                                        titleAttribute: 'slug',
+                                        modifyQueryUsing: fn ($query) => $query->where('is_active', true)
+                                            ->orderBy('name->'.app()->getLocale()),
+                                    )
+                                    ->getOptionLabelFromRecordUsing(fn (Ingredient $record): string => $record->name)
+                                    ->getSearchResultsUsing(fn (string $search): array => Ingredient::query()
+                                        ->where('is_active', true)
+                                        ->where(function ($q) use ($search): void {
+                                            $q->where('name->en', 'like', "%{$search}%")
+                                                ->orWhere('name->uk', 'like', "%{$search}%");
+                                        })
+                                        ->orderBy('name->'.app()->getLocale())
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(fn (Ingredient $i): array => [$i->id => $i->name])
+                                        ->all())
                                     ->searchable()
                                     ->preload(false)
                                     ->required()
@@ -218,7 +240,8 @@ class RecipeResource extends Resource
                 Section::make('Tags')
                     ->schema([
                         Select::make('tags')
-                            ->relationship('tags', 'name')
+                            ->relationship('tags', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Tag $record): string => $record->name)
                             ->multiple()
                             ->preload()
                             ->searchable(),
@@ -311,12 +334,10 @@ class RecipeResource extends Resource
                 TextColumn::make('category.name')
                     ->label('Category')
                     ->placeholder('--')
-                    ->sortable()
                     ->toggleable(),
                 TextColumn::make('cuisine.name')
                     ->label('Cuisine')
                     ->placeholder('--')
-                    ->sortable()
                     ->toggleable(),
                 TextColumn::make('kcal_per_serving')
                     ->label('kcal/srv')
@@ -359,12 +380,14 @@ class RecipeResource extends Resource
                     ]),
                 SelectFilter::make('category_id')
                     ->label('Category')
-                    ->relationship('category', 'name')
+                    ->relationship('category', 'slug')
+                    ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->name)
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('cuisine_id')
                     ->label('Cuisine')
-                    ->relationship('cuisine', 'name')
+                    ->relationship('cuisine', 'slug')
+                    ->getOptionLabelFromRecordUsing(fn (Cuisine $record): string => $record->name)
                     ->searchable()
                     ->preload(),
             ])

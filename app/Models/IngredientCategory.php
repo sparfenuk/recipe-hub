@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 class IngredientCategory extends Model implements AuditableContract
 {
-    use Auditable;
+    use Auditable, HasTranslations;
 
     public $timestamps = false;
 
@@ -19,6 +20,9 @@ class IngredientCategory extends Model implements AuditableContract
         'name',
         'parent_id',
     ];
+
+    /** @var array<int, string> */
+    public array $translatable = ['name'];
 
     /** @return BelongsTo<self, $this> */
     public function parent(): BelongsTo

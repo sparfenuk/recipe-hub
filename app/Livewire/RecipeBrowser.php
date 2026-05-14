@@ -134,12 +134,14 @@ class RecipeBrowser extends Component
 
     public function render(): View
     {
+        $nameByLocale = 'name->'.app()->getLocale();
+
         return view('livewire.recipe-browser', [
             'recipes' => $this->getRecipes(),
-            'categories' => Category::orderBy('name')->get(),
-            'cuisines' => Cuisine::orderBy('name')->get(),
-            'dietTags' => Tag::where('type', 'diet')->orderBy('name')->get(),
-            'allergens' => Allergen::orderBy('name')->get(),
+            'categories' => Category::orderBy($nameByLocale)->get(),
+            'cuisines' => Cuisine::orderBy($nameByLocale)->get(),
+            'dietTags' => Tag::where('type', 'diet')->orderBy($nameByLocale)->get(),
+            'allergens' => Allergen::orderBy($nameByLocale)->get(),
         ])->layout('components.layouts.app', [
             'title' => __('recipes.catalog').' — '.config('app.name'),
             'metaDescription' => __('recipes.catalog_desc'),

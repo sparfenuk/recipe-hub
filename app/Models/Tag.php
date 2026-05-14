@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 class Tag extends Model implements AuditableContract
 {
-    use Auditable;
+    use Auditable, HasTranslations;
 
     public $timestamps = false;
 
@@ -17,6 +18,9 @@ class Tag extends Model implements AuditableContract
         'name',
         'type',
     ];
+
+    /** @var array<int, string> */
+    public array $translatable = ['name'];
 
     public function isDiet(): bool
     {

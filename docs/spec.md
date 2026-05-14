@@ -230,7 +230,7 @@ The full USDA bulk dump stays out of the repo; a separate `make import-usda-full
 
 > **Conventions**
 > - All `timestamp` and `datetime` columns store UTC. Application config: `'timezone' => 'UTC'`.
-> - All textual content (recipe titles, ingredient names, taxonomy labels) is **English only** in v1 — no per-locale JSON columns.
+> - User-facing text columns (recipe `title` / `summary` / `description`, `recipe_steps.body`, `units.name`, `ingredients.name`, and the taxonomy `name` columns on `categories` / `cuisines` / `tags` / `allergens` / `ingredient_categories`) are stored as **MySQL `JSON`** keyed by locale (`{"uk": "...", "en": "..."}`) via `spatie/laravel-translatable`. Slugs remain English-only for URL stability.
 > - Locale is resolved from the `locale` cookie at request time and is not persisted on `users`.
 
 ```
@@ -511,8 +511,8 @@ Vite config compiles `app.css` + `app.js`, fingerprints output, serves HMR in de
 
 **Scope**
 - **Localized UI strings:** Blade/Livewire labels, buttons, navigation, validation messages, password reset / verification emails, error pages, flash messages.
-- **Localized content (via `spatie/laravel-translatable`):** recipe titles / summaries / descriptions, recipe step bodies, unit display names. Stored as MySQL JSON columns keyed by locale (`{"uk": "...", "en": "..."}`). Public-facing pages render the active locale via the `HasTranslations` accessor; if a translation is missing the package falls back to UK first, then to any available locale (`fallback('uk', fallbackAny: true)` configured in `AppServiceProvider`).
-- **Not localized:** ingredient names (English seeded from USDA — deferred for a future iteration), categories / cuisines / tags display names (English-only at MVP), slugs (English-only for stable URLs).
+- **Localized content (via `spatie/laravel-translatable`):** recipe titles / summaries / descriptions, recipe step bodies, unit display names, ingredient names, and taxonomy display names (ingredient categories, recipe categories, cuisines, tags, allergens). Stored as MySQL JSON columns keyed by locale (`{"uk": "...", "en": "..."}`). Public-facing pages render the active locale via the `HasTranslations` accessor; if a translation is missing the package falls back to UK first, then to any available locale (`fallback('uk', fallbackAny: true)` configured in `AppServiceProvider`).
+- **Not localized:** ingredient aliases (search-only multi-row index, language-agnostic), slugs (English-only for stable URLs). USDA-sourced ingredient names ship with `{"en": "<value>"}` only; admins can fill the UK translation via the Filament `LocaleSwitcher`.
 
 **Static UI strings**
 - JSON translation files: `lang/en.json`, `lang/uk.json` for flat strings.
@@ -536,7 +536,7 @@ Implemented in a `SetLocale` middleware on the `web` group. No DB lookup; works 
 - Translatable resource forms use `filament/spatie-laravel-translatable-plugin` (`Translatable` trait on the resource + `LocaleSwitcher` action on List/Edit pages). Each translatable field renders one input per configured locale (default order: `uk`, `en`). The admin can author / edit both locales side-by-side.
 
 **Search**
-- MeiliSearch indexes both locales (`title_en`, `title_uk`, `summary_en`, `summary_uk`, `description_en`, `description_uk`) plus the ingredient names. A UK user typing Ukrainian matches Ukrainian-language fields; an English user matches English fields. Filament's table search hits both locales via JSON path `where title->en like ?` / `where title->uk like ?`.
+- MeiliSearch indexes both locales (`title_en`, `title_uk`, `summary_en`, `summary_uk`, `description_en`, `description_uk`, `ingredient_names_en`, `ingredient_names_uk` on `Recipe`; `name_en` / `name_uk` + aliases on `Ingredient`). A UK user typing Ukrainian matches Ukrainian-language fields; an English user matches English fields. Filament's table search hits both locales via JSON path `where title->en like ?` / `where title->uk like ?` and `name->en` / `name->uk` on taxonomies.
 
 **Numbers**
 - Formatted via `Number::format()` honoring `app()->getLocale()`.
@@ -827,7 +827,7 @@ All MVP decisions are locked. Remaining items below are intentional v1.1+ deferr
 - **Admin panel:** Filament 3, English UI strings only (via `ForceEnglish` middleware); translatable content fields via `filament/spatie-laravel-translatable-plugin` (UK + EN tabs).
 - **Local dev:** Laravel Sail (Docker Compose).
 - **Database:** MySQL 8.0.
-- **Localization:** Ukrainian primary + English fallback. UI strings translated via JSON / PHP lang files. Translatable content fields (recipe title / summary / description, step body, unit name) stored as MySQL JSON via `spatie/laravel-translatable`. Slugs remain English-only for URL stability. Locale switcher persists to **cookie only** (no DB column). Adding a future locale requires only seeding the new key — no schema migration.
+- **Localization:** Ukrainian primary + English fallback. UI strings translated via JSON / PHP lang files. Translatable content fields (recipe title / summary / description, step body, unit name, ingredient name, taxonomy names — categories / cuisines / tags / allergens / ingredient categories) stored as MySQL JSON via `spatie/laravel-translatable`. Slugs remain English-only for URL stability. Locale switcher persists to **cookie only** (no DB column). Adding a future locale requires only seeding the new key — no schema migration.
 - **Search:** MeiliSearch (via Laravel Scout).
 - **Hosting:** Single VPS managed by Laravel Forge.
 - **Time zones:** All timestamps stored in **UTC**; app `timezone=UTC`; display in UTC. Per-user timezone preference deferred to a later release.
