@@ -65,5 +65,7 @@ it('works within migrate:fresh --seed flow', function () {
     $this->artisan('migrate:fresh', ['--seed' => true])
         ->assertSuccessful();
 
-    expect(Ingredient::count())->toBe(14);
+    // RecipeSeeder may add stubs for ingredients not in the curated USDA set,
+    // so we assert the USDA-sourced subset rather than total count.
+    expect(Ingredient::where('source', 'like', 'USDA FDC #%')->count())->toBe(14);
 });

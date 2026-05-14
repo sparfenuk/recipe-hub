@@ -291,6 +291,21 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Search bar in catalog header → filters list to matching recipes.
   - Pest test: search returns expected recipe.
 
+- [x] **L3.12 — Recipe fixtures from PDF source** *(completed 2026-05-14)*
+  - `RecipeSeeder` loads `database/seeders/data/recipes.json` (161 recipes derived from the source PDF) and creates bilingual UK/EN recipes with localized titles, summaries, descriptions, and step bodies.
+  - Source `category` slugs (`breakfast`, `dessert`, `smoothie`, etc.) mapped to the existing `CategorySeeder` taxonomy with fallback `firstOrCreate` (auto-creating `smoothies`, `ice-cream`, `secret`).
+  - Source unit strings (`г`, `мл`, `ст. л.`, `ч. л.`, `зубчик`, `за смаком`, etc.) mapped to the seeded `Unit` codes. Decorative / optional unit values (`для подачі`, `для прикраси`, `кілька крапель`, etc.) collapse to the new `taste` unit and mark the row `is_optional=true`.
+  - Ingredient matching: exact-name match against `ingredients.name` (case-insensitive), then `ingredient_aliases.alias`. Misses log to `storage/logs/recipe-seed-{date}.log` and a stub Ingredient is created with `source = "RecipeSeeder fixture (no USDA match)"` so the recipe still loads.
+  - Defensive guard: rows whose unit + ingredient pair would crash `UnitConverter::toGrams` (count units on stub ingredients without `piece_weight_g`, volume units on ingredients without `density_g_per_ml`) are seeded as `is_optional=true` so `NutritionCalculator` skips them and the recipe still gets a partial nutrition cache.
+  - Prep / cook times derived heuristically by scanning step text for `хв|мін|min|hour|год` matches; clamped to 5-180 min total and split ⅓ prep / ⅔ cook.
+  - Hero image attached from `pdf_pages/plate_only/{slug}.png` via spatie/medialibrary when the file exists. Missing images are counted and reported but do not fail the seed (`pdf_pages/` is gitignored and absent in CI).
+  - Author = first user with the `admin` role; seeder throws a clear `RuntimeException` if none exists.
+  - Each recipe wrapped in `DB::transaction` so a partial failure rolls back cleanly and the next idempotent re-run continues from where it left off.
+  - Idempotent: re-runs skip recipes whose slug already exists. Page 176 "Pina Colada" is skipped because page 164 already created that slug — to be differentiated by hand in Filament.
+  - Test path overridable via static `RecipeSeeder::$dataPathOverride` and `$imagesRootOverride`. Small 3-recipe fixture (`tests/fixtures/recipes-seed-sample.json`) + tiny 1x1 placeholder PNG enable fast, deterministic Pest coverage.
+  - Wired into `DatabaseSeeder` after the admin user is created. First production run reports `created 160, skipped 1, missing images 0`.
+  - 7 new Pest tests (508 total, 1400 assertions): bilingual fields, hero attachment, graceful missing-image, bilingual steps, idempotency, taste-unit fallback, no-admin error path. Pint / Larastan green.
+
 - [x] **L3.11 — Translatable content infrastructure** *(completed 2026-05-14)*
   - `spatie/laravel-translatable` + `filament/spatie-laravel-translatable-plugin` installed.
   - Migration converts `recipes.title` / `summary` / `description`, `recipe_steps.body`, and `units.name` from scalar columns to MySQL JSON (`{"uk": "...", "en": "..."}`) with backfill from existing EN values; reversible.
