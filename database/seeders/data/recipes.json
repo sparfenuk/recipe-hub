@@ -378,7 +378,7 @@
     "protein": 21,
     "fat": 23,
     "carbs": 26,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Грецький йогурт 5%",
@@ -2276,7 +2276,7 @@
     "protein": 37,
     "fat": 18,
     "carbs": 32,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Гречка",
@@ -6646,7 +6646,7 @@
     "protein": 43,
     "fat": 22,
     "carbs": 14,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Броколi",
@@ -7666,7 +7666,7 @@
     "protein": 6,
     "fat": 3,
     "carbs": 26,
-    "servings": 4,
+    "servings": 3,
     "ingredients": [
       {
         "name_uk": "Вівсяні пластівці",
@@ -7890,7 +7890,7 @@
     "protein": 15,
     "fat": 9,
     "carbs": 33,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Тортилья або лаваш",
@@ -8334,7 +8334,7 @@
     "protein": 17,
     "fat": 25,
     "carbs": 50,
-    "servings": 2,
+    "servings": 1,
     "ingredients": [
       {
         "name_uk": "Вівсянка",
@@ -9586,7 +9586,7 @@
     "protein": 6,
     "fat": 28,
     "carbs": 63,
-    "servings": 3,
+    "servings": 1,
     "ingredients": [
       {
         "name_uk": "Яблуко зелене без шкірки",
@@ -9658,7 +9658,7 @@
     "protein": 33,
     "fat": 51,
     "carbs": 85,
-    "servings": 4,
+    "servings": 1,
     "ingredients": [
       {
         "name_uk": "Банан заморожений",
@@ -10066,7 +10066,7 @@
     "protein": 49,
     "fat": 60,
     "carbs": 38,
-    "servings": 3,
+    "servings": 1,
     "ingredients": [
       {
         "name_uk": "Сир кисломолочний зернистий (творог)",
@@ -10154,7 +10154,7 @@
     "protein": 9,
     "fat": 55,
     "carbs": 3,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Яйця (жовтки)",
@@ -10240,7 +10240,7 @@
     "protein": 7,
     "fat": 23,
     "carbs": 0.7,
-    "servings": 1,
+    "servings": 3,
     "ingredients": [
       {
         "name_uk": "Яйця",
@@ -10298,7 +10298,7 @@
     "protein": 4,
     "fat": 53,
     "carbs": 2,
-    "servings": 1,
+    "servings": 3,
     "ingredients": [
       {
         "name_uk": "Яйця",
@@ -10364,7 +10364,7 @@
     "protein": 1.5,
     "fat": 34,
     "carbs": 5,
-    "servings": 1,
+    "servings": 3,
     "ingredients": [
       {
         "name_uk": "Майонез",
@@ -10558,7 +10558,7 @@
     "protein": 11,
     "fat": 62,
     "carbs": 6,
-    "servings": 1,
+    "servings": 3,
     "ingredients": [
       {
         "name_uk": "Базилік",
@@ -10622,7 +10622,7 @@
     "protein": 6,
     "fat": 8,
     "carbs": 6,
-    "servings": 1,
+    "servings": 4,
     "ingredients": [
       {
         "name_uk": "Цибуля зелена",
@@ -10684,7 +10684,7 @@
     "protein": 2,
     "fat": 24,
     "carbs": 11,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Цибуля порей",
@@ -10752,7 +10752,7 @@
     "protein": 3,
     "fat": 18,
     "carbs": 12,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Сметана",
@@ -10814,7 +10814,7 @@
     "protein": 9,
     "fat": 8,
     "carbs": 6,
-    "servings": 1,
+    "servings": 4,
     "ingredients": [
       {
         "name_uk": "Йогурт грецький",
@@ -10882,7 +10882,7 @@
     "protein": 1,
     "fat": 46,
     "carbs": 4,
-    "servings": 1,
+    "servings": 3,
     "ingredients": [
       {
         "name_uk": "Оливкова олія",
@@ -10984,7 +10984,7 @@
     "protein": 1,
     "fat": 52,
     "carbs": 5,
-    "servings": 1,
+    "servings": 2,
     "ingredients": [
       {
         "name_uk": "Базилік, гілочка",
@@ -11058,7 +11058,7 @@
     "protein": 7,
     "fat": 9,
     "carbs": 4,
-    "servings": 1,
+    "servings": 4,
     "ingredients": [
       {
         "name_uk": "Огірок",
@@ -11138,7 +11138,7 @@
     "protein": 8,
     "fat": 15,
     "carbs": 24,
-    "servings": 1,
+    "servings": 3,
     "ingredients": [
       {
         "name_uk": "Нут (відварений або консервований)",
@@ -11210,7 +11210,7 @@
     "protein": 8,
     "fat": 3,
     "carbs": 53,
-    "servings": 1,
+    "servings": 4,
     "ingredients": [
       {
         "name_uk": "Борошно",
@@ -11290,7 +11290,7 @@
     "protein": 8,
     "fat": 2,
     "carbs": 52,
-    "servings": 1,
+    "servings": 8,
     "ingredients": [
       {
         "name_uk": "Борошно",

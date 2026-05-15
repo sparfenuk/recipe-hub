@@ -16,7 +16,8 @@ class ApplyIngredientNutritionOverrides extends Command
     /** @var string */
     protected $signature = 'ingredients:apply-overrides
                             {--dry-run : Report what would change without writing}
-                            {--no-recompute : Skip dispatching RecalculateRecipeNutrition for all recipes}';
+                            {--no-recompute : Skip dispatching RecalculateRecipeNutrition for all recipes}
+                            {--force : Re-apply nutrition even when the ingredient already has values (fixes mis-classified rows)}';
 
     /** @var string */
     protected $description = 'Backfill nutrition / piece weight / density on ingredients that have no USDA match, using the curated overrides JSON';
@@ -72,7 +73,12 @@ class ApplyIngredientNutritionOverrides extends Command
             $this->warn('DRY RUN — no writes.');
         }
 
-        $nutritionApplied = $this->applyNutrition($dryRun);
+        $force = (bool) $this->option('force');
+        if ($force) {
+            $this->warn('FORCE mode — ingredients with existing nutrition will be overwritten.');
+        }
+
+        $nutritionApplied = $this->applyNutrition($dryRun, $force);
         $pieceDensityApplied = $this->applyPieceAndDensity($dryRun);
         $relaxed = $this->relaxOptional($dryRun);
 
@@ -101,10 +107,14 @@ class ApplyIngredientNutritionOverrides extends Command
         return self::SUCCESS;
     }
 
-    private function applyNutrition(bool $dryRun): int
+    private function applyNutrition(bool $dryRun, bool $force = false): int
     {
         $count = 0;
-        $stubs = Ingredient::whereNull('kcal_per_100g')->get();
+        // --force re-resolves stubs that already have values (they may have matched the wrong override
+        // keyword). USDA-imported rows keep their original values: they're authoritative for that FDC ID.
+        $stubs = $force
+            ? Ingredient::where('source', 'not like', 'USDA FDC #%')->get()
+            : Ingredient::whereNull('kcal_per_100g')->get();
 
         foreach ($stubs as $stub) {
             $rawEn = (string) $stub->getTranslation('name', 'en', false);
