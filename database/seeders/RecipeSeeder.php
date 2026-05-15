@@ -114,6 +114,13 @@ class RecipeSeeder extends Seeder
                         );
                     }
 
+                    // Backfill reference nutrition for already-seeded recipes that pre-date the ref_*
+                    // columns. Idempotent — only writes when the column is null.
+                    $existing = Recipe::withTrashed()->where('slug', $slug)->first();
+                    if ($existing !== null) {
+                        $this->backfillReferenceNutrition($existing, $row);
+                    }
+
                     $skipped++;
 
                     continue;
@@ -141,6 +148,12 @@ class RecipeSeeder extends Seeder
                         'author_id' => $author->id,
                         'status' => 'published',
                         'published_at' => now(),
+                        // Reference nutrition from the source cookbook (per-serving). These override
+                        // the ingredient-computed cache for display so on-page values match the book.
+                        'ref_kcal_per_serving' => isset($row['calories']) ? (float) $row['calories'] : null,
+                        'ref_protein_per_serving_g' => isset($row['protein']) ? (float) $row['protein'] : null,
+                        'ref_fat_per_serving_g' => isset($row['fat']) ? (float) $row['fat'] : null,
+                        'ref_carbs_per_serving_g' => isset($row['carbs']) ? (float) $row['carbs'] : null,
                     ]));
 
                     $this->attachIngredients($recipe, $row['ingredients']);
@@ -193,6 +206,28 @@ class RecipeSeeder extends Seeder
             ['slug' => $slug],
             ['name' => Str::headline($slug)],
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function backfillReferenceNutrition(Recipe $recipe, array $row): void
+    {
+        $updates = [];
+        $map = [
+            'ref_kcal_per_serving' => 'calories',
+            'ref_protein_per_serving_g' => 'protein',
+            'ref_fat_per_serving_g' => 'fat',
+            'ref_carbs_per_serving_g' => 'carbs',
+        ];
+        foreach ($map as $column => $sourceKey) {
+            if ($recipe->{$column} === null && isset($row[$sourceKey])) {
+                $updates[$column] = (float) $row[$sourceKey];
+            }
+        }
+        if ($updates !== []) {
+            $recipe->forceFill($updates)->saveQuietly();
+        }
     }
 
     /**

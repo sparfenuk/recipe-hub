@@ -242,23 +242,23 @@
             <tbody>
                 <tr>
                     <td>{{ __('recipes.calories') }}</td>
-                    <td>{{ number_format((float) $recipe->kcal_per_serving, 0) }} {{ __('recipes.kcal') }}</td>
-                    <td>{{ number_format((float) $recipe->total_kcal, 0) }} {{ __('recipes.kcal') }}</td>
+                    <td>{{ number_format((float) $recipe->display_kcal_per_serving, 0) }} {{ __('recipes.kcal') }}</td>
+                    <td>{{ number_format((float) $recipe->display_total_kcal, 0) }} {{ __('recipes.kcal') }}</td>
                 </tr>
                 <tr>
                     <td>{{ __('recipes.protein') }}</td>
-                    <td>{{ number_format((float) $recipe->protein_per_serving_g, 1) }}g</td>
-                    <td>{{ number_format((float) $recipe->total_protein_g, 1) }}g</td>
+                    <td>{{ number_format((float) $recipe->display_protein_per_serving_g, 1) }}g</td>
+                    <td>{{ number_format((float) $recipe->display_protein_per_serving_g * max((int) $recipe->servings, 1), 1) }}g</td>
                 </tr>
                 <tr>
                     <td>{{ __('recipes.fat') }}</td>
-                    <td>{{ number_format((float) $recipe->fat_per_serving_g, 1) }}g</td>
-                    <td>{{ number_format((float) $recipe->total_fat_g, 1) }}g</td>
+                    <td>{{ number_format((float) $recipe->display_fat_per_serving_g, 1) }}g</td>
+                    <td>{{ number_format((float) $recipe->display_fat_per_serving_g * max((int) $recipe->servings, 1), 1) }}g</td>
                 </tr>
                 <tr>
                     <td>{{ __('recipes.carbs') }}</td>
-                    <td>{{ number_format((float) $recipe->carbs_per_serving_g, 1) }}g</td>
-                    <td>{{ number_format((float) $recipe->total_carbs_g, 1) }}g</td>
+                    <td>{{ number_format((float) $recipe->display_carbs_per_serving_g, 1) }}g</td>
+                    <td>{{ number_format((float) $recipe->display_carbs_per_serving_g * max((int) $recipe->servings, 1), 1) }}g</td>
                 </tr>
                 <tr>
                     <td>{{ __('recipes.fiber') }}</td>

@@ -298,13 +298,13 @@
             'position' => $step->position,
             'text' => trim(strip_tags($step->body)),
         ])->values()->all();
-        if ($recipe->kcal_per_serving) {
+        if ($recipe->display_kcal_per_serving) {
             $jsonLd['nutrition'] = [
                 '@type' => 'NutritionInformation',
-                'calories' => $recipe->kcal_per_serving.' kcal',
-                'proteinContent' => $recipe->protein_per_serving_g.'g',
-                'fatContent' => $recipe->fat_per_serving_g.'g',
-                'carbohydrateContent' => $recipe->carbs_per_serving_g.'g',
+                'calories' => $recipe->display_kcal_per_serving.' kcal',
+                'proteinContent' => $recipe->display_protein_per_serving_g.'g',
+                'fatContent' => $recipe->display_fat_per_serving_g.'g',
+                'carbohydrateContent' => $recipe->display_carbs_per_serving_g.'g',
                 'fiberContent' => $recipe->fiber_per_serving_g.'g',
             ];
         }

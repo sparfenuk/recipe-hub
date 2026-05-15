@@ -51,6 +51,10 @@ class Recipe extends Model implements AuditableContract, HasMedia
         'fat_per_serving_g',
         'carbs_per_serving_g',
         'fiber_per_serving_g',
+        'ref_kcal_per_serving',
+        'ref_protein_per_serving_g',
+        'ref_fat_per_serving_g',
+        'ref_carbs_per_serving_g',
         'nutrition_cached_at',
         'published_at',
     ];
@@ -74,9 +78,74 @@ class Recipe extends Model implements AuditableContract, HasMedia
             'fat_per_serving_g' => 'decimal:2',
             'carbs_per_serving_g' => 'decimal:2',
             'fiber_per_serving_g' => 'decimal:2',
+            'ref_kcal_per_serving' => 'decimal:2',
+            'ref_protein_per_serving_g' => 'decimal:2',
+            'ref_fat_per_serving_g' => 'decimal:2',
+            'ref_carbs_per_serving_g' => 'decimal:2',
             'nutrition_cached_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Per-serving nutrition shown to readers. Prefers the source cookbook
+     * reference (set at seed time from recipes.json) when available, falling
+     * back to the ingredient-computed cache, and finally to total / servings
+     * for partially-populated rows in tests. NutritionCalculator still owns
+     * `kcal_per_serving` etc.; this accessor is what UI and JSON-LD read.
+     */
+    public function getDisplayKcalPerServingAttribute(): ?float
+    {
+        return $this->resolvePerServing('ref_kcal_per_serving', 'kcal_per_serving', 'total_kcal');
+    }
+
+    public function getDisplayProteinPerServingGAttribute(): ?float
+    {
+        return $this->resolvePerServing('ref_protein_per_serving_g', 'protein_per_serving_g', 'total_protein_g');
+    }
+
+    public function getDisplayFatPerServingGAttribute(): ?float
+    {
+        return $this->resolvePerServing('ref_fat_per_serving_g', 'fat_per_serving_g', 'total_fat_g');
+    }
+
+    public function getDisplayCarbsPerServingGAttribute(): ?float
+    {
+        return $this->resolvePerServing('ref_carbs_per_serving_g', 'carbs_per_serving_g', 'total_carbs_g');
+    }
+
+    /**
+     * Whole-recipe kcal as it should appear in UI (placeholders, calculator labels).
+     * Uses the cookbook reference when seeded, otherwise the ingredient-computed total cache.
+     */
+    public function getDisplayTotalKcalAttribute(): float
+    {
+        if ($this->ref_kcal_per_serving !== null) {
+            return (float) $this->ref_kcal_per_serving * max((int) $this->servings, 1);
+        }
+
+        return (float) ($this->total_kcal ?? 0);
+    }
+
+    /**
+     * Walks ref → per-serving cache → (total / servings). The per-serving + total columns
+     * default to 0 in the schema, so treat 0 as "not cached yet" and keep walking.
+     */
+    private function resolvePerServing(string $refCol, string $perServingCol, string $totalCol): ?float
+    {
+        if ($this->{$refCol} !== null) {
+            return (float) $this->{$refCol};
+        }
+        $perServing = $this->{$perServingCol};
+        if ($perServing !== null && (float) $perServing > 0) {
+            return (float) $perServing;
+        }
+        $total = $this->{$totalCol};
+        if ($total !== null && (float) $total > 0) {
+            return (float) $total / max((int) $this->servings, 1);
+        }
+
+        return null;
     }
 
     public function registerMediaCollections(): void

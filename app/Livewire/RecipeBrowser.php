@@ -177,7 +177,7 @@ class RecipeBrowser extends Component
             ->where('status', 'published')
             ->when($this->category_ids !== [], fn ($q) => $q->whereIn('category_id', $this->category_ids))
             ->when($this->cuisine_ids !== [], fn ($q) => $q->whereIn('cuisine_id', $this->cuisine_ids))
-            ->when($this->max_kcal, fn ($q, $v) => $q->where('kcal_per_serving', '<=', $v))
+            ->when($this->max_kcal, fn ($q, $v) => $q->whereRaw('COALESCE(ref_kcal_per_serving, kcal_per_serving) <= ?', [$v]))
             ->when($this->max_prep_time, fn ($q, $v) => $q->where('prep_time_min', '<=', $v));
 
         if ($this->diet_tags !== []) {
@@ -210,7 +210,7 @@ class RecipeBrowser extends Component
         return $query
             ->with('media')
             ->when($this->search === '' && $this->sort === 'newest', fn ($q) => $q->orderByDesc('published_at'))
-            ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderBy('kcal_per_serving'))
+            ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderByRaw('COALESCE(ref_kcal_per_serving, kcal_per_serving) asc'))
             ->when($this->sort === 'shortest_prep', fn ($q) => $q->orderBy('prep_time_min'))
             ->paginate(12);
     }

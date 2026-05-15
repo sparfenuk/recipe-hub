@@ -714,3 +714,85 @@ test('daily_pct per-serving values are recalculated', function () {
     $nutrition = $component->get('scaledNutrition');
     expect($nutrition['kcal_per_serving'])->toBe(250.0);
 });
+
+// --- Reference (cookbook PDF) nutrition tests ---
+
+test('ref_* per-serving values override computed cache in display', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 2,
+    ]);
+
+    $recipe->updateQuietly([
+        // Ingredient-computed cache (USDA-based).
+        'total_kcal' => 1000,
+        'total_protein_g' => 60,
+        'total_fat_g' => 50,
+        'total_carbs_g' => 80,
+        'kcal_per_serving' => 500,
+        'protein_per_serving_g' => 30,
+        'fat_per_serving_g' => 25,
+        'carbs_per_serving_g' => 40,
+        // Cookbook reference (PDF). Different on purpose to prove it wins.
+        'ref_kcal_per_serving' => 400,
+        'ref_protein_per_serving_g' => 25,
+        'ref_fat_per_serving_g' => 18,
+        'ref_carbs_per_serving_g' => 45,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()]);
+    $nutrition = $component->get('scaledNutrition');
+
+    expect($nutrition['kcal_per_serving'])->toBe(400.0)
+        ->and($nutrition['protein_per_serving_g'])->toBe(25.0)
+        ->and($nutrition['fat_per_serving_g'])->toBe(18.0)
+        ->and($nutrition['carbs_per_serving_g'])->toBe(45.0)
+        // Totals derive from ref × servings.
+        ->and($nutrition['kcal'])->toBe(800.0)
+        ->and($nutrition['protein_g'])->toBe(50.0);
+});
+
+test('kcal mode scales relative to ref total when ref is set', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 2,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 1000,            // computed (would give a different factor)
+        'kcal_per_serving' => 500,
+        'ref_kcal_per_serving' => 400,   // displayed → ref_total = 800
+        'nutrition_cached_at' => now(),
+    ]);
+
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe->fresh()])
+        ->call('setMode', 'kcal')
+        ->set('targetKcal', 400);
+
+    // Asking for 400 kcal out of 800 ref-displayed total → 0.5 factor.
+    expect($component->get('scaleFactor'))->toBe(0.5);
+
+    $nutrition = $component->get('scaledNutrition');
+    expect($nutrition['kcal'])->toBe(400.0)
+        ->and($nutrition['kcal_per_serving'])->toBe(200.0);
+});
+
+test('display falls back to computed when no ref values seeded', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 1,
+    ]);
+
+    $recipe->updateQuietly([
+        'total_kcal' => 300,
+        'kcal_per_serving' => 300,
+        'protein_per_serving_g' => 15,
+        'ref_kcal_per_serving' => null,
+        'ref_protein_per_serving_g' => null,
+        'nutrition_cached_at' => now(),
+    ]);
+
+    expect((float) $recipe->fresh()->display_kcal_per_serving)->toBe(300.0)
+        ->and((float) $recipe->fresh()->display_protein_per_serving_g)->toBe(15.0);
+});

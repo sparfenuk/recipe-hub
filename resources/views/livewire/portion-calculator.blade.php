@@ -77,16 +77,16 @@
                         wire:model.live.debounce.300ms="targetKcal"
                         min="1"
                         step="10"
-                        placeholder="{{ __('calculator.kcal_placeholder', ['kcal' => number_format((float) $this->recipe->total_kcal, 0)]) }}"
+                        placeholder="{{ __('calculator.kcal_placeholder', ['kcal' => number_format((float) $this->recipe->display_total_kcal, 0)]) }}"
                         class="block w-full rounded-lg border-slate-200 pr-14 text-lg font-semibold text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                     >
                     <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
                         {{ __('recipes.kcal') }}
                     </span>
                 </div>
-                @if ($this->recipe->total_kcal)
+                @if ($this->recipe->display_total_kcal)
                     <p class="mt-1.5 text-xs text-slate-500">
-                        {{ __('calculator.original_kcal', ['kcal' => number_format((float) $this->recipe->total_kcal, 0)]) }}
+                        {{ __('calculator.original_kcal', ['kcal' => number_format((float) $this->recipe->display_total_kcal, 0)]) }}
                     </p>
                 @endif
             </div>
