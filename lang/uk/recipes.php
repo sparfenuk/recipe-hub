@@ -53,5 +53,6 @@ return [
     'exclude_ingredients' => 'Без інгредієнтів',
     'ingredient_search_placeholder' => 'Пошук інгредієнтів...',
     'no_ingredients_found' => 'Інгредієнтів не знайдено.',
+    'selected_count' => '{1} :count вибрано|[2,4] :count вибрано|[5,*] :count вибрано',
 
 ];

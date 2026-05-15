@@ -7,15 +7,15 @@
     </nav>
 
     {{-- Hero --}}
-    <div class="overflow-hidden rounded-2xl bg-slate-100">
+    <div class="flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 p-6 sm:p-8">
         @if ($recipe->getFirstMediaUrl('hero', 'full'))
             <img
                 src="{{ $recipe->getFirstMediaUrl('hero', 'full') }}"
                 alt="{{ $recipe->title }}"
-                class="h-64 w-full object-cover sm:h-80 lg:h-96"
+                class="h-80 w-auto max-w-full object-contain sm:h-96 lg:h-[32rem]"
             >
         @else
-            <div class="flex h-64 items-center justify-center sm:h-80 lg:h-96">
+            <div class="flex h-80 items-center justify-center sm:h-96 lg:h-[32rem]">
                 <x-heroicon-o-photo class="h-16 w-16 text-slate-300" />
             </div>
         @endif

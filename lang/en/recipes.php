@@ -53,5 +53,6 @@ return [
     'exclude_ingredients' => 'Without ingredients',
     'ingredient_search_placeholder' => 'Search ingredients...',
     'no_ingredients_found' => 'No ingredients found.',
+    'selected_count' => '{1} :count selected|[2,*] :count selected',
 
 ];

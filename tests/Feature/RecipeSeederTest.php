@@ -80,6 +80,54 @@ it('is idempotent when re-run', function (): void {
     expect(Recipe::count())->toBe(3);
 });
 
+it('force-overwrites existing recipes when forceOverwrite is true', function (): void {
+    $this->seed(RecipeSeeder::class);
+
+    $first = Recipe::orderBy('id')->first();
+    $first->update(['title' => ['en' => 'Manually edited title', 'uk' => 'Manually edited title']]);
+    $originalId = $first->id;
+
+    RecipeSeeder::$forceOverwrite = true;
+
+    try {
+        $this->seed(RecipeSeeder::class);
+    } finally {
+        RecipeSeeder::$forceOverwrite = false;
+    }
+
+    expect(Recipe::count())->toBe(3);
+
+    $reseeded = Recipe::where('slug', $first->slug)->first();
+
+    expect($reseeded)->not->toBeNull()
+        ->and($reseeded->id)->not->toBe($originalId)
+        ->and($reseeded->getTranslation('title', 'en'))->toBe('Healthy crepes with Greek yogurt, cherries and cocoa');
+});
+
+it('recipes:reseed command without --force is idempotent', function (): void {
+    $this->seed(RecipeSeeder::class);
+
+    $this->artisan('recipes:reseed')->assertSuccessful();
+
+    expect(Recipe::count())->toBe(3);
+});
+
+it('recipes:reseed --force re-creates existing recipes after confirmation', function (): void {
+    $this->seed(RecipeSeeder::class);
+
+    $first = Recipe::orderBy('id')->first();
+    $originalId = $first->id;
+
+    $this->artisan('recipes:reseed', ['--force' => true])
+        ->expectsConfirmation('--force will delete every recipe whose slug is in recipes.json (including their media, ingredients, steps, and any admin edits) and re-create them from the JSON. Continue?', 'yes')
+        ->assertSuccessful();
+
+    $reseeded = Recipe::where('slug', $first->slug)->first();
+
+    expect(Recipe::count())->toBe(3)
+        ->and($reseeded->id)->not->toBe($originalId);
+});
+
 it('marks rows with unmappable units as optional and uses the taste unit', function (): void {
     $this->seed(RecipeSeeder::class);
 

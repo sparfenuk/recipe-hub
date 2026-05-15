@@ -100,8 +100,14 @@ $fh = fopen("$usdaDir/food.csv", 'r');
 $header = fgetcsv($fh);
 $totalRead = 0;
 $kept = 0;
+$skippedMalformed = 0;
 while (($row = fgetcsv($fh)) !== false) {
     $totalRead++;
+    if (count($row) !== count($header)) {
+        $skippedMalformed++;
+
+        continue;
+    }
     $rec = array_combine($header, $row);
 
     if (! in_array($rec['data_type'], ['foundation_food', 'sr_legacy_food'], true)) {
@@ -147,6 +153,9 @@ while (($row = fgetcsv($fh)) !== false) {
 }
 fclose($fh);
 echo "  $totalRead total rows, $kept kept after category + keyword filter.\n";
+if ($skippedMalformed > 0) {
+    echo "  $skippedMalformed malformed rows skipped (bad CSV quoting in source).\n";
+}
 
 if ($kept === 0) {
     fwrite(STDERR, "No foods passed filters. Check input files.\n");
@@ -163,7 +172,13 @@ $header = fgetcsv($fh);
 $nutrientIdSet = array_keys($nutrientMap);
 $fdcIdSet = array_flip($fdcIds);
 $nutRows = 0;
+$nutSkippedMalformed = 0;
 while (($row = fgetcsv($fh)) !== false) {
+    if (count($row) !== count($header)) {
+        $nutSkippedMalformed++;
+
+        continue;
+    }
     $rec = array_combine($header, $row);
     $fdcId = (int) $rec['fdc_id'];
     $nutrientId = (int) $rec['nutrient_id'];
@@ -181,6 +196,9 @@ while (($row = fgetcsv($fh)) !== false) {
 }
 fclose($fh);
 echo "  $nutRows nutrient values collected.\n";
+if ($nutSkippedMalformed > 0) {
+    echo "  $nutSkippedMalformed malformed rows skipped (bad CSV quoting in source).\n";
+}
 
 // ── Step 4: Normalize names ────────────────────────────────────────────────
 echo "Normalizing names…\n";

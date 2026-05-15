@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Translatable\HasTranslations;
@@ -35,5 +36,11 @@ class Tag extends Model implements AuditableContract
     public function isMisc(): bool
     {
         return $this->type === 'misc';
+    }
+
+    /** @return BelongsToMany<Recipe, $this> */
+    public function recipes(): BelongsToMany
+    {
+        return $this->belongsToMany(Recipe::class, 'recipe_tag');
     }
 }

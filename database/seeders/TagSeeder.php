@@ -14,8 +14,6 @@ class TagSeeder extends Seeder
             ['slug' => 'vegan', 'name' => ['en' => 'Vegan', 'uk' => 'Веганське'], 'type' => 'diet'],
             ['slug' => 'keto', 'name' => ['en' => 'Keto', 'uk' => 'Кето'], 'type' => 'diet'],
             ['slug' => 'gluten-free', 'name' => ['en' => 'Gluten-Free', 'uk' => 'Без глютену'], 'type' => 'diet'],
-            ['slug' => 'halal', 'name' => ['en' => 'Halal', 'uk' => 'Халяль'], 'type' => 'diet'],
-            ['slug' => 'kosher-friendly', 'name' => ['en' => 'Kosher-Friendly', 'uk' => 'Кошерне'], 'type' => 'diet'],
             ['slug' => 'dairy-free', 'name' => ['en' => 'Dairy-Free', 'uk' => 'Без молочних продуктів'], 'type' => 'diet'],
             ['slug' => 'low-carb', 'name' => ['en' => 'Low-Carb', 'uk' => 'Низьковуглеводне'], 'type' => 'diet'],
             ['slug' => 'paleo', 'name' => ['en' => 'Paleo', 'uk' => 'Палео'], 'type' => 'diet'],

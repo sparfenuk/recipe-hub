@@ -15,6 +15,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::view('/book', 'pages.book')->name('book');
+Route::view('/author', 'pages.author')->name('author');
+
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/recipes', RecipeBrowser::class)->name('recipes.index');

@@ -121,6 +121,12 @@ class Ingredient extends Model implements AuditableContract, HasMedia
         return $this->belongsToMany(Tag::class, 'ingredient_tag');
     }
 
+    /** @return BelongsToMany<Recipe, $this> */
+    public function recipes(): BelongsToMany
+    {
+        return $this->belongsToMany(Recipe::class, 'recipe_ingredients');
+    }
+
     /** @param  Builder<static>  $query
      *  @return Builder<static> */
     public function makeAllSearchableUsing(Builder $query): Builder

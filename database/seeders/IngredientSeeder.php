@@ -7,9 +7,17 @@ use Illuminate\Support\Facades\Artisan;
 
 class IngredientSeeder extends Seeder
 {
+    /** Override the curated USDA CSV path for tests. Null = production default. */
+    public static ?string $csvPathOverride = null;
+
     public function run(): void
     {
-        Artisan::call('ingredients:import-usda', ['--enrich' => true]);
+        $params = ['--enrich' => true];
+        if (self::$csvPathOverride !== null) {
+            $params['path'] = self::$csvPathOverride;
+        }
+
+        Artisan::call('ingredients:import-usda', $params);
 
         $this->command->getOutput()->writeln(Artisan::output());
     }

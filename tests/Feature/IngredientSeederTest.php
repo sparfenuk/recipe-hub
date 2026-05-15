@@ -10,6 +10,14 @@ beforeEach(function () {
     $this->seed(UnitSeeder::class);
     $this->seed(IngredientCategorySeeder::class);
     $this->seed(AllergenSeeder::class);
+
+    // Pin tests to a frozen 14-row CSV so they stay deterministic when the production
+    // curated CSV is regenerated against a newer USDA dump.
+    IngredientSeeder::$csvPathOverride = base_path('tests/fixtures/usda-curated-14.csv');
+});
+
+afterEach(function () {
+    IngredientSeeder::$csvPathOverride = null;
 });
 
 it('seeds all ingredients from the curated CSV', function () {

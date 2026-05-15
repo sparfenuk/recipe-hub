@@ -35,4 +35,10 @@ class Category extends Model implements AuditableContract
     {
         return $this->hasMany(self::class, 'parent_id');
     }
+
+    /** @return HasMany<Recipe, $this> */
+    public function recipes(): HasMany
+    {
+        return $this->hasMany(Recipe::class);
+    }
 }

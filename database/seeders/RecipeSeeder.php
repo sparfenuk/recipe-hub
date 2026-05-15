@@ -27,6 +27,13 @@ class RecipeSeeder extends Seeder
 
     public static ?string $imagesRootOverride = null;
 
+    /**
+     * When true, recipes whose slug already exists are force-deleted and re-created from the
+     * source JSON. Wipes admin edits, attached media, ingredients, and steps for those slugs.
+     * Defaults to false so production / CI runs stay idempotent.
+     */
+    public static bool $forceOverwrite = false;
+
     /** Recipe-card units in the source JSON mapped to seeded Unit.code. */
     private const UNIT_MAP = [
         'г' => 'g',
@@ -94,9 +101,23 @@ class RecipeSeeder extends Seeder
             $slug = Str::slug($titleEn);
 
             if (Recipe::withTrashed()->where('slug', $slug)->exists()) {
-                $skipped++;
+                if (self::$forceOverwrite) {
+                    Recipe::withTrashed()->where('slug', $slug)->get()->each->forceDelete();
+                } else {
+                    // Recipe already exists, but the source JSON may carry bilingual ingredient names
+                    // that weren't backfilled on the original seed run (USDA ingredients ship EN-only).
+                    // Walk the ingredient list so resolveIngredient() can opportunistically enrich them.
+                    foreach ($row['ingredients'] as $ingredientRow) {
+                        $this->resolveIngredient(
+                            trim((string) $ingredientRow['name_en']),
+                            trim((string) $ingredientRow['name_uk']),
+                        );
+                    }
 
-                continue;
+                    $skipped++;
+
+                    continue;
+                }
             }
 
             $category = $this->resolveCategory((string) $row['category']);
@@ -264,6 +285,8 @@ class RecipeSeeder extends Seeder
         }
 
         if ($ingredient) {
+            $this->backfillIngredientTranslations($ingredient, $nameEn, $nameUk);
+
             return $ingredient;
         }
 
@@ -291,6 +314,30 @@ class RecipeSeeder extends Seeder
         ]);
 
         return $stub;
+    }
+
+    /**
+     * Backfill missing UK / EN translations on an existing ingredient using the recipe source names.
+     * USDA-imported ingredients ship with EN only; the bilingual recipe JSON is the only place we
+     * have curated UK names for them, so we opportunistically pick them up on every seed pass.
+     */
+    private function backfillIngredientTranslations(Ingredient $ingredient, string $nameEn, string $nameUk): void
+    {
+        $dirty = false;
+
+        if ($nameUk !== '' && $ingredient->getTranslation('name', 'uk', false) === '') {
+            $ingredient->setTranslation('name', 'uk', $nameUk);
+            $dirty = true;
+        }
+
+        if ($nameEn !== '' && $ingredient->getTranslation('name', 'en', false) === '') {
+            $ingredient->setTranslation('name', 'en', $nameEn);
+            $dirty = true;
+        }
+
+        if ($dirty) {
+            $ingredient->save();
+        }
     }
 
     /**

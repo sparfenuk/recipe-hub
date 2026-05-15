@@ -49,6 +49,18 @@
 
             {{-- Desktop navigation --}}
             <nav class="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
+                <a href="{{ route('recipes.index') }}" @class([
+                    'transition-colors hover:text-emerald-600',
+                    'text-emerald-600' => request()->routeIs('recipes.*'),
+                ])>{{ __('nav.recipes') }}</a>
+                <a href="{{ route('book') }}" @class([
+                    'transition-colors hover:text-emerald-600',
+                    'text-emerald-600' => request()->routeIs('book'),
+                ])>{{ __('book.nav_book') }}</a>
+                <a href="{{ route('author') }}" @class([
+                    'transition-colors hover:text-emerald-600',
+                    'text-emerald-600' => request()->routeIs('author'),
+                ])>{{ __('book.nav_author') }}</a>
                 {{ $nav ?? '' }}
             </nav>
 
@@ -135,6 +147,9 @@
             </div>
 
             <nav class="space-y-1 px-4 py-3 text-sm font-medium text-slate-600">
+                <a href="{{ route('recipes.index') }}" class="block rounded px-2 py-2 hover:bg-slate-50 hover:text-emerald-600">{{ __('nav.recipes') }}</a>
+                <a href="{{ route('book') }}" class="block rounded px-2 py-2 hover:bg-slate-50 hover:text-emerald-600">{{ __('book.nav_book') }}</a>
+                <a href="{{ route('author') }}" class="block rounded px-2 py-2 hover:bg-slate-50 hover:text-emerald-600">{{ __('book.nav_author') }}</a>
                 {{ $nav ?? '' }}
             </nav>
 
@@ -181,6 +196,6 @@
         </div>
     </footer>
 
-    @livewireScripts
+    @livewireScriptConfig
 </body>
 </html>

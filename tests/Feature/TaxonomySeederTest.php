@@ -44,8 +44,8 @@ test('cuisine seeder is idempotent', function () {
 test('tag seeder creates expected records', function () {
     $this->seed(TagSeeder::class);
 
-    expect(Tag::count())->toBe(18)
-        ->and(Tag::where('type', 'diet')->count())->toBe(10)
+    expect(Tag::count())->toBe(16)
+        ->and(Tag::where('type', 'diet')->count())->toBe(8)
         ->and(Tag::where('type', 'misc')->count())->toBe(8)
         ->and(Tag::where('slug', 'vegan')->exists())->toBeTrue()
         ->and(Tag::where('slug', 'quick')->exists())->toBeTrue();
@@ -55,7 +55,7 @@ test('tag seeder is idempotent', function () {
     $this->seed(TagSeeder::class);
     $this->seed(TagSeeder::class);
 
-    expect(Tag::count())->toBe(18);
+    expect(Tag::count())->toBe(16);
 });
 
 test('allergen seeder creates all 9 allergens from spec', function () {
