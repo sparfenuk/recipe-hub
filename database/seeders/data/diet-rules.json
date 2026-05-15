@@ -1,0 +1,46 @@
+{
+    "_comment": "Auto-tagging rules for diet tags on recipes. Word-boundary, case-insensitive matching on the English ingredient name. A recipe is tagged only if NONE of its ingredients trigger exclude_allergens or exclude_ingredient_keywords. Idempotent: re-running uses syncWithoutDetaching, never removes existing tags (so admin overrides survive).",
+    "rules": [
+        {
+            "tag": "gluten-free",
+            "exclude_allergens": ["gluten"]
+        },
+        {
+            "tag": "dairy-free",
+            "exclude_allergens": ["lactose"]
+        },
+        {
+            "tag": "vegetarian",
+            "exclude_allergens": ["fish", "shellfish"],
+            "exclude_ingredient_keywords": [
+                "chicken", "turkey", "duck", "goose", "quail", "pheasant",
+                "beef", "veal", "pork", "lamb", "mutton", "venison", "rabbit", "bison",
+                "ham", "bacon", "sausage", "salami", "pepperoni", "prosciutto", "chorizo", "mortadella", "kielbasa", "hot dog",
+                "meat",
+                "liver", "kidney", "tripe", "tongue",
+                "brisket", "ribs", "ribeye", "sirloin", "tenderloin",
+                "salmon", "tuna", "cod", "halibut", "tilapia", "trout", "sardine", "sardines", "anchovy", "anchovies",
+                "mackerel", "herring", "snapper", "swordfish", "mahi", "haddock", "pollock", "fish",
+                "shrimp", "shrimps", "prawn", "prawns", "crab", "lobster", "clam", "clams", "mussel", "mussels",
+                "oyster", "oysters", "scallop", "scallops", "squid", "calamari", "octopus", "seafood"
+            ]
+        },
+        {
+            "tag": "vegan",
+            "exclude_allergens": ["fish", "shellfish", "lactose", "eggs"],
+            "exclude_ingredient_keywords": [
+                "chicken", "turkey", "duck", "goose", "quail", "pheasant",
+                "beef", "veal", "pork", "lamb", "mutton", "venison", "rabbit", "bison",
+                "ham", "bacon", "sausage", "salami", "pepperoni", "prosciutto", "chorizo", "mortadella", "kielbasa", "hot dog",
+                "meat",
+                "liver", "kidney", "tripe", "tongue",
+                "brisket", "ribs", "ribeye", "sirloin", "tenderloin",
+                "salmon", "tuna", "cod", "halibut", "tilapia", "trout", "sardine", "sardines", "anchovy", "anchovies",
+                "mackerel", "herring", "snapper", "swordfish", "mahi", "haddock", "pollock", "fish",
+                "shrimp", "shrimps", "prawn", "prawns", "crab", "lobster", "clam", "clams", "mussel", "mussels",
+                "oyster", "oysters", "scallop", "scallops", "squid", "calamari", "octopus", "seafood",
+                "honey", "gelatin", "lard", "tallow"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "_comment": "Auto-cuisine rules. Word-boundary, case-insensitive keyword matching on the recipe's English title. First matching rule wins. Idempotent: only fills cuisine_id when currently NULL — never overwrites admin edits.",
+    "rules": [
+        {"cuisine": "italian", "keywords": ["italian", "bruschetta", "polenta", "risotto", "ravioli", "lasagna", "lasagne", "carpaccio", "tiramisu", "espresso", "pizza", "spaghetti", "fettuccine", "linguine", "penne", "pesto", "panini", "focaccia", "gnocchi", "minestrone"]},
+        {"cuisine": "french", "keywords": ["french", "ratatouille", "quiche", "croissant", "baguette", "crepe", "crepes", "creme brulee", "mousse", "souffle", "bisque", "bouillabaisse", "coq au vin", "cassoulet"]},
+        {"cuisine": "mexican", "keywords": ["mexican", "tortilla", "burrito", "taco", "tacos", "quesadilla", "nachos", "fajita", "guacamole", "salsa", "enchilada", "carnitas"]},
+        {"cuisine": "japanese", "keywords": ["japanese", "sushi", "teriyaki", "miso", "ramen", "udon", "tempura", "wasabi", "nori", "edamame", "yakitori", "donburi", "katsu", "matcha", "mochi", "onigiri"]},
+        {"cuisine": "chinese", "keywords": ["chinese", "wok", "dim sum", "chow mein", "kung pao", "lo mein", "wonton", "bao", "mapo", "stir fry", "stir-fry"]},
+        {"cuisine": "thai", "keywords": ["thai", "pad thai", "tom yum", "tom kha"]},
+        {"cuisine": "indian", "keywords": ["indian", "curry", "tikka", "masala", "biryani", "naan", "samosa", "tandoori", "vindaloo", "dal", "paneer", "chutney", "dosa", "kheer"]},
+        {"cuisine": "greek", "keywords": ["greek", "tzatziki", "moussaka", "gyro", "souvlaki", "spanakopita", "dolma"]},
+        {"cuisine": "spanish", "keywords": ["spanish", "paella", "tapas", "gazpacho", "churros", "sangria"]},
+        {"cuisine": "korean", "keywords": ["korean", "kimchi", "bibimbap", "bulgogi", "gochujang", "japchae"]},
+        {"cuisine": "vietnamese", "keywords": ["vietnamese", "pho", "banh mi", "spring roll", "spring rolls"]},
+        {"cuisine": "turkish", "keywords": ["turkish", "kebab", "doner", "baklava", "borek", "meze"]},
+        {"cuisine": "moroccan", "keywords": ["moroccan", "couscous", "tagine", "harissa"]},
+        {"cuisine": "lebanese", "keywords": ["lebanese", "middle eastern", "hummus", "tabbouleh", "falafel", "shawarma", "kibbeh", "fattoush", "tahini", "lavash", "pita"]},
+        {"cuisine": "ukrainian", "keywords": ["ukrainian", "borscht", "borsch", "varenyky", "pierogi", "pierogies", "holubtsi", "kasha", "salo"]},
+        {"cuisine": "american", "keywords": ["american", "burger", "burgers", "hot dog", "barbecue", "bbq", "buffalo wings", "cornbread", "sloppy joe", "caesar"]},
+        {"cuisine": "british", "keywords": ["british", "english", "shepherd's pie", "fish and chips", "scone", "scones", "yorkshire", "bangers"]},
+        {"cuisine": "ethiopian", "keywords": ["ethiopian", "injera", "doro wat", "berbere"]},
+        {"cuisine": "caribbean", "keywords": ["caribbean", "jerk chicken", "plantain"]}
+    ]
+}
