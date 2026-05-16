@@ -6,17 +6,21 @@ use App\Models\CalculatorSession;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Models\User;
+use App\Services\Nutrition\UnitConverter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Throwable;
 
 /**
  * @property-read int|null $dailyKcalTarget
  * @property-read bool $isScaled
  * @property-read array{protein_g: float, fat_g: float, carbs_g: float}|null $macroTargets
+ * @property-read Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}> $ingredientBreakdown
+ * @property-read Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}> $ingredientBreakdownTotal
  */
 class PortionCalculator extends Component
 {
@@ -166,6 +170,77 @@ class PortionCalculator extends Component
             'is_optional' => (bool) $ri->is_optional,
             'group_label' => $ri->group_label,
         ]);
+    }
+
+    /**
+     * Per-serving nutrition contribution per ingredient, matching the semantics of
+     * scaledNutrition's *_per_serving values (servings mode = intrinsic, kcal/daily_pct
+     * modes = scaled by factor).
+     *
+     * @return Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}>
+     */
+    #[Computed]
+    public function ingredientBreakdown(): Collection
+    {
+        $servings = max($this->originalServings, 1);
+        $perServingFactor = ($this->mode === 'servings' ? 1.0 : $this->scaleFactor()) / $servings;
+
+        return $this->computeIngredientBreakdown($perServingFactor);
+    }
+
+    /**
+     * Total (scaled-recipe) nutrition contribution per ingredient — matches the totals
+     * shown in the macro split chart, so tooltips can attribute slices back to ingredients.
+     *
+     * @return Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}>
+     */
+    #[Computed]
+    public function ingredientBreakdownTotal(): Collection
+    {
+        return $this->computeIngredientBreakdown($this->scaleFactor());
+    }
+
+    /**
+     * @return Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}>
+     */
+    private function computeIngredientBreakdown(float $factor): Collection
+    {
+        $this->recipe->loadMissing('recipeIngredients.ingredient', 'recipeIngredients.unit');
+
+        return $this->recipe->recipeIngredients
+            ->map(function (RecipeIngredient $ri) use ($factor): ?array {
+                $ingredient = $ri->ingredient;
+
+                if ($ingredient === null || $ri->unit === null || $ri->is_optional) {
+                    return null;
+                }
+
+                try {
+                    $grams = $ri->grams_override !== null
+                        ? (float) $ri->grams_override
+                        : UnitConverter::toGrams(
+                            (float) $ri->amount,
+                            $ri->unit,
+                            $ingredient->density_g_per_ml !== null ? (float) $ingredient->density_g_per_ml : null,
+                            $ingredient->piece_weight_g !== null ? (float) $ingredient->piece_weight_g : null,
+                        );
+                } catch (Throwable) {
+                    return null;
+                }
+
+                $per100 = $grams * $factor / 100;
+
+                return [
+                    'name' => $ingredient->name,
+                    'kcal' => round($per100 * (float) ($ingredient->kcal_per_100g ?? 0), 1),
+                    'protein_g' => round($per100 * (float) ($ingredient->protein_g ?? 0), 1),
+                    'fat_g' => round($per100 * (float) ($ingredient->fat_g ?? 0), 1),
+                    'carbs_g' => round($per100 * (float) ($ingredient->carbs_g ?? 0), 1),
+                    'fiber_g' => round($per100 * (float) ($ingredient->fiber_g ?? 0), 1),
+                ];
+            })
+            ->filter(fn (?array $row): bool => $row !== null && $row['kcal'] > 0)
+            ->values();
     }
 
     /** @return array{kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float, kcal_per_serving: float, protein_per_serving_g: float, fat_per_serving_g: float, carbs_per_serving_g: float, fiber_per_serving_g: float} */

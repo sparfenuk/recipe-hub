@@ -17,6 +17,10 @@ class RecipeBrowser extends Component
 {
     use WithPagination;
 
+    private const PAGE_SIZE = 12;
+
+    public int $perPage = self::PAGE_SIZE;
+
     /** @var array<int> */
     public array $category_ids = [];
 
@@ -55,12 +59,12 @@ class RecipeBrowser extends Component
 
     public function updatedCategoryIds(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedCuisineIds(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function toggleCategory(int $id): void
@@ -68,7 +72,7 @@ class RecipeBrowser extends Component
         $this->category_ids = in_array($id, $this->category_ids, true)
             ? array_values(array_diff($this->category_ids, [$id]))
             : [...$this->category_ids, $id];
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function toggleCuisine(int $id): void
@@ -76,37 +80,37 @@ class RecipeBrowser extends Component
         $this->cuisine_ids = in_array($id, $this->cuisine_ids, true)
             ? array_values(array_diff($this->cuisine_ids, [$id]))
             : [...$this->cuisine_ids, $id];
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedMaxKcal(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedMaxPrepTime(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedDietTags(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedExcludeAllergens(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedSort(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedSearch(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     /** @param  array<int>  $ids */
@@ -118,7 +122,7 @@ class RecipeBrowser extends Component
             'exclude' => $this->exclude_ingredients = $ids,
             default => null,
         };
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function clearFilters(): void
@@ -134,6 +138,17 @@ class RecipeBrowser extends Component
         $this->sort = 'newest';
         $this->search = '';
         $this->dispatch('clear-ingredient-filters');
+        $this->resetView();
+    }
+
+    public function loadMore(): void
+    {
+        $this->perPage += self::PAGE_SIZE;
+    }
+
+    private function resetView(): void
+    {
+        $this->perPage = self::PAGE_SIZE;
         $this->resetPage();
     }
 
@@ -212,6 +227,6 @@ class RecipeBrowser extends Component
             ->when($this->search === '' && $this->sort === 'newest', fn ($q) => $q->orderByDesc('published_at'))
             ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderByRaw('COALESCE(ref_kcal_per_serving, kcal_per_serving) asc'))
             ->when($this->sort === 'shortest_prep', fn ($q) => $q->orderBy('prep_time_min'))
-            ->paginate(12);
+            ->paginate($this->perPage, ['*'], 'page', 1);
     }
 }

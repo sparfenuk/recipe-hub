@@ -64,6 +64,22 @@
     </section>
 
     {{-- Sections grid --}}
+    @php
+        $sectionTiles = [
+            ['slug' => 'breakfast',        'label' => 'book.section_breakfast', 'icon' => 'heroicon-o-sun',      'classes' => 'from-amber-100 to-amber-50 text-amber-800 ring-amber-200 hover:ring-amber-400'],
+            ['slug' => 'lunch',            'label' => 'book.section_lunch',     'icon' => 'heroicon-o-cake',     'classes' => 'from-emerald-100 to-emerald-50 text-emerald-800 ring-emerald-200 hover:ring-emerald-400'],
+            ['slug' => 'dinner',           'label' => 'book.section_dinner',    'icon' => 'heroicon-o-moon',     'classes' => 'from-indigo-100 to-indigo-50 text-indigo-800 ring-indigo-200 hover:ring-indigo-400'],
+            ['slug' => 'snacks',           'label' => 'book.section_snacks',    'icon' => 'heroicon-o-sparkles', 'classes' => 'from-rose-100 to-rose-50 text-rose-800 ring-rose-200 hover:ring-rose-400'],
+            ['slug' => 'smoothies',        'label' => 'book.section_smoothies', 'icon' => 'heroicon-o-beaker',   'classes' => 'from-lime-100 to-lime-50 text-lime-800 ring-lime-200 hover:ring-lime-400'],
+            ['slug' => 'ice-cream',        'label' => 'book.section_ice_cream', 'icon' => 'heroicon-o-cloud',    'classes' => 'from-sky-100 to-sky-50 text-sky-800 ring-sky-200 hover:ring-sky-400'],
+            ['slug' => 'desserts',         'label' => 'book.section_desserts',  'icon' => 'heroicon-o-heart',    'classes' => 'from-pink-100 to-pink-50 text-pink-800 ring-pink-200 hover:ring-pink-400'],
+            ['slug' => 'sauces-dressings', 'label' => 'book.section_sauces',    'icon' => 'heroicon-o-bolt',     'classes' => 'from-orange-100 to-orange-50 text-orange-800 ring-orange-200 hover:ring-orange-400'],
+        ];
+        $tileSlugs = array_column($sectionTiles, 'slug');
+        $categoryIdBySlug = \App\Models\Category::query()
+            ->whereIn('slug', $tileSlugs)
+            ->pluck('id', 'slug');
+    @endphp
     <section class="py-16">
         <div class="mx-auto max-w-7xl">
             <div class="mb-10 text-center">
@@ -76,38 +92,18 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                <a href="{{ route('recipes.index', ['category' => 'breakfast']) }}" class="group block rounded-2xl bg-gradient-to-br from-amber-100 to-amber-50 p-6 text-amber-800 ring-1 ring-inset ring-amber-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-amber-400">
-                    <x-heroicon-o-sun class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_breakfast') }}</div>
-                </a>
-                <a href="{{ route('recipes.index', ['category' => 'lunch']) }}" class="group block rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 p-6 text-emerald-800 ring-1 ring-inset ring-emerald-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-emerald-400">
-                    <x-heroicon-o-cake class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_lunch') }}</div>
-                </a>
-                <a href="{{ route('recipes.index', ['category' => 'dinner']) }}" class="group block rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-50 p-6 text-indigo-800 ring-1 ring-inset ring-indigo-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-indigo-400">
-                    <x-heroicon-o-moon class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_dinner') }}</div>
-                </a>
-                <a href="{{ route('recipes.index', ['category' => 'snacks']) }}" class="group block rounded-2xl bg-gradient-to-br from-rose-100 to-rose-50 p-6 text-rose-800 ring-1 ring-inset ring-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-rose-400">
-                    <x-heroicon-o-sparkles class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_snacks') }}</div>
-                </a>
-                <a href="{{ route('recipes.index', ['category' => 'smoothies']) }}" class="group block rounded-2xl bg-gradient-to-br from-lime-100 to-lime-50 p-6 text-lime-800 ring-1 ring-inset ring-lime-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-lime-400">
-                    <x-heroicon-o-beaker class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_smoothies') }}</div>
-                </a>
-                <a href="{{ route('recipes.index', ['category' => 'ice-cream']) }}" class="group block rounded-2xl bg-gradient-to-br from-sky-100 to-sky-50 p-6 text-sky-800 ring-1 ring-inset ring-sky-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-sky-400">
-                    <x-heroicon-o-cloud class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_ice_cream') }}</div>
-                </a>
-                <a href="{{ route('recipes.index', ['category' => 'desserts']) }}" class="group block rounded-2xl bg-gradient-to-br from-pink-100 to-pink-50 p-6 text-pink-800 ring-1 ring-inset ring-pink-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-pink-400">
-                    <x-heroicon-o-heart class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_desserts') }}</div>
-                </a>
-                <a href="{{ route('recipes.index', ['category' => 'sauces-dressings']) }}" class="group block rounded-2xl bg-gradient-to-br from-orange-100 to-orange-50 p-6 text-orange-800 ring-1 ring-inset ring-orange-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-orange-400">
-                    <x-heroicon-o-bolt class="h-8 w-8" />
-                    <div class="mt-4 text-lg font-bold tracking-tight">{{ __('book.section_sauces') }}</div>
-                </a>
+                @foreach ($sectionTiles as $tile)
+                    @php
+                        $categoryId = $categoryIdBySlug[$tile['slug']] ?? null;
+                        $tileHref = $categoryId
+                            ? route('recipes.index', ['categories' => [$categoryId]])
+                            : route('recipes.index');
+                    @endphp
+                    <a href="{{ $tileHref }}" class="group block rounded-2xl bg-gradient-to-br {{ $tile['classes'] }} p-6 ring-1 ring-inset transition-all hover:-translate-y-0.5 hover:shadow-md">
+                        <x-dynamic-component :component="$tile['icon']" class="h-8 w-8" />
+                        <div class="mt-4 text-lg font-bold tracking-tight">{{ __($tile['label']) }}</div>
+                    </a>
+                @endforeach
             </div>
         </div>
     </section>

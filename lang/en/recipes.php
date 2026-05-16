@@ -4,6 +4,8 @@ return [
 
     'catalog' => 'Recipes',
     'catalog_desc' => 'Browse our collection of curated recipes.',
+    'load_more' => 'Load more',
+    'loading_more' => 'Loading more recipes…',
     'filters' => 'Filters',
     'category' => 'Category',
     'cuisine' => 'Cuisine',

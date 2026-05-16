@@ -250,9 +250,45 @@
                     @endforeach
                 </div>
 
-                <div class="mt-8">
-                    {{ $recipes->links() }}
-                </div>
+                @if ($recipes->hasMorePages())
+                    <div
+                        x-data="{
+                            init() {
+                                const io = new IntersectionObserver((entries) => {
+                                    if (entries[0].isIntersecting) {
+                                        $wire.loadMore();
+                                    }
+                                }, { rootMargin: '300px 0px' });
+                                io.observe(this.$el);
+                                this.$cleanup = () => io.disconnect();
+                            },
+                        }"
+                        wire:loading.remove
+                        wire:target="loadMore"
+                        class="mt-10 flex justify-center"
+                    >
+                        <button
+                            type="button"
+                            wire:click="loadMore"
+                            class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+                        >
+                            <x-heroicon-o-arrow-down-circle class="h-4 w-4" />
+                            {{ __('recipes.load_more') }}
+                        </button>
+                    </div>
+
+                    <div
+                        wire:loading.flex
+                        wire:target="loadMore"
+                        class="mt-10 hidden items-center justify-center gap-2 text-sm text-slate-500"
+                    >
+                        <svg class="h-4 w-4 animate-spin text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                        {{ __('recipes.loading_more') }}
+                    </div>
+                @endif
             @endif
         </div>
     </div>

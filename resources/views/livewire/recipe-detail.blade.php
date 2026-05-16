@@ -114,11 +114,11 @@
 
                         <ul class="divide-y divide-slate-100">
                             @foreach ($ingredients as $ri)
-                                <li class="flex items-start gap-3 py-2.5 {{ $ri->is_optional ? 'opacity-60' : '' }}">
-                                    <span class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full {{ $ri->is_optional ? 'bg-slate-300' : 'bg-emerald-500' }}"></span>
+                                <li class="flex items-start gap-3 py-2.5">
+                                    <span class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500"></span>
                                     <div class="flex-1">
                                         <span class="font-medium text-slate-900">
-                                            @if ($ri->amount)
+                                            @if ((float) $ri->amount > 0)
                                                 {{ rtrim(rtrim(number_format((float) $ri->amount, 3), '0'), '.') }}
                                             @endif
                                             @if ($ri->unit)
@@ -128,9 +128,6 @@
                                         </span>
                                         @if ($ri->note)
                                             <span class="text-sm text-slate-500"> — {{ $ri->note }}</span>
-                                        @endif
-                                        @if ($ri->is_optional)
-                                            <span class="ml-1 text-xs text-slate-400">({{ __('recipes.optional') }})</span>
                                         @endif
                                     </div>
                                 </li>

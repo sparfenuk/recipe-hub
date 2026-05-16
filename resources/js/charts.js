@@ -23,7 +23,55 @@ export default function nutritionCharts(data) {
             const proteinKcal = Math.round(data.protein_g * 4);
             const fatKcal = Math.round(data.fat_g * 9);
             const carbsKcal = Math.round(data.carbs_g * 4);
-            const totalKcal = proteinKcal + fatKcal + carbsKcal;
+            const totalKcal = Math.round(data.total_kcal ?? proteinKcal + fatKcal + carbsKcal);
+
+            const macroKeys = ['protein_g', 'fat_g', 'carbs_g'];
+            const macroLabels = [data.labels.protein, data.labels.fat, data.labels.carbs];
+            const macroColors = ['#10b981', '#f59e0b', '#6366f1'];
+            const kcalPerGram = [4, 9, 4];
+
+            const escapeHtml = (str) =>
+                String(str).replace(/[&<>"']/g, (c) => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                }[c]));
+
+            const customTooltip = ({ seriesIndex }) => {
+                const macroKey = macroKeys[seriesIndex];
+                const macroLabel = macroLabels[seriesIndex];
+                const macroColor = macroColors[seriesIndex];
+                const totalGrams = data[macroKey];
+                const sliceKcal = Math.round(totalGrams * kcalPerGram[seriesIndex]);
+
+                const rows = (data.breakdown || [])
+                    .map((row) => ({ name: row.name, grams: row[macroKey] || 0 }))
+                    .filter((row) => row.grams > 0)
+                    .sort((a, b) => b.grams - a.grams);
+
+                const list = rows
+                    .map(
+                        (row) =>
+                            `<li style="display:flex;justify-content:space-between;gap:12px;padding:2px 0;">
+                                <span style="color:#475569;">${escapeHtml(row.name)}</span>
+                                <span style="color:#0f172a;font-weight:500;white-space:nowrap;">${row.grams.toFixed(1)}g</span>
+                            </li>`,
+                    )
+                    .join('');
+
+                return `
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;font-size:12px;min-width:200px;box-shadow:0 4px 12px rgba(15,23,42,0.08);">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                            <span style="display:inline-block;width:8px;height:8px;border-radius:9999px;background:${macroColor};"></span>
+                            <span style="font-weight:600;color:#0f172a;">${escapeHtml(macroLabel)}</span>
+                            <span style="margin-left:auto;color:#64748b;">${totalGrams.toFixed(1)}g · ${sliceKcal} ${escapeHtml(data.labels.kcal_unit)}</span>
+                        </div>
+                        ${rows.length ? `<ul style="list-style:none;margin:0;padding:0;">${list}</ul>` : ''}
+                    </div>
+                `;
+            };
 
             this.donutChart = new ApexCharts(this.$refs.donut, {
                 chart: {
@@ -32,8 +80,8 @@ export default function nutritionCharts(data) {
                     fontFamily: 'inherit',
                 },
                 series: [proteinKcal, fatKcal, carbsKcal],
-                labels: [data.labels.protein, data.labels.fat, data.labels.carbs],
-                colors: ['#10b981', '#f59e0b', '#6366f1'],
+                labels: macroLabels,
+                colors: macroColors,
                 plotOptions: {
                     pie: {
                         donut: {
@@ -59,9 +107,7 @@ export default function nutritionCharts(data) {
                     style: { fontSize: '11px' },
                 },
                 tooltip: {
-                    y: {
-                        formatter: (val) => val + ' ' + data.labels.kcal_unit,
-                    },
+                    custom: customTooltip,
                 },
                 stroke: { width: 2, colors: ['#fff'] },
             });
