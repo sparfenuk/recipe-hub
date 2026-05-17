@@ -179,8 +179,8 @@
                                 @if ((float) $item['amount'] > 0)
                                     <span class="font-semibold text-slate-900">{{ rtrim(rtrim(number_format($item['amount'], 1), '0'), '.') }}</span>
                                 @endif
-                                @if ($item['unit_code'])
-                                    <span class="text-slate-600">{{ $item['unit_code'] }}</span>
+                                @if ($item['unit_label'])
+                                    <span class="text-slate-600">{{ $item['unit_label'] }}</span>
                                 @endif
                                 <span class="text-slate-700">{{ $item['name'] }}</span>
                             </span>
@@ -208,19 +208,19 @@
                 <div class="h-px bg-slate-100"></div>
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-slate-600">{{ __('recipes.protein') }}</span>
-                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['protein_per_serving_g'], 1) }}g</span>
+                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['protein_per_serving_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-slate-600">{{ __('recipes.fat') }}</span>
-                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['fat_per_serving_g'], 1) }}g</span>
+                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['fat_per_serving_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-slate-600">{{ __('recipes.carbs') }}</span>
-                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['carbs_per_serving_g'], 1) }}g</span>
+                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['carbs_per_serving_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-slate-600">{{ __('recipes.fiber') }}</span>
-                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['fiber_per_serving_g'], 1) }}g</span>
+                    <span class="font-semibold text-slate-700">{{ number_format($nutrition['fiber_per_serving_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
             </div>
 
@@ -266,14 +266,14 @@
                                     <span class="text-xs font-medium text-slate-700 whitespace-nowrap">{{ number_format($row['kcal'], 0) }} {{ __('recipes.kcal') }}</span>
                                 </div>
                                 <div class="text-[11px] text-slate-500">
-                                    {{ __('recipes.protein') }} {{ number_format($row['protein_g'], 1) }}g
+                                    {{ __('recipes.protein') }} {{ number_format($row['protein_g'], 1) }}{{ __('recipes.g') }}
                                     <span class="text-slate-400">·</span>
-                                    {{ __('recipes.fat') }} {{ number_format($row['fat_g'], 1) }}g
+                                    {{ __('recipes.fat') }} {{ number_format($row['fat_g'], 1) }}{{ __('recipes.g') }}
                                     <span class="text-slate-400">·</span>
-                                    {{ __('recipes.carbs') }} {{ number_format($row['carbs_g'], 1) }}g
+                                    {{ __('recipes.carbs') }} {{ number_format($row['carbs_g'], 1) }}{{ __('recipes.g') }}
                                     @if ($row['fiber_g'] > 0)
                                         <span class="text-slate-400">·</span>
-                                        {{ __('recipes.fiber') }} {{ number_format($row['fiber_g'], 1) }}g
+                                        {{ __('recipes.fiber') }} {{ number_format($row['fiber_g'], 1) }}{{ __('recipes.g') }}
                                     @endif
                                 </div>
                             </li>
@@ -303,19 +303,19 @@
                 </div>
                 <div class="flex items-center justify-between text-slate-600">
                     <span>{{ __('recipes.protein') }}</span>
-                    <span class="font-medium">{{ number_format($nutrition['protein_g'], 1) }}g</span>
+                    <span class="font-medium">{{ number_format($nutrition['protein_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
                 <div class="flex items-center justify-between text-slate-600">
                     <span>{{ __('recipes.fat') }}</span>
-                    <span class="font-medium">{{ number_format($nutrition['fat_g'], 1) }}g</span>
+                    <span class="font-medium">{{ number_format($nutrition['fat_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
                 <div class="flex items-center justify-between text-slate-600">
                     <span>{{ __('recipes.carbs') }}</span>
-                    <span class="font-medium">{{ number_format($nutrition['carbs_g'], 1) }}g</span>
+                    <span class="font-medium">{{ number_format($nutrition['carbs_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
                 <div class="flex items-center justify-between text-slate-600">
                     <span>{{ __('recipes.fiber') }}</span>
-                    <span class="font-medium">{{ number_format($nutrition['fiber_g'], 1) }}g</span>
+                    <span class="font-medium">{{ number_format($nutrition['fiber_g'], 1) }}{{ __('recipes.g') }}</span>
                 </div>
             </div>
         </div>
@@ -336,6 +336,7 @@
                         'fat' => __('recipes.fat'),
                         'carbs' => __('recipes.carbs'),
                         'kcal_unit' => __('recipes.kcal'),
+                        'g_unit' => __('recipes.g'),
                         'actual' => __('calculator.actual'),
                         'target' => __('calculator.target'),
                     ],

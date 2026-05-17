@@ -39,6 +39,7 @@ return [
     'nutrition_total' => 'Entire recipe',
     'calories' => 'Calories',
     'kcal' => 'kcal',
+    'g' => 'g',
     'protein' => 'Protein',
     'fat' => 'Fat',
     'carbs' => 'Carbs',

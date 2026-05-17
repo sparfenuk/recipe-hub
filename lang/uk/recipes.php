@@ -39,6 +39,7 @@ return [
     'nutrition_total' => 'Весь рецепт',
     'calories' => 'Калорії',
     'kcal' => 'ккал',
+    'g' => 'г',
     'protein' => 'Білки',
     'fat' => 'Жири',
     'carbs' => 'Вуглеводи',

@@ -56,7 +56,7 @@ export default function nutritionCharts(data) {
                         (row) =>
                             `<li style="display:flex;justify-content:space-between;gap:12px;padding:2px 0;">
                                 <span style="color:#475569;">${escapeHtml(row.name)}</span>
-                                <span style="color:#0f172a;font-weight:500;white-space:nowrap;">${row.grams.toFixed(1)}g</span>
+                                <span style="color:#0f172a;font-weight:500;white-space:nowrap;">${row.grams.toFixed(1)}${escapeHtml(data.labels.g_unit)}</span>
                             </li>`,
                     )
                     .join('');
@@ -66,7 +66,7 @@ export default function nutritionCharts(data) {
                         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                             <span style="display:inline-block;width:8px;height:8px;border-radius:9999px;background:${macroColor};"></span>
                             <span style="font-weight:600;color:#0f172a;">${escapeHtml(macroLabel)}</span>
-                            <span style="margin-left:auto;color:#64748b;">${totalGrams.toFixed(1)}g · ${sliceKcal} ${escapeHtml(data.labels.kcal_unit)}</span>
+                            <span style="margin-left:auto;color:#64748b;">${totalGrams.toFixed(1)}${escapeHtml(data.labels.g_unit)} · ${sliceKcal} ${escapeHtml(data.labels.kcal_unit)}</span>
                         </div>
                         ${rows.length ? `<ul style="list-style:none;margin:0;padding:0;">${list}</ul>` : ''}
                     </div>
@@ -145,7 +145,7 @@ export default function nutritionCharts(data) {
                 },
                 yaxis: {
                     labels: {
-                        formatter: (val) => Math.round(val) + 'g',
+                        formatter: (val) => Math.round(val) + data.labels.g_unit,
                     },
                 },
                 colors: ['#10b981', '#cbd5e1'],

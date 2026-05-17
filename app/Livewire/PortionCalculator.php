@@ -165,7 +165,7 @@ class PortionCalculator extends Component
         return $this->recipe->recipeIngredients->map(fn (RecipeIngredient $ri): array => [
             'name' => $ri->ingredient?->name,
             'amount' => round((float) $ri->amount * $factor, 3),
-            'unit_code' => $ri->unit?->code,
+            'unit_label' => $ri->unit?->name,
             'note' => $ri->note,
             'is_optional' => (bool) $ri->is_optional,
             'group_label' => $ri->group_label,
