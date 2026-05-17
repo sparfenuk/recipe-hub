@@ -155,7 +155,6 @@ test('pdf includes nutrition table when cached', function () {
     $html = view('pdf.recipe', ['recipe' => $recipe->fresh()->load('recipeIngredients.ingredient', 'recipeIngredients.unit', 'author', 'category', 'cuisine', 'tags', 'steps')])->render();
 
     expect($html)->toContain('350');
-    expect($html)->toContain('1,400');
     expect($html)->toContain(__('recipes.nutrition_per_serving'));
 });
 

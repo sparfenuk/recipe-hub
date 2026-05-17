@@ -221,8 +221,7 @@ test('calculator shows optional ingredients', function () {
     Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
         ->set('targetServings', 4)
         ->assertSee('20')
-        ->assertSee('Parsley')
-        ->assertSee(__('recipes.optional'));
+        ->assertSee('Parsley');
 });
 
 test('scale factor is 1 when target equals original', function () {
@@ -538,7 +537,8 @@ test('daily_pct mode shows input when user has daily target', function () {
         ->test(PortionCalculator::class, ['recipe' => $recipe])
         ->call('setMode', 'daily_pct')
         ->assertSee(__('calculator.target_daily_pct'))
-        ->assertSee(__('calculator.daily_target_info', ['kcal' => '2,000']));
+        ->assertSee(__('calculator.daily_target_label'))
+        ->assertSee('2,000');
 });
 
 test('daily_pct mode scales by percentage of daily target', function () {

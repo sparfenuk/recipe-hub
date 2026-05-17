@@ -12,7 +12,6 @@ return [
     'kcal_placeholder' => 'e.g. :kcal',
     'daily_pct_placeholder' => 'e.g. 30',
     'original_kcal' => 'Original recipe: :kcal kcal',
-    'daily_target_info' => 'Your daily target: :kcal kcal',
     'daily_target_label' => 'Daily target',
     'daily_target_equals' => ':pct% = :kcal kcal',
     'daily_pct_no_target' => 'Set your daily calorie target to use this mode.',

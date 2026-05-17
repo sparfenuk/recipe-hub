@@ -305,6 +305,7 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Test path overridable via static `RecipeSeeder::$dataPathOverride` and `$imagesRootOverride`. Small 3-recipe fixture (`tests/fixtures/recipes-seed-sample.json`) + tiny 1x1 placeholder PNG enable fast, deterministic Pest coverage.
   - Wired into `DatabaseSeeder` after the admin user is created. First production run reports `created 160, skipped 1, missing images 0`.
   - 7 new Pest tests (508 total, 1400 assertions): bilingual fields, hero attachment, graceful missing-image, bilingual steps, idempotency, taste-unit fallback, no-admin error path. Pint / Larastan green.
+  - **2026-05-17 follow-up:** `DatabaseSeeder` now also runs `ingredients:enrich` (populates `ingredient_allergen` pivot from `allergen-rules.json`) and `recipes:auto-tag` (populates `recipe_tag` from `diet-rules.json`) after `RecipeSeeder`, so a fresh `db:seed` produces a fully populated filter sidebar on `/recipes` without manual post-processing. Both commands are idempotent (`syncWithoutDetaching`). Extracted a small `runArtisan()` helper to share the call+echo boilerplate with the pre-existing `ingredients:apply-overrides` invocation.
 
 - [x] **L3.11 — Translatable content infrastructure** *(completed 2026-05-14)*
   - `spatie/laravel-translatable` + `filament/spatie-laravel-translatable-plugin` installed.
@@ -483,14 +484,24 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Test exception captured.
   - Source maps uploaded on deploy.
 
-- [ ] **L5.8 — Forge provisioning**
-  - VPS provisioned (Hetzner CPX21 or equivalent).
-  - Forge sites created: staging + production, separate databases.
-  - MeiliSearch installed as Forge daemon, bound to `127.0.0.1`.
-  - Horizon daemon configured.
-  - SSL via Forge's Let's Encrypt.
-  - UFW firewall: 22/80/443 only.
-  - Server timezone `UTC`.
+- [~] **L5.8 — VPS provisioning** *(in progress 2026-05-17 — managed via Ploi.io instead of Forge)*
+  - [x] VPS provisioned: Hetzner CX23, Ubuntu 24.04, IP `91.98.200.250`, managed by Ploi.io (panel at ploi.io). Deviation from spec: Ploi chosen over Forge.
+  - [x] Production site live at `hubrecipe.com`. Site dir `/home/ploi/hubrecipe.com`, web root `/home/ploi/hubrecipe.com/public`, system user `ploi`.
+  - [x] Nginx + PHP-FPM 8.4 (LSAPI). MySQL 8 + Redis 7 on `127.0.0.1`.
+  - [x] SSL: Let's Encrypt on origin + Cloudflare in front (Full strict; currently DNS-only mode during setup, will flip to proxied once verified).
+  - [x] Code deployed: `composer install --no-dev --optimize-autoloader`, `npm ci && npm run build`. `APP_KEY` generated. `.env` configured (DB, Redis, `FILESYSTEM_DISK=public`, `MAIL_MAILER=resend`, `SCOUT_DRIVER=database` as temporary fallback).
+  - [x] DB migrated + fully seeded: 6,321 USDA ingredients, 160 recipes (RecipeSeeder), admin user, all taxonomies.
+  - [x] `php artisan storage:link` run; `storage/` + `bootstrap/cache/` chowned `ploi:ploi` and chmod 775.
+  - [x] Recipe hero images: SFTP-uploaded the local `storage/app/public/{id}/…` tree, then imported a `mysqldump` of the local `media` table to repopulate the empty `media` table on prod (RecipeSeeder reports "missing images N" when `pdf_pages/` isn't on the server, so no `media` rows are created on a fresh prod seed — fixed for next cycle by the L3.12 follow-up above + uploading `pdf_pages/` alongside code).
+  - [x] Diet-tag + allergen filters on `/recipes`: fixed by running `ingredients:enrich` + `recipes:auto-tag` on prod; permanent fix landed by wiring both into `DatabaseSeeder` (see L3.12 follow-up).
+  - [x] Resend API key installed for transactional mail (verified domain).
+  - [x] First-install + per-deploy command checklists drafted (see deploy notes). Filament-specific: `make:filament-user`, `filament:upgrade`, `filament:optimize` documented for the deploy script.
+  - [ ] **Pending:** MeiliSearch installed and bound to `127.0.0.1` (currently `SCOUT_DRIVER=database`; flip + `scout:import` once installed).
+  - [ ] **Pending:** Horizon daemon running under Ploi process supervisor (`php artisan horizon`, user `ploi`). Nutrition recompute jobs piling up until this is started.
+  - [ ] **Pending:** Schedule cron registered (`* * * * * php artisan schedule:run`) for `audits:prune` etc.
+  - [ ] **Pending:** Staging site (only production exists; spec calls for separate staging + production databases).
+  - [ ] **Pending:** UFW firewall verified (22/80/443 only) and server timezone confirmed `UTC`.
+  - [ ] **Pending:** Cuisine filter on `/recipes` is still empty on prod — `recipes.cuisine_id` is null because `RecipeSeeder` doesn't populate it. Either add `"cuisine"` to `recipes.json` and wire resolution in the seeder, or dump local cuisine assignments.
 
 - [ ] **L5.9 — First staging deploy + smoke test**
   - Push to `develop` triggers staging deploy.

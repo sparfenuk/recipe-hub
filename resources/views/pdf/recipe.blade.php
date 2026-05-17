@@ -219,7 +219,7 @@
 
     <table class="header-table">
         <tr>
-            @if ($heroDataUri)
+            @if ($heroDataUri ?? null)
                 <td class="hero-cell">
                     <img src="{{ $heroDataUri }}" alt="" class="hero">
                 </td>

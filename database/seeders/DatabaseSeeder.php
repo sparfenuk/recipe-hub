@@ -33,7 +33,14 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RecipeSeeder::class);
 
-        Artisan::call('ingredients:apply-overrides');
+        $this->runArtisan('ingredients:apply-overrides');
+        $this->runArtisan('ingredients:enrich');
+        $this->runArtisan('recipes:auto-tag');
+    }
+
+    private function runArtisan(string $command): void
+    {
+        Artisan::call($command);
         $this->command->getOutput()->writeln(Artisan::output());
     }
 }

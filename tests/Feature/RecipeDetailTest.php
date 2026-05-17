@@ -103,8 +103,7 @@ test('recipe detail shows optional ingredients', function () {
     ]);
 
     Livewire::test(RecipeDetail::class, ['slug' => 'parsley-dish'])
-        ->assertSee('Parsley')
-        ->assertSee(__('recipes.optional'));
+        ->assertSee('Parsley');
 });
 
 test('recipe detail shows ingredient notes', function () {

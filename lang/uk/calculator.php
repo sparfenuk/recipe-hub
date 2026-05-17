@@ -12,7 +12,6 @@ return [
     'kcal_placeholder' => 'напр. :kcal',
     'daily_pct_placeholder' => 'напр. 30',
     'original_kcal' => 'Оригінальний рецепт: :kcal ккал',
-    'daily_target_info' => 'Ваша денна норма: :kcal ккал',
     'daily_target_label' => 'Денна норма',
     'daily_target_equals' => ':pct% = :kcal ккал',
     'daily_pct_no_target' => 'Встановіть денну норму калорій, щоб використовувати цей режим.',
