@@ -3,8 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RecipeResource\Pages;
+use App\Models\Category;
+use App\Models\Cuisine;
 use App\Models\Ingredient;
 use App\Models\Recipe;
+use App\Models\Tag;
 use App\Models\Unit;
 use Carbon\Carbon;
 use Filament\Forms\Components\Fieldset;
@@ -18,6 +21,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
@@ -37,6 +41,8 @@ use Illuminate\Support\Str;
 
 class RecipeResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Recipe::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
@@ -71,13 +77,15 @@ class RecipeResource extends Resource
                             ->columnSpanFull(),
                         Select::make('category_id')
                             ->label('Category')
-                            ->relationship('category', 'name')
+                            ->relationship('category', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->name)
                             ->searchable()
                             ->preload()
                             ->nullable(),
                         Select::make('cuisine_id')
                             ->label('Cuisine')
-                            ->relationship('cuisine', 'name')
+                            ->relationship('cuisine', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Cuisine $record): string => $record->name)
                             ->searchable()
                             ->preload()
                             ->nullable(),
@@ -145,7 +153,24 @@ class RecipeResource extends Resource
                             ->schema([
                                 Select::make('ingredient_id')
                                     ->label('Ingredient')
-                                    ->relationship('ingredient', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
+                                    ->relationship(
+                                        name: 'ingredient',
+                                        titleAttribute: 'slug',
+                                        modifyQueryUsing: fn ($query) => $query->where('is_active', true)
+                                            ->orderBy('name->'.app()->getLocale()),
+                                    )
+                                    ->getOptionLabelFromRecordUsing(fn (Ingredient $record): string => $record->name)
+                                    ->getSearchResultsUsing(fn (string $search): array => Ingredient::query()
+                                        ->where('is_active', true)
+                                        ->where(function ($q) use ($search): void {
+                                            $q->where('name->en', 'like', "%{$search}%")
+                                                ->orWhere('name->uk', 'like', "%{$search}%");
+                                        })
+                                        ->orderBy('name->'.app()->getLocale())
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(fn (Ingredient $i): array => [$i->id => $i->name])
+                                        ->all())
                                     ->searchable()
                                     ->preload(false)
                                     ->required()
@@ -158,8 +183,10 @@ class RecipeResource extends Resource
                                 Select::make('unit_id')
                                     ->label('Unit')
                                     ->options(fn () => Unit::query()
-                                        ->orderBy('name')
-                                        ->pluck('name', 'id'))
+                                        ->orderBy('code')
+                                        ->get()
+                                        ->mapWithKeys(fn (Unit $u) => [$u->id => $u->name])
+                                        ->all())
                                     ->searchable()
                                     ->required(),
                                 TextInput::make('note')
@@ -213,7 +240,8 @@ class RecipeResource extends Resource
                 Section::make('Tags')
                     ->schema([
                         Select::make('tags')
-                            ->relationship('tags', 'name')
+                            ->relationship('tags', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Tag $record): string => $record->name)
                             ->multiple()
                             ->preload()
                             ->searchable(),
@@ -285,8 +313,13 @@ class RecipeResource extends Resource
                     ->defaultImageUrl(url('/images/recipe-placeholder.svg'))
                     ->label(''),
                 TextColumn::make('title')
-                    ->searchable()
-                    ->sortable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where(function (Builder $q) use ($search): void {
+                            $q->where('title->en', 'like', "%{$search}%")
+                                ->orWhere('title->uk', 'like', "%{$search}%");
+                        });
+                    })
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('title->'.app()->getLocale(), $direction))
                     ->limit(40),
                 TextColumn::make('status')
                     ->badge()
@@ -301,12 +334,10 @@ class RecipeResource extends Resource
                 TextColumn::make('category.name')
                     ->label('Category')
                     ->placeholder('--')
-                    ->sortable()
                     ->toggleable(),
                 TextColumn::make('cuisine.name')
                     ->label('Cuisine')
                     ->placeholder('--')
-                    ->sortable()
                     ->toggleable(),
                 TextColumn::make('kcal_per_serving')
                     ->label('kcal/srv')
@@ -349,12 +380,14 @@ class RecipeResource extends Resource
                     ]),
                 SelectFilter::make('category_id')
                     ->label('Category')
-                    ->relationship('category', 'name')
+                    ->relationship('category', 'slug')
+                    ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->name)
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('cuisine_id')
                     ->label('Cuisine')
-                    ->relationship('cuisine', 'name')
+                    ->relationship('cuisine', 'slug')
+                    ->getOptionLabelFromRecordUsing(fn (Cuisine $record): string => $record->name)
                     ->searchable()
                     ->preload(),
             ])
@@ -411,12 +444,17 @@ class RecipeResource extends Resource
         $recipe->loadMissing('recipeIngredients', 'steps', 'tags', 'media');
 
         $clone = $recipe->replicate();
-        $clone->title = $recipe->title.' (Copy)';
+
+        foreach ($recipe->getTranslations('title') as $locale => $value) {
+            $clone->setTranslation('title', $locale, $value.' (Copy)');
+        }
+
         $clone->status = 'draft';
         $clone->published_at = null;
         $clone->nutrition_cached_at = null;
 
-        $baseSlug = Str::slug($clone->title);
+        $baseSlug = Str::slug($recipe->getTranslation('title', 'en', false) ?: $recipe->getTranslation('title', 'uk'));
+        $baseSlug = $baseSlug !== '' ? $baseSlug.'-copy' : 'copy';
         $slug = $baseSlug;
         $counter = 1;
 
@@ -435,7 +473,10 @@ class RecipeResource extends Resource
         }
 
         foreach ($recipe->steps as $step) {
-            $clone->steps()->create($step->only(['position', 'body']));
+            $clone->steps()->create([
+                'position' => $step->position,
+                'body' => $step->getTranslations('body'),
+            ]);
         }
 
         $clone->tags()->sync($recipe->tags->pluck('id'));

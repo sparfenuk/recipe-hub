@@ -10,22 +10,22 @@ class IngredientCategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['slug' => 'vegetables', 'name' => 'Vegetables'],
-            ['slug' => 'fruits', 'name' => 'Fruits'],
-            ['slug' => 'grains-cereals', 'name' => 'Grains & Cereals'],
-            ['slug' => 'dairy', 'name' => 'Dairy & Eggs'],
-            ['slug' => 'meat', 'name' => 'Meat'],
-            ['slug' => 'poultry', 'name' => 'Poultry'],
-            ['slug' => 'seafood', 'name' => 'Seafood'],
-            ['slug' => 'legumes', 'name' => 'Legumes'],
-            ['slug' => 'nuts-seeds', 'name' => 'Nuts & Seeds'],
-            ['slug' => 'herbs-spices', 'name' => 'Herbs & Spices'],
-            ['slug' => 'oils-fats', 'name' => 'Oils & Fats'],
-            ['slug' => 'sweeteners', 'name' => 'Sweeteners'],
-            ['slug' => 'condiments-sauces', 'name' => 'Condiments & Sauces'],
-            ['slug' => 'beverages', 'name' => 'Beverages'],
-            ['slug' => 'baking', 'name' => 'Baking & Leavening'],
-            ['slug' => 'other', 'name' => 'Other'],
+            ['slug' => 'vegetables', 'name' => ['en' => 'Vegetables', 'uk' => 'Овочі']],
+            ['slug' => 'fruits', 'name' => ['en' => 'Fruits', 'uk' => 'Фрукти']],
+            ['slug' => 'grains-cereals', 'name' => ['en' => 'Grains & Cereals', 'uk' => 'Крупи та зернові']],
+            ['slug' => 'dairy', 'name' => ['en' => 'Dairy & Eggs', 'uk' => 'Молочні продукти та яйця']],
+            ['slug' => 'meat', 'name' => ['en' => 'Meat', 'uk' => 'М’ясо']],
+            ['slug' => 'poultry', 'name' => ['en' => 'Poultry', 'uk' => 'Птиця']],
+            ['slug' => 'seafood', 'name' => ['en' => 'Seafood', 'uk' => 'Морепродукти']],
+            ['slug' => 'legumes', 'name' => ['en' => 'Legumes', 'uk' => 'Бобові']],
+            ['slug' => 'nuts-seeds', 'name' => ['en' => 'Nuts & Seeds', 'uk' => 'Горіхи та насіння']],
+            ['slug' => 'herbs-spices', 'name' => ['en' => 'Herbs & Spices', 'uk' => 'Трави та спеції']],
+            ['slug' => 'oils-fats', 'name' => ['en' => 'Oils & Fats', 'uk' => 'Олії та жири']],
+            ['slug' => 'sweeteners', 'name' => ['en' => 'Sweeteners', 'uk' => 'Підсолоджувачі']],
+            ['slug' => 'condiments-sauces', 'name' => ['en' => 'Condiments & Sauces', 'uk' => 'Приправи та соуси']],
+            ['slug' => 'beverages', 'name' => ['en' => 'Beverages', 'uk' => 'Напої']],
+            ['slug' => 'baking', 'name' => ['en' => 'Baking & Leavening', 'uk' => 'Випічка та розпушувачі']],
+            ['slug' => 'other', 'name' => ['en' => 'Other', 'uk' => 'Інше']],
         ];
 
         foreach ($categories as $category) {

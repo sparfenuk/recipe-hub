@@ -6,17 +6,21 @@ use App\Models\CalculatorSession;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Models\User;
+use App\Services\Nutrition\UnitConverter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Throwable;
 
 /**
  * @property-read int|null $dailyKcalTarget
  * @property-read bool $isScaled
  * @property-read array{protein_g: float, fat_g: float, carbs_g: float}|null $macroTargets
+ * @property-read Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}> $ingredientBreakdown
+ * @property-read Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}> $ingredientBreakdownTotal
  */
 class PortionCalculator extends Component
 {
@@ -77,9 +81,25 @@ class PortionCalculator extends Component
         return $this->targetServings / $this->originalServings;
     }
 
+    /**
+     * Per-recipe total kcal as displayed to the reader. Uses cookbook reference values
+     * (ref_*) when present so scaling math stays consistent with the on-page numbers;
+     * falls back to ingredient-computed cache when no reference is set.
+     */
+    private function displayTotalKcal(): float
+    {
+        $servings = max($this->originalServings, 1);
+
+        if ($this->recipe->ref_kcal_per_serving !== null) {
+            return (float) $this->recipe->ref_kcal_per_serving * $servings;
+        }
+
+        return (float) $this->recipe->total_kcal;
+    }
+
     private function kcalScaleFactor(): float
     {
-        $totalKcal = (float) $this->recipe->total_kcal;
+        $totalKcal = $this->displayTotalKcal();
 
         if (! $this->targetKcal || $this->targetKcal <= 0 || $totalKcal <= 0) {
             return 1.0;
@@ -96,7 +116,7 @@ class PortionCalculator extends Component
             return 1.0;
         }
 
-        $totalKcal = (float) $this->recipe->total_kcal;
+        $totalKcal = $this->displayTotalKcal();
 
         if ($totalKcal <= 0) {
             return 1.0;
@@ -152,6 +172,77 @@ class PortionCalculator extends Component
         ]);
     }
 
+    /**
+     * Per-serving nutrition contribution per ingredient, matching the semantics of
+     * scaledNutrition's *_per_serving values (servings mode = intrinsic, kcal/daily_pct
+     * modes = scaled by factor).
+     *
+     * @return Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}>
+     */
+    #[Computed]
+    public function ingredientBreakdown(): Collection
+    {
+        $servings = max($this->originalServings, 1);
+        $perServingFactor = ($this->mode === 'servings' ? 1.0 : $this->scaleFactor()) / $servings;
+
+        return $this->computeIngredientBreakdown($perServingFactor);
+    }
+
+    /**
+     * Total (scaled-recipe) nutrition contribution per ingredient — matches the totals
+     * shown in the macro split chart, so tooltips can attribute slices back to ingredients.
+     *
+     * @return Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}>
+     */
+    #[Computed]
+    public function ingredientBreakdownTotal(): Collection
+    {
+        return $this->computeIngredientBreakdown($this->scaleFactor());
+    }
+
+    /**
+     * @return Collection<int, array{name: string, kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float}>
+     */
+    private function computeIngredientBreakdown(float $factor): Collection
+    {
+        $this->recipe->loadMissing('recipeIngredients.ingredient', 'recipeIngredients.unit');
+
+        return $this->recipe->recipeIngredients
+            ->map(function (RecipeIngredient $ri) use ($factor): ?array {
+                $ingredient = $ri->ingredient;
+
+                if ($ingredient === null || $ri->unit === null || $ri->is_optional) {
+                    return null;
+                }
+
+                try {
+                    $grams = $ri->grams_override !== null
+                        ? (float) $ri->grams_override
+                        : UnitConverter::toGrams(
+                            (float) $ri->amount,
+                            $ri->unit,
+                            $ingredient->density_g_per_ml !== null ? (float) $ingredient->density_g_per_ml : null,
+                            $ingredient->piece_weight_g !== null ? (float) $ingredient->piece_weight_g : null,
+                        );
+                } catch (Throwable) {
+                    return null;
+                }
+
+                $per100 = $grams * $factor / 100;
+
+                return [
+                    'name' => $ingredient->name,
+                    'kcal' => round($per100 * (float) ($ingredient->kcal_per_100g ?? 0), 1),
+                    'protein_g' => round($per100 * (float) ($ingredient->protein_g ?? 0), 1),
+                    'fat_g' => round($per100 * (float) ($ingredient->fat_g ?? 0), 1),
+                    'carbs_g' => round($per100 * (float) ($ingredient->carbs_g ?? 0), 1),
+                    'fiber_g' => round($per100 * (float) ($ingredient->fiber_g ?? 0), 1),
+                ];
+            })
+            ->filter(fn (?array $row): bool => $row !== null && $row['kcal'] > 0)
+            ->values();
+    }
+
     /** @return array{kcal: float, protein_g: float, fat_g: float, carbs_g: float, fiber_g: float, kcal_per_serving: float, protein_per_serving_g: float, fat_per_serving_g: float, carbs_per_serving_g: float, fiber_per_serving_g: float} */
     #[Computed]
     public function scaledNutrition(): array
@@ -159,38 +250,49 @@ class PortionCalculator extends Component
         $factor = $this->scaleFactor();
         $servings = max($this->originalServings, 1);
 
-        $totalKcal = round((float) $this->recipe->total_kcal * $factor, 2);
-        $totalProtein = round((float) $this->recipe->total_protein_g * $factor, 2);
-        $totalFat = round((float) $this->recipe->total_fat_g * $factor, 2);
-        $totalCarbs = round((float) $this->recipe->total_carbs_g * $factor, 2);
-        $totalFiber = round((float) $this->recipe->total_fiber_g * $factor, 2);
+        // Display source: cookbook reference (ref_*) when seeded, else ingredient cache.
+        // Fiber has no PDF reference so always falls through to computed.
+        $kcalPS = (float) ($this->recipe->display_kcal_per_serving ?? 0);
+        $proteinPS = (float) ($this->recipe->display_protein_per_serving_g ?? 0);
+        $fatPS = (float) ($this->recipe->display_fat_per_serving_g ?? 0);
+        $carbsPS = (float) ($this->recipe->display_carbs_per_serving_g ?? 0);
+        $fiberPS = (float) ($this->recipe->fiber_per_serving_g ?? 0);
+
+        $totalKcal = round($kcalPS * $servings * $factor, 2);
+        $totalProtein = round($proteinPS * $servings * $factor, 2);
+        $totalFat = round($fatPS * $servings * $factor, 2);
+        $totalCarbs = round($carbsPS * $servings * $factor, 2);
+        $totalFiber = round($fiberPS * $servings * $factor, 2);
 
         if ($this->mode === 'servings') {
+            // Per-serving values are intrinsic to the recipe — they don't change when the
+            // reader asks for more or fewer servings, only the totals do.
             return [
                 'kcal' => $totalKcal,
                 'protein_g' => $totalProtein,
                 'fat_g' => $totalFat,
                 'carbs_g' => $totalCarbs,
                 'fiber_g' => $totalFiber,
-                'kcal_per_serving' => round((float) ($this->recipe->kcal_per_serving ?? 0), 2),
-                'protein_per_serving_g' => round((float) ($this->recipe->protein_per_serving_g ?? 0), 2),
-                'fat_per_serving_g' => round((float) ($this->recipe->fat_per_serving_g ?? 0), 2),
-                'carbs_per_serving_g' => round((float) ($this->recipe->carbs_per_serving_g ?? 0), 2),
-                'fiber_per_serving_g' => round((float) ($this->recipe->fiber_per_serving_g ?? 0), 2),
+                'kcal_per_serving' => round($kcalPS, 2),
+                'protein_per_serving_g' => round($proteinPS, 2),
+                'fat_per_serving_g' => round($fatPS, 2),
+                'carbs_per_serving_g' => round($carbsPS, 2),
+                'fiber_per_serving_g' => round($fiberPS, 2),
             ];
         }
 
+        // kcal / daily_pct modes shrink the whole recipe, so per-serving values scale too.
         return [
             'kcal' => $totalKcal,
             'protein_g' => $totalProtein,
             'fat_g' => $totalFat,
             'carbs_g' => $totalCarbs,
             'fiber_g' => $totalFiber,
-            'kcal_per_serving' => round($totalKcal / $servings, 2),
-            'protein_per_serving_g' => round($totalProtein / $servings, 2),
-            'fat_per_serving_g' => round($totalFat / $servings, 2),
-            'carbs_per_serving_g' => round($totalCarbs / $servings, 2),
-            'fiber_per_serving_g' => round($totalFiber / $servings, 2),
+            'kcal_per_serving' => round($kcalPS * $factor, 2),
+            'protein_per_serving_g' => round($proteinPS * $factor, 2),
+            'fat_per_serving_g' => round($fatPS * $factor, 2),
+            'carbs_per_serving_g' => round($carbsPS * $factor, 2),
+            'fiber_per_serving_g' => round($fiberPS * $factor, 2),
         ];
     }
 

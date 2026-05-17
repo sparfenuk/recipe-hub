@@ -50,7 +50,8 @@ test('recipe creation generates audit record', function () {
         ->first();
 
     expect($audit)->not->toBeNull()
-        ->and($audit->new_values)->toHaveKey('title', 'Test Recipe');
+        ->and($audit->new_values)->toHaveKey('title')
+        ->and(json_decode((string) $audit->new_values['title'], true))->toMatchArray(['en' => 'Test Recipe']);
 });
 
 test('recipe update generates audit with old and new values', function () {
@@ -64,8 +65,10 @@ test('recipe update generates audit with old and new values', function () {
         ->first();
 
     expect($audit)->not->toBeNull()
-        ->and($audit->old_values)->toHaveKey('title', 'Old Title')
-        ->and($audit->new_values)->toHaveKey('title', 'New Title');
+        ->and($audit->old_values)->toHaveKey('title')
+        ->and($audit->new_values)->toHaveKey('title')
+        ->and(json_decode((string) $audit->old_values['title'], true))->toMatchArray(['en' => 'Old Title'])
+        ->and(json_decode((string) $audit->new_values['title'], true))->toMatchArray(['en' => 'New Title']);
 });
 
 test('recipe soft delete generates audit', function () {
@@ -140,16 +143,16 @@ test('taxonomy models generate audits', function () {
 });
 
 test('taxonomy update generates audit', function () {
-    $category = Category::create(['slug' => 'soup', 'name' => 'Soup']);
-    $category->update(['name' => 'Soups & Stews']);
+    $category = Category::create(['slug' => 'soup', 'name' => ['en' => 'Soup', 'uk' => 'Суп']]);
+    $category->update(['name' => ['en' => 'Soups & Stews', 'uk' => 'Супи та рагу']]);
 
     $audit = Audit::where('auditable_type', Category::class)
         ->where('event', 'updated')
         ->first();
 
     expect($audit)->not->toBeNull()
-        ->and($audit->old_values)->toHaveKey('name', 'Soup')
-        ->and($audit->new_values)->toHaveKey('name', 'Soups & Stews');
+        ->and(json_decode((string) $audit->old_values['name'], true))->toMatchArray(['en' => 'Soup', 'uk' => 'Суп'])
+        ->and(json_decode((string) $audit->new_values['name'], true))->toMatchArray(['en' => 'Soups & Stews', 'uk' => 'Супи та рагу']);
 });
 
 test('admin can access audit log page', function () {

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -29,5 +30,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
         $admin->assignRole('admin');
+
+        $this->call(RecipeSeeder::class);
+
+        Artisan::call('ingredients:apply-overrides');
+        $this->command->getOutput()->writeln(Artisan::output());
     }
 }

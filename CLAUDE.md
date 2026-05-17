@@ -11,7 +11,7 @@ Full spec: `docs/spec.md`. Task checklist: `docs/plan.md` (read it to find the n
 
 ## Tech stack (locked)
 
-Laravel 12, PHP 8.5, Livewire 3 + Alpine.js 3 + Tailwind CSS 4 + Flux UI, Filament 3 (EN-only), MySQL 8, Redis 7 + Horizon, MeiliSearch via Scout, Fortify + Sanctum (no social login), spatie/laravel-medialibrary, Sail, Laravel Forge VPS. i18n: EN + UK, UI strings only, locale via cookie (no DB column). Content is English-only. UTC everywhere. Ingredients seeded from USDA FoodData Central.
+Laravel 12, PHP 8.5, Livewire 3 + Alpine.js 3 + Tailwind CSS 4 + Flux UI, Filament 3, MySQL 8, Redis 7 + Horizon, MeiliSearch via Scout, Fortify + Sanctum (no social login), spatie/laravel-medialibrary, spatie/laravel-translatable, Sail, Laravel Forge VPS. i18n: EN + UK (UK primary, EN fallback), locale via cookie (no DB column), translatable content stored as JSON columns. UTC everywhere. Ingredients seeded from USDA FoodData Central.
 
 Do not change stack choices without updating `docs/spec.md` section 17.
 
@@ -41,7 +41,6 @@ sail test                   # Pest
 - Touch global git config. Identity is repo-local only.
 - Install host-side PHP/Composer. Everything runs in Sail.
 - Destructive git (`reset --hard`, `push --force`, `clean -fd`, branch delete) without instruction.
-- Add `spatie/laravel-translatable` or per-locale content columns. Content is EN-only.
 - Store non-UTC timestamps.
 
 ## Out of scope (MVP)

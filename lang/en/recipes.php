@@ -4,6 +4,8 @@ return [
 
     'catalog' => 'Recipes',
     'catalog_desc' => 'Browse our collection of curated recipes.',
+    'load_more' => 'Load more',
+    'loading_more' => 'Loading more recipes…',
     'filters' => 'Filters',
     'category' => 'Category',
     'cuisine' => 'Cuisine',
@@ -53,5 +55,6 @@ return [
     'exclude_ingredients' => 'Without ingredients',
     'ingredient_search_placeholder' => 'Search ingredients...',
     'no_ingredients_found' => 'No ingredients found.',
+    'selected_count' => '{1} :count selected|[2,*] :count selected',
 
 ];

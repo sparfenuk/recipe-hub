@@ -291,6 +291,45 @@ If you can't tick all four, the task isn't done — keep going or split off a fo
   - Search bar in catalog header → filters list to matching recipes.
   - Pest test: search returns expected recipe.
 
+- [x] **L3.12 — Recipe fixtures from PDF source** *(completed 2026-05-14)*
+  - `RecipeSeeder` loads `database/seeders/data/recipes.json` (161 recipes derived from the source PDF) and creates bilingual UK/EN recipes with localized titles, summaries, descriptions, and step bodies.
+  - Source `category` slugs (`breakfast`, `dessert`, `smoothie`, etc.) mapped to the existing `CategorySeeder` taxonomy with fallback `firstOrCreate` (auto-creating `smoothies`, `ice-cream`, `secret`).
+  - Source unit strings (`г`, `мл`, `ст. л.`, `ч. л.`, `зубчик`, `за смаком`, etc.) mapped to the seeded `Unit` codes. Decorative / optional unit values (`для подачі`, `для прикраси`, `кілька крапель`, etc.) collapse to the new `taste` unit and mark the row `is_optional=true`.
+  - Ingredient matching: exact-name match against `ingredients.name` (case-insensitive), then `ingredient_aliases.alias`. Misses log to `storage/logs/recipe-seed-{date}.log` and a stub Ingredient is created with `source = "RecipeSeeder fixture (no USDA match)"` so the recipe still loads.
+  - Defensive guard: rows whose unit + ingredient pair would crash `UnitConverter::toGrams` (count units on stub ingredients without `piece_weight_g`, volume units on ingredients without `density_g_per_ml`) are seeded as `is_optional=true` so `NutritionCalculator` skips them and the recipe still gets a partial nutrition cache.
+  - Prep / cook times derived heuristically by scanning step text for `хв|мін|min|hour|год` matches; clamped to 5-180 min total and split ⅓ prep / ⅔ cook.
+  - Hero image attached from `pdf_pages/plate_only/{slug}.png` via spatie/medialibrary when the file exists. Missing images are counted and reported but do not fail the seed (`pdf_pages/` is gitignored and absent in CI).
+  - Author = first user with the `admin` role; seeder throws a clear `RuntimeException` if none exists.
+  - Each recipe wrapped in `DB::transaction` so a partial failure rolls back cleanly and the next idempotent re-run continues from where it left off.
+  - Idempotent: re-runs skip recipes whose slug already exists. Page 176 "Pina Colada" is skipped because page 164 already created that slug — to be differentiated by hand in Filament.
+  - Test path overridable via static `RecipeSeeder::$dataPathOverride` and `$imagesRootOverride`. Small 3-recipe fixture (`tests/fixtures/recipes-seed-sample.json`) + tiny 1x1 placeholder PNG enable fast, deterministic Pest coverage.
+  - Wired into `DatabaseSeeder` after the admin user is created. First production run reports `created 160, skipped 1, missing images 0`.
+  - 7 new Pest tests (508 total, 1400 assertions): bilingual fields, hero attachment, graceful missing-image, bilingual steps, idempotency, taste-unit fallback, no-admin error path. Pint / Larastan green.
+
+- [x] **L3.11 — Translatable content infrastructure** *(completed 2026-05-14)*
+  - `spatie/laravel-translatable` + `filament/spatie-laravel-translatable-plugin` installed.
+  - Migration converts `recipes.title` / `summary` / `description`, `recipe_steps.body`, and `units.name` from scalar columns to MySQL JSON (`{"uk": "...", "en": "..."}`) with backfill from existing EN values; reversible.
+  - `Recipe`, `RecipeStep`, `Unit` models use `HasTranslations` trait with `$translatable` arrays.
+  - `AppServiceProvider` configures fallback chain `uk → any` via `Translatable::fallback('uk', fallbackAny: true)`.
+  - `RecipeResource` opts in via the plugin's `Translatable` trait; List/Create/Edit pages mount the `LocaleSwitcher` action so admins can author both locales side-by-side. `defaultLocales(['uk', 'en'])` in the panel provider.
+  - `UnitSeeder` rewritten with bilingual short names and a new `taste` unit (`type=count`, `to_base_factor=0`) for "за смаком" recipe lines.
+  - Scout `toSearchableArray` indexes both locales (`title_en`/`title_uk`, etc.). Filament title column uses custom `searchable(query:)` and `sortable(query:)` closures that hit `title->en` / `title->uk` via Laravel's JSON path operator.
+  - Public Blade views unchanged: `$recipe->title`, `$step->body`, `$ri->unit->name` resolve to the active locale via the translatable accessor automatically.
+  - Slug stays English-only for URL stability (`Str::slug($recipe->getTranslation('title', 'en'))`).
+  - Quality gates green: Pint, Larastan level 6, Pest (501 tests, 1384 assertions).
+  - Spec §11.6 + §17.1 + CLAUDE.md updated to reflect the new policy; ban on `spatie/laravel-translatable` lifted.
+  - Ingredient name i18n + taxonomy i18n addressed in **L3.13**.
+
+- [x] **L3.13 — Ingredient + taxonomy translations** *(completed 2026-05-15)*
+  - Migration `convert_taxonomy_names_to_json` converts `ingredients.name`, `ingredient_categories.name`, `categories.name`, `cuisines.name`, `tags.name`, `allergens.name` from `VARCHAR` to MySQL JSON (`{"en": "..."}`) with backfill from existing EN values; reversible. `ingredients.name` index dropped (JSON columns can't use the simple varchar index — search hits the JSON path operator instead).
+  - `Ingredient`, `IngredientCategory`, `Category`, `Cuisine`, `Tag`, `Allergen` models use `HasTranslations` trait with `$translatable = ['name']`.
+  - Filament resources opt in via the plugin's `Translatable` trait. List/Create/Edit / ManageRecords pages mount `LocaleSwitcher`. Name columns use JSON-path-aware `searchable(query:)` and `sortable(query:)` closures (`name->en`, `name->uk`). Relationship `Select` fields (category / cuisine / tags / allergens / ingredient / default_unit / parent) switch to `relationship(..., 'slug')` + `getOptionLabelFromRecordUsing(fn (...) => $record->name)` so options show the translated label while Eloquent's `pluck` still gets a scalar column. Slug auto-fill in `IngredientResource` only fires when the EN locale is active so URLs stay English-only.
+  - `CategorySeeder`, `CuisineSeeder`, `TagSeeder`, `AllergenSeeder`, `IngredientCategorySeeder` now seed bilingual UK/EN names. USDA importer writes `name` as `{"en": "<value>"}` (UK falls back via `Translatable::fallback('uk', fallbackAny: true)` and can be filled in via Filament). `RecipeSeeder.resolveIngredient` uses JSON-path lookup against `name->en` + `name->uk`; stubs are seeded with both locales from the source JSON.
+  - `Ingredient::toSearchableArray` indexes `name_en` / `name_uk` (plus aliases). `Recipe::toSearchableArray` indexes `ingredient_names_en` / `ingredient_names_uk`. `RecipeBrowser` orders taxonomies by `name->{current locale}`.
+  - Public Blade views unchanged: `$ingredient->name`, `$category->name`, `$tag->name`, etc. resolve to the active locale via the translatable accessor automatically.
+  - Tests updated: `RecipeSearchTest` searchable-array key assertions, `TaxonomyAdminTest` edit tests (pre-seed both locales + assert per-locale translation), `AuditLogTest` taxonomy update test (audit stores JSON-encoded value, decode for assertions).
+  - Quality gates green: Pint, Larastan level 6, Pest (508 tests, 1410 assertions).
+
 ---
 
 ## Layer 4 — User-facing interactions

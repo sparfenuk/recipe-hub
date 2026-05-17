@@ -7,15 +7,15 @@
     </nav>
 
     {{-- Hero --}}
-    <div class="overflow-hidden rounded-2xl bg-slate-100">
+    <div class="flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 p-6 sm:p-8">
         @if ($recipe->getFirstMediaUrl('hero', 'full'))
             <img
                 src="{{ $recipe->getFirstMediaUrl('hero', 'full') }}"
                 alt="{{ $recipe->title }}"
-                class="h-64 w-full object-cover sm:h-80 lg:h-96"
+                class="h-80 w-auto max-w-full object-contain sm:h-96 lg:h-[32rem]"
             >
         @else
-            <div class="flex h-64 items-center justify-center sm:h-80 lg:h-96">
+            <div class="flex h-80 items-center justify-center sm:h-96 lg:h-[32rem]">
                 <x-heroicon-o-photo class="h-16 w-16 text-slate-300" />
             </div>
         @endif
@@ -114,23 +114,20 @@
 
                         <ul class="divide-y divide-slate-100">
                             @foreach ($ingredients as $ri)
-                                <li class="flex items-start gap-3 py-2.5 {{ $ri->is_optional ? 'opacity-60' : '' }}">
-                                    <span class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full {{ $ri->is_optional ? 'bg-slate-300' : 'bg-emerald-500' }}"></span>
+                                <li class="flex items-start gap-3 py-2.5">
+                                    <span class="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500"></span>
                                     <div class="flex-1">
                                         <span class="font-medium text-slate-900">
-                                            @if ($ri->amount)
+                                            @if ((float) $ri->amount > 0)
                                                 {{ rtrim(rtrim(number_format((float) $ri->amount, 3), '0'), '.') }}
                                             @endif
                                             @if ($ri->unit)
-                                                {{ $ri->unit->code }}
+                                                {{ $ri->unit->name }}
                                             @endif
                                             {{ $ri->ingredient?->name }}
                                         </span>
                                         @if ($ri->note)
                                             <span class="text-sm text-slate-500"> — {{ $ri->note }}</span>
-                                        @endif
-                                        @if ($ri->is_optional)
-                                            <span class="ml-1 text-xs text-slate-400">({{ __('recipes.optional') }})</span>
                                         @endif
                                     </div>
                                 </li>
@@ -286,7 +283,7 @@
                 $parts[] = rtrim(rtrim(number_format((float) $ri->amount, 3), '0'), '.');
             }
             if ($ri->unit) {
-                $parts[] = $ri->unit->code;
+                $parts[] = $ri->unit->name;
             }
             if ($ri->ingredient) {
                 $parts[] = $ri->ingredient->name;
@@ -298,13 +295,13 @@
             'position' => $step->position,
             'text' => trim(strip_tags($step->body)),
         ])->values()->all();
-        if ($recipe->kcal_per_serving) {
+        if ($recipe->display_kcal_per_serving) {
             $jsonLd['nutrition'] = [
                 '@type' => 'NutritionInformation',
-                'calories' => $recipe->kcal_per_serving.' kcal',
-                'proteinContent' => $recipe->protein_per_serving_g.'g',
-                'fatContent' => $recipe->fat_per_serving_g.'g',
-                'carbohydrateContent' => $recipe->carbs_per_serving_g.'g',
+                'calories' => $recipe->display_kcal_per_serving.' kcal',
+                'proteinContent' => $recipe->display_protein_per_serving_g.'g',
+                'fatContent' => $recipe->display_fat_per_serving_g.'g',
+                'carbohydrateContent' => $recipe->display_carbs_per_serving_g.'g',
                 'fiberContent' => $recipe->fiber_per_serving_g.'g',
             ];
         }

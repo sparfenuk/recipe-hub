@@ -15,11 +15,15 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Translatable\HasTranslations;
 
 class Ingredient extends Model implements AuditableContract, HasMedia
 {
     /** @use HasFactory<IngredientFactory> */
-    use Auditable, HasFactory, InteractsWithMedia, Searchable;
+    use Auditable, HasFactory, HasTranslations, InteractsWithMedia, Searchable;
+
+    /** @var array<int, string> */
+    public array $translatable = ['name'];
 
     protected $fillable = [
         'slug',
@@ -117,6 +121,12 @@ class Ingredient extends Model implements AuditableContract, HasMedia
         return $this->belongsToMany(Tag::class, 'ingredient_tag');
     }
 
+    /** @return BelongsToMany<Recipe, $this> */
+    public function recipes(): BelongsToMany
+    {
+        return $this->belongsToMany(Recipe::class, 'recipe_ingredients');
+    }
+
     /** @param  Builder<static>  $query
      *  @return Builder<static> */
     public function makeAllSearchableUsing(Builder $query): Builder
@@ -134,8 +144,9 @@ class Ingredient extends Model implements AuditableContract, HasMedia
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'aliases' => $this->aliases->pluck('name')->implode(', '),
+            'name_en' => $this->getTranslation('name', 'en', false),
+            'name_uk' => $this->getTranslation('name', 'uk', false),
+            'aliases' => $this->aliases->pluck('alias')->implode(', '),
         ];
     }
 }

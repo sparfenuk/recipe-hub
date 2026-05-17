@@ -7,14 +7,23 @@ beforeEach(function () {
     $this->seed(UnitSeeder::class);
 });
 
-test('seeder creates all 11 units', function () {
-    expect(Unit::count())->toBe(11);
+test('seeder creates all 12 units', function () {
+    expect(Unit::count())->toBe(12);
 });
 
 test('seeder is idempotent', function () {
     $this->seed(UnitSeeder::class);
 
-    expect(Unit::count())->toBe(11);
+    expect(Unit::count())->toBe(12);
+});
+
+test('taste unit is bilingual and count-typed', function () {
+    $taste = Unit::where('code', 'taste')->first();
+
+    expect($taste)->not->toBeNull()
+        ->and($taste->getTranslation('name', 'en'))->toBe('to taste')
+        ->and($taste->getTranslation('name', 'uk'))->toBe('за смаком')
+        ->and($taste->isCount())->toBeTrue();
 });
 
 test('unit codes are unique', function () {

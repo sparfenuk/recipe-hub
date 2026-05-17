@@ -52,6 +52,12 @@ test('chart section does not render when total kcal is zero', function () {
         'total_protein_g' => 0,
         'total_fat_g' => 0,
         'total_carbs_g' => 0,
+        // RecalculateRecipeNutrition writes both totals and per-serving together; mirror that
+        // so the display chain doesn't pick stale per-serving values when totals go to zero.
+        'kcal_per_serving' => 0,
+        'protein_per_serving_g' => 0,
+        'fat_per_serving_g' => 0,
+        'carbs_per_serving_g' => 0,
     ]);
 
     Livewire::test(PortionCalculator::class, ['recipe' => $this->recipe->fresh()])

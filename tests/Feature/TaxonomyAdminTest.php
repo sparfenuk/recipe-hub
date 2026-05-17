@@ -44,16 +44,17 @@ test('admin can create an ingredient category', function () {
 });
 
 test('admin can edit an ingredient category', function () {
-    $category = IngredientCategory::create(['slug' => 'vegetables', 'name' => 'Vegetables']);
+    $category = IngredientCategory::create(['slug' => 'vegetables', 'name' => ['en' => 'Vegetables', 'uk' => 'Овочі']]);
 
     Livewire::actingAs($this->admin)
         ->test(IngredientCategoryResource\Pages\ManageIngredientCategories::class)
         ->callTableAction('edit', $category, [
-            'name' => 'Fresh Vegetables',
+            'name' => 'Свіжі овочі',
             'slug' => 'fresh-vegetables',
         ]);
 
-    expect($category->fresh()->name)->toBe('Fresh Vegetables');
+    expect($category->fresh()->getTranslation('name', 'uk'))->toBe('Свіжі овочі')
+        ->and($category->fresh()->getTranslation('name', 'en'))->toBe('Vegetables');
 });
 
 test('admin can delete an ingredient category', function () {
@@ -86,16 +87,17 @@ test('admin can create a cuisine', function () {
 });
 
 test('admin can edit a cuisine', function () {
-    $cuisine = Cuisine::create(['slug' => 'italian', 'name' => 'Italian']);
+    $cuisine = Cuisine::create(['slug' => 'italian', 'name' => ['en' => 'Italian', 'uk' => 'Італійська']]);
 
     Livewire::actingAs($this->admin)
         ->test(CuisineResource\Pages\ManageCuisines::class)
         ->callTableAction('edit', $cuisine, [
-            'name' => 'Southern Italian',
+            'name' => 'Південноіталійська',
             'slug' => 'southern-italian',
         ]);
 
-    expect($cuisine->fresh()->name)->toBe('Southern Italian');
+    expect($cuisine->fresh()->getTranslation('name', 'uk'))->toBe('Південноіталійська')
+        ->and($cuisine->fresh()->getTranslation('name', 'en'))->toBe('Italian');
 });
 
 test('admin can delete a cuisine', function () {
@@ -130,17 +132,18 @@ test('admin can create a tag', function () {
 });
 
 test('admin can edit a tag', function () {
-    $tag = Tag::create(['slug' => 'quick', 'name' => 'Quick', 'type' => 'misc']);
+    $tag = Tag::create(['slug' => 'quick', 'name' => ['en' => 'Quick', 'uk' => 'Швидко'], 'type' => 'misc']);
 
     Livewire::actingAs($this->admin)
         ->test(TagResource\Pages\ManageTags::class)
         ->callTableAction('edit', $tag, [
-            'name' => 'Quick & Easy',
+            'name' => 'Швидко і просто',
             'slug' => 'quick-easy',
             'type' => 'misc',
         ]);
 
-    expect($tag->fresh()->name)->toBe('Quick & Easy');
+    expect($tag->fresh()->getTranslation('name', 'uk'))->toBe('Швидко і просто')
+        ->and($tag->fresh()->getTranslation('name', 'en'))->toBe('Quick');
 });
 
 test('admin can delete a tag', function () {
@@ -173,16 +176,17 @@ test('admin can create an allergen', function () {
 });
 
 test('admin can edit an allergen', function () {
-    $allergen = Allergen::create(['slug' => 'nuts', 'name' => 'Nuts']);
+    $allergen = Allergen::create(['slug' => 'nuts', 'name' => ['en' => 'Nuts', 'uk' => 'Горіхи']]);
 
     Livewire::actingAs($this->admin)
         ->test(AllergenResource\Pages\ManageAllergens::class)
         ->callTableAction('edit', $allergen, [
-            'name' => 'Tree Nuts',
+            'name' => 'Деревні горіхи',
             'slug' => 'tree-nuts',
         ]);
 
-    expect($allergen->fresh()->name)->toBe('Tree Nuts');
+    expect($allergen->fresh()->getTranslation('name', 'uk'))->toBe('Деревні горіхи')
+        ->and($allergen->fresh()->getTranslation('name', 'en'))->toBe('Nuts');
 });
 
 test('admin can delete an allergen', function () {
@@ -215,16 +219,17 @@ test('admin can create a category', function () {
 });
 
 test('admin can edit a category', function () {
-    $category = Category::create(['slug' => 'breakfast', 'name' => 'Breakfast']);
+    $category = Category::create(['slug' => 'breakfast', 'name' => ['en' => 'Breakfast', 'uk' => 'Сніданок']]);
 
     Livewire::actingAs($this->admin)
         ->test(CategoryResource\Pages\ManageCategories::class)
         ->callTableAction('edit', $category, [
-            'name' => 'Morning Breakfast',
+            'name' => 'Ранковий сніданок',
             'slug' => 'morning-breakfast',
         ]);
 
-    expect($category->fresh()->name)->toBe('Morning Breakfast');
+    expect($category->fresh()->getTranslation('name', 'uk'))->toBe('Ранковий сніданок')
+        ->and($category->fresh()->getTranslation('name', 'en'))->toBe('Breakfast');
 });
 
 test('admin can delete a category', function () {

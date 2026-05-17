@@ -3,7 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\IngredientResource\Pages;
+use App\Models\Allergen;
 use App\Models\Ingredient;
+use App\Models\IngredientCategory;
+use App\Models\Tag;
+use App\Models\Unit;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -11,6 +15,7 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -22,10 +27,13 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class IngredientResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Ingredient::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
@@ -47,20 +55,29 @@ class IngredientResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn ($set, ?string $state) => $set('slug', Str::slug($state ?? ''))),
+                            ->afterStateUpdated(function ($set, $state, $livewire): void {
+                                $activeLocale = $livewire->activeLocale ?? 'en';
+                                if ($activeLocale !== 'en') {
+                                    return;
+                                }
+
+                                $set('slug', Str::slug(is_string($state) ? $state : ''));
+                            }),
                         TextInput::make('slug')
                             ->required()
                             ->maxLength(150)
                             ->unique(ignoreRecord: true),
                         Select::make('category_id')
                             ->label('Category')
-                            ->relationship('category', 'name')
+                            ->relationship('category', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (IngredientCategory $record): string => $record->name)
                             ->searchable()
                             ->preload()
                             ->nullable(),
                         Select::make('default_unit_id')
                             ->label('Default unit')
-                            ->relationship('defaultUnit', 'name')
+                            ->relationship('defaultUnit', 'code')
+                            ->getOptionLabelFromRecordUsing(fn (Unit $record): string => $record->name)
                             ->searchable()
                             ->preload()
                             ->nullable(),
@@ -147,12 +164,14 @@ class IngredientResource extends Resource
                     ->columns(2)
                     ->schema([
                         Select::make('allergens')
-                            ->relationship('allergens', 'name')
+                            ->relationship('allergens', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Allergen $record): string => $record->name)
                             ->multiple()
                             ->preload()
                             ->searchable(),
                         Select::make('tags')
-                            ->relationship('tags', 'name')
+                            ->relationship('tags', 'slug')
+                            ->getOptionLabelFromRecordUsing(fn (Tag $record): string => $record->name)
                             ->multiple()
                             ->preload()
                             ->searchable(),
@@ -184,12 +203,14 @@ class IngredientResource extends Resource
                     ->defaultImageUrl(fn () => '')
                     ->label(''),
                 TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $q) use ($search): void {
+                        $q->where('name->en', 'like', "%{$search}%")
+                            ->orWhere('name->uk', 'like', "%{$search}%");
+                    }))
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('name->'.app()->getLocale(), $direction)),
                 TextColumn::make('category.name')
                     ->label('Category')
-                    ->placeholder('--')
-                    ->sortable(),
+                    ->placeholder('--'),
                 TextColumn::make('kcal_per_100g')
                     ->label('kcal/100g')
                     ->numeric(0)
@@ -213,11 +234,12 @@ class IngredientResource extends Resource
                     ->label('Active')
                     ->boolean(),
             ])
-            ->defaultSort('name')
+            ->defaultSort('slug')
             ->filters([
                 SelectFilter::make('category_id')
                     ->label('Category')
-                    ->relationship('category', 'name')
+                    ->relationship('category', 'slug')
+                    ->getOptionLabelFromRecordUsing(fn (IngredientCategory $record): string => $record->name)
                     ->searchable()
                     ->preload(),
                 TernaryFilter::make('is_active')

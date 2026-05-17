@@ -77,16 +77,16 @@
                         wire:model.live.debounce.300ms="targetKcal"
                         min="1"
                         step="10"
-                        placeholder="{{ __('calculator.kcal_placeholder', ['kcal' => number_format((float) $this->recipe->total_kcal, 0)]) }}"
+                        placeholder="{{ __('calculator.kcal_placeholder', ['kcal' => number_format((float) $this->recipe->display_total_kcal, 0)]) }}"
                         class="block w-full rounded-lg border-slate-200 pr-14 text-lg font-semibold text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                     >
                     <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
                         {{ __('recipes.kcal') }}
                     </span>
                 </div>
-                @if ($this->recipe->total_kcal)
+                @if ($this->recipe->display_total_kcal)
                     <p class="mt-1.5 text-xs text-slate-500">
-                        {{ __('calculator.original_kcal', ['kcal' => number_format((float) $this->recipe->total_kcal, 0)]) }}
+                        {{ __('calculator.original_kcal', ['kcal' => number_format((float) $this->recipe->display_total_kcal, 0)]) }}
                     </p>
                 @endif
             </div>
@@ -94,11 +94,25 @@
         @elseif ($this->mode === 'daily_pct')
             {{-- Daily % input --}}
             @if ($this->dailyKcalTarget)
-                <label class="block text-sm font-medium text-slate-700" for="target-daily-pct">
+                {{-- Prominent daily target badge --}}
+                <div class="flex items-center justify-between rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/60 px-4 py-3">
+                    <div>
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                            {{ __('calculator.daily_target_label') }}
+                        </p>
+                        <p class="mt-0.5 leading-none">
+                            <span class="text-2xl font-bold text-emerald-900">{{ number_format($this->dailyKcalTarget) }}</span>
+                            <span class="ml-1 text-sm font-medium text-emerald-700">{{ __('recipes.kcal') }}</span>
+                        </p>
+                    </div>
+                    <x-heroicon-o-chart-pie class="h-8 w-8 text-emerald-500/70" />
+                </div>
+
+                <label class="mt-4 block text-sm font-medium text-slate-700" for="target-daily-pct">
                     {{ __('calculator.target_daily_pct') }}
                 </label>
-                <div class="mt-2">
-                    <div class="relative">
+                <div class="mt-2 flex items-center gap-3">
+                    <div class="relative w-[5.25rem] flex-shrink-0">
                         <input
                             id="target-daily-pct"
                             type="number"
@@ -107,16 +121,28 @@
                             max="100"
                             step="5"
                             placeholder="{{ __('calculator.daily_pct_placeholder') }}"
-                            class="block w-full rounded-lg border-slate-200 pr-8 text-lg font-semibold text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                            class="block w-full rounded-lg border-slate-200 pr-6 text-center text-lg font-semibold text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                         >
-                        <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
-                            %
-                        </span>
+                        <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-sm text-slate-400">%</span>
                     </div>
-                    <p class="mt-1.5 text-xs text-slate-500">
-                        {{ __('calculator.daily_target_info', ['kcal' => number_format($this->dailyKcalTarget)]) }}
-                    </p>
+                    <input
+                        type="range"
+                        wire:model.live.debounce.150ms="targetDailyPct"
+                        min="5"
+                        max="100"
+                        step="5"
+                        aria-label="{{ __('calculator.target_daily_pct') }}"
+                        class="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-emerald-100 accent-emerald-600"
+                    >
                 </div>
+                @if ($this->targetDailyPct && $this->targetDailyPct >= 5 && $this->targetDailyPct <= 100)
+                    <p class="mt-2 text-xs font-medium text-emerald-700">
+                        {{ __('calculator.daily_target_equals', [
+                            'pct' => $this->targetDailyPct,
+                            'kcal' => number_format($this->dailyKcalTarget * $this->targetDailyPct / 100),
+                        ]) }}
+                    </p>
+                @endif
             @else
                 <div class="rounded-lg bg-slate-50 p-4 text-center">
                     <x-heroicon-o-chart-pie class="mx-auto h-8 w-8 text-slate-300" />
@@ -147,17 +173,16 @@
 
                 <ul class="space-y-1">
                     @foreach ($ingredients as $item)
-                        <li class="flex items-start gap-2 text-sm {{ $item['is_optional'] ? 'opacity-60' : '' }}">
-                            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full {{ $item['is_optional'] ? 'bg-slate-300' : 'bg-emerald-500' }}"></span>
+                        <li class="flex items-start gap-2 text-sm">
+                            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500"></span>
                             <span>
-                                <span class="font-semibold text-slate-900">{{ rtrim(rtrim(number_format($item['amount'], 3), '0'), '.') }}</span>
+                                @if ((float) $item['amount'] > 0)
+                                    <span class="font-semibold text-slate-900">{{ rtrim(rtrim(number_format($item['amount'], 1), '0'), '.') }}</span>
+                                @endif
                                 @if ($item['unit_code'])
                                     <span class="text-slate-600">{{ $item['unit_code'] }}</span>
                                 @endif
                                 <span class="text-slate-700">{{ $item['name'] }}</span>
-                                @if ($item['is_optional'])
-                                    <span class="text-xs text-slate-400">({{ __('recipes.optional') }})</span>
-                                @endif
                             </span>
                         </li>
                     @endforeach
@@ -198,6 +223,64 @@
                     <span class="font-semibold text-slate-700">{{ number_format($nutrition['fiber_per_serving_g'], 1) }}g</span>
                 </div>
             </div>
+
+            @php
+                $breakdown = $this->ingredientBreakdown;
+                $hasRefNutrition = $this->recipe->ref_kcal_per_serving !== null
+                    || $this->recipe->ref_protein_per_serving_g !== null
+                    || $this->recipe->ref_fat_per_serving_g !== null
+                    || $this->recipe->ref_carbs_per_serving_g !== null;
+            @endphp
+            @if ($breakdown->isNotEmpty())
+                <div class="mt-4 rounded-lg bg-slate-50 px-3 py-2.5">
+                    <p class="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        {{ __('calculator.per_ingredient_breakdown') }}
+                        @if ($hasRefNutrition)
+                            <span
+                                x-data="{ open: false }"
+                                @mouseenter="open = true"
+                                @mouseleave="open = false"
+                                @focusin="open = true"
+                                @focusout="open = false"
+                                tabindex="0"
+                                class="relative inline-flex cursor-help text-red-500 outline-none"
+                            >
+                                <x-heroicon-o-information-circle class="h-3.5 w-3.5" />
+                                <span
+                                    x-show="open"
+                                    x-cloak
+                                    x-transition.opacity
+                                    class="pointer-events-none absolute left-1/2 top-full z-20 mt-1 w-64 -translate-x-1/2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[11px] font-normal normal-case tracking-normal text-slate-700 shadow-lg"
+                                    role="tooltip"
+                                >
+                                    {{ __('calculator.breakdown_mismatch_info') }}
+                                </span>
+                            </span>
+                        @endif
+                    </p>
+                    <ul class="mt-2 space-y-1.5">
+                        @foreach ($breakdown as $row)
+                            <li>
+                                <div class="flex items-baseline justify-between gap-2">
+                                    <span class="text-sm font-semibold text-slate-900">{{ $row['name'] }}</span>
+                                    <span class="text-xs font-medium text-slate-700 whitespace-nowrap">{{ number_format($row['kcal'], 0) }} {{ __('recipes.kcal') }}</span>
+                                </div>
+                                <div class="text-[11px] text-slate-500">
+                                    {{ __('recipes.protein') }} {{ number_format($row['protein_g'], 1) }}g
+                                    <span class="text-slate-400">·</span>
+                                    {{ __('recipes.fat') }} {{ number_format($row['fat_g'], 1) }}g
+                                    <span class="text-slate-400">·</span>
+                                    {{ __('recipes.carbs') }} {{ number_format($row['carbs_g'], 1) }}g
+                                    @if ($row['fiber_g'] > 0)
+                                        <span class="text-slate-400">·</span>
+                                        {{ __('recipes.fiber') }} {{ number_format($row['fiber_g'], 1) }}g
+                                    @endif
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div class="mt-4 h-px bg-slate-100"></div>
 
@@ -242,10 +325,12 @@
             @php
                 $targets = $this->macroTargets;
                 $chartData = [
+                    'total_kcal' => $nutrition['kcal'],
                     'protein_g' => $nutrition['protein_g'],
                     'fat_g' => $nutrition['fat_g'],
                     'carbs_g' => $nutrition['carbs_g'],
                     'targets' => $targets,
+                    'breakdown' => $this->ingredientBreakdownTotal->values()->all(),
                     'labels' => [
                         'protein' => __('recipes.protein'),
                         'fat' => __('recipes.fat'),

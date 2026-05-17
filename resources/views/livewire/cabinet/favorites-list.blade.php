@@ -76,10 +76,10 @@
                             <h3 class="font-semibold text-slate-900 group-hover:text-emerald-700">{{ $recipe->title }}</h3>
 
                             <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                                @if ($recipe->kcal_per_serving)
+                                @if ($recipe->display_kcal_per_serving)
                                     <span class="inline-flex items-center gap-1">
                                         <x-heroicon-o-fire class="h-3.5 w-3.5" />
-                                        {{ number_format((float) $recipe->kcal_per_serving, 0) }} {{ __('recipes.kcal_serving') }}
+                                        {{ number_format((float) $recipe->display_kcal_per_serving, 0) }} {{ __('recipes.kcal_serving') }}
                                     </span>
                                 @endif
                                 @if ($recipe->prep_time_min)

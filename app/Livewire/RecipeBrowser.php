@@ -17,9 +17,15 @@ class RecipeBrowser extends Component
 {
     use WithPagination;
 
-    public ?int $category_id = null;
+    private const PAGE_SIZE = 12;
 
-    public ?int $cuisine_id = null;
+    public int $perPage = self::PAGE_SIZE;
+
+    /** @var array<int> */
+    public array $category_ids = [];
+
+    /** @var array<int> */
+    public array $cuisine_ids = [];
 
     public ?int $max_kcal = null;
 
@@ -43,52 +49,68 @@ class RecipeBrowser extends Component
 
     /** @var array<string, array<string, mixed>> */
     protected $queryString = [
-        'category_id' => ['except' => null, 'as' => 'category'],
-        'cuisine_id' => ['except' => null, 'as' => 'cuisine'],
+        'category_ids' => ['except' => [], 'as' => 'categories'],
+        'cuisine_ids' => ['except' => [], 'as' => 'cuisines'],
         'max_kcal' => ['except' => null],
         'max_prep_time' => ['except' => null],
         'search' => ['except' => '', 'as' => 'q'],
         'sort' => ['except' => 'newest'],
     ];
 
-    public function updatedCategoryId(): void
+    public function updatedCategoryIds(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
-    public function updatedCuisineId(): void
+    public function updatedCuisineIds(): void
     {
-        $this->resetPage();
+        $this->resetView();
+    }
+
+    public function toggleCategory(int $id): void
+    {
+        $this->category_ids = in_array($id, $this->category_ids, true)
+            ? array_values(array_diff($this->category_ids, [$id]))
+            : [...$this->category_ids, $id];
+        $this->resetView();
+    }
+
+    public function toggleCuisine(int $id): void
+    {
+        $this->cuisine_ids = in_array($id, $this->cuisine_ids, true)
+            ? array_values(array_diff($this->cuisine_ids, [$id]))
+            : [...$this->cuisine_ids, $id];
+        $this->resetView();
     }
 
     public function updatedMaxKcal(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedMaxPrepTime(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedDietTags(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedExcludeAllergens(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedSort(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function updatedSearch(): void
     {
-        $this->resetPage();
+        $this->resetView();
     }
 
     /** @param  array<int>  $ids */
@@ -100,13 +122,13 @@ class RecipeBrowser extends Component
             'exclude' => $this->exclude_ingredients = $ids,
             default => null,
         };
-        $this->resetPage();
+        $this->resetView();
     }
 
     public function clearFilters(): void
     {
-        $this->category_id = null;
-        $this->cuisine_id = null;
+        $this->category_ids = [];
+        $this->cuisine_ids = [];
         $this->max_kcal = null;
         $this->max_prep_time = null;
         $this->diet_tags = [];
@@ -116,13 +138,24 @@ class RecipeBrowser extends Component
         $this->sort = 'newest';
         $this->search = '';
         $this->dispatch('clear-ingredient-filters');
+        $this->resetView();
+    }
+
+    public function loadMore(): void
+    {
+        $this->perPage += self::PAGE_SIZE;
+    }
+
+    private function resetView(): void
+    {
+        $this->perPage = self::PAGE_SIZE;
         $this->resetPage();
     }
 
     public function hasActiveFilters(): bool
     {
-        return $this->category_id !== null
-            || $this->cuisine_id !== null
+        return $this->category_ids !== []
+            || $this->cuisine_ids !== []
             || $this->max_kcal !== null
             || $this->max_prep_time !== null
             || $this->diet_tags !== []
@@ -134,12 +167,17 @@ class RecipeBrowser extends Component
 
     public function render(): View
     {
+        $nameByLocale = 'name->'.app()->getLocale();
+
         return view('livewire.recipe-browser', [
             'recipes' => $this->getRecipes(),
-            'categories' => Category::orderBy('name')->get(),
-            'cuisines' => Cuisine::orderBy('name')->get(),
-            'dietTags' => Tag::where('type', 'diet')->orderBy('name')->get(),
-            'allergens' => Allergen::orderBy('name')->get(),
+            'categories' => Category::whereHas('recipes', fn ($q) => $q->where('status', 'published'))->orderBy($nameByLocale)->get(),
+            'cuisines' => Cuisine::whereHas('recipes', fn ($q) => $q->where('status', 'published'))->orderBy($nameByLocale)->get(),
+            'dietTags' => Tag::where('type', 'diet')
+                ->whereHas('recipes', fn ($q) => $q->where('status', 'published'))
+                ->orderBy($nameByLocale)->get(),
+            'allergens' => Allergen::whereHas('ingredients.recipes', fn ($q) => $q->where('status', 'published'))
+                ->orderBy($nameByLocale)->get(),
         ])->layout('components.layouts.app', [
             'title' => __('recipes.catalog').' — '.config('app.name'),
             'metaDescription' => __('recipes.catalog_desc'),
@@ -152,9 +190,9 @@ class RecipeBrowser extends Component
     {
         $query = Recipe::query()
             ->where('status', 'published')
-            ->when($this->category_id, fn ($q) => $q->where('category_id', $this->category_id))
-            ->when($this->cuisine_id, fn ($q) => $q->where('cuisine_id', $this->cuisine_id))
-            ->when($this->max_kcal, fn ($q, $v) => $q->where('kcal_per_serving', '<=', $v))
+            ->when($this->category_ids !== [], fn ($q) => $q->whereIn('category_id', $this->category_ids))
+            ->when($this->cuisine_ids !== [], fn ($q) => $q->whereIn('cuisine_id', $this->cuisine_ids))
+            ->when($this->max_kcal, fn ($q, $v) => $q->whereRaw('COALESCE(ref_kcal_per_serving, kcal_per_serving) <= ?', [$v]))
             ->when($this->max_prep_time, fn ($q, $v) => $q->where('prep_time_min', '<=', $v));
 
         if ($this->diet_tags !== []) {
@@ -187,8 +225,8 @@ class RecipeBrowser extends Component
         return $query
             ->with('media')
             ->when($this->search === '' && $this->sort === 'newest', fn ($q) => $q->orderByDesc('published_at'))
-            ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderBy('kcal_per_serving'))
+            ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderByRaw('COALESCE(ref_kcal_per_serving, kcal_per_serving) asc'))
             ->when($this->sort === 'shortest_prep', fn ($q) => $q->orderBy('prep_time_min'))
-            ->paginate(12);
+            ->paginate($this->perPage, ['*'], 'page', 1);
     }
 }

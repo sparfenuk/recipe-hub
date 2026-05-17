@@ -230,7 +230,7 @@ The full USDA bulk dump stays out of the repo; a separate `make import-usda-full
 
 > **Conventions**
 > - All `timestamp` and `datetime` columns store UTC. Application config: `'timezone' => 'UTC'`.
-> - All textual content (recipe titles, ingredient names, taxonomy labels) is **English only** in v1 — no per-locale JSON columns.
+> - User-facing text columns (recipe `title` / `summary` / `description`, `recipe_steps.body`, `units.name`, `ingredients.name`, and the taxonomy `name` columns on `categories` / `cuisines` / `tags` / `allergens` / `ingredient_categories`) are stored as **MySQL `JSON`** keyed by locale (`{"uk": "...", "en": "..."}`) via `spatie/laravel-translatable`. Slugs remain English-only for URL stability.
 > - Locale is resolved from the `locale` cookie at request time and is not persisted on `users`.
 
 ```
@@ -507,11 +507,12 @@ Vite config compiles `app.css` + `app.js`, fingerprints output, serves HMR in de
 - Color contrast meets WCAG AA; Tailwind palette tuned accordingly.
 - Keyboard-only navigation tested for catalog, calculator, cabinet.
 
-### 11.6 Localization (EN default, UK secondary — UI strings only)
+### 11.6 Localization (UK primary, EN fallback — UI strings + content)
 
 **Scope**
-- **Localized:** static UI strings (Blade/Livewire labels, buttons, navigation, validation messages, password reset / verification emails, error pages, flash messages).
-- **Not localized:** recipe titles, descriptions, instructions, ingredient names, categories, tags. All content is authored and stored in English. Admin panel UI and admin content forms are English-only.
+- **Localized UI strings:** Blade/Livewire labels, buttons, navigation, validation messages, password reset / verification emails, error pages, flash messages.
+- **Localized content (via `spatie/laravel-translatable`):** recipe titles / summaries / descriptions, recipe step bodies, unit display names, ingredient names, and taxonomy display names (ingredient categories, recipe categories, cuisines, tags, allergens). Stored as MySQL JSON columns keyed by locale (`{"uk": "...", "en": "..."}`). Public-facing pages render the active locale via the `HasTranslations` accessor; if a translation is missing the package falls back to UK first, then to any available locale (`fallback('uk', fallbackAny: true)` configured in `AppServiceProvider`).
+- **Not localized:** ingredient aliases (search-only multi-row index, language-agnostic), slugs (English-only for stable URLs). USDA-sourced ingredient names ship with `{"en": "<value>"}` only; admins can fill the UK translation via the Filament `LocaleSwitcher`.
 
 **Static UI strings**
 - JSON translation files: `lang/en.json`, `lang/uk.json` for flat strings.
@@ -531,11 +532,11 @@ Implemented in a `SetLocale` middleware on the `web` group. No DB lookup; works 
 - Click sets cookie `locale` (1-year expiry, `SameSite=Lax`) and re-renders.
 
 **Filament admin**
-- Filament UI locale fixed to `en` regardless of user cookie (`Filament::setServingPanel()` hook or middleware that overrides locale for `/admin/*` routes).
-- All resource forms have single English fields. No translation tabs, no `spatie/laravel-translatable`.
+- Filament UI strings fixed to `en` (via the `ForceEnglish` middleware on `/admin/*` routes) regardless of user cookie.
+- Translatable resource forms use `filament/spatie-laravel-translatable-plugin` (`Translatable` trait on the resource + `LocaleSwitcher` action on List/Edit pages). Each translatable field renders one input per configured locale (default order: `uk`, `en`). The admin can author / edit both locales side-by-side.
 
 **Search**
-- MeiliSearch indexes the English content fields. UI labels in the search page are localized; the searchable corpus itself is English. A UK user types into the same English index — works fine for recipe/ingredient names.
+- MeiliSearch indexes both locales (`title_en`, `title_uk`, `summary_en`, `summary_uk`, `description_en`, `description_uk`, `ingredient_names_en`, `ingredient_names_uk` on `Recipe`; `name_en` / `name_uk` + aliases on `Ingredient`). A UK user typing Ukrainian matches Ukrainian-language fields; an English user matches English fields. Filament's table search hits both locales via JSON path `where title->en like ?` / `where title->uk like ?` and `name->en` / `name->uk` on taxonomies.
 
 **Numbers**
 - Formatted via `Number::format()` honoring `app()->getLocale()`.
@@ -823,10 +824,10 @@ All MVP decisions are locked. Remaining items below are intentional v1.1+ deferr
 ### 17.1 Locked
 - **Backend:** Laravel 12.x on PHP 8.5.
 - **Frontend:** Livewire 3 + Alpine.js 3 + Tailwind CSS 4 (Flux UI for primitives, ApexCharts for charts). Upgraded from v3 → v4 because Laravel 12 scaffolds with v4, Flux UI requires v4, and forms/typography plugins are built-in.
-- **Admin panel:** Filament 3, **English-only UI and content entry** (no translation tabs).
+- **Admin panel:** Filament 3, English UI strings only (via `ForceEnglish` middleware); translatable content fields via `filament/spatie-laravel-translatable-plugin` (UK + EN tabs).
 - **Local dev:** Laravel Sail (Docker Compose).
 - **Database:** MySQL 8.0.
-- **Localization:** English default + Ukrainian secondary for **static UI strings only**. Recipe/ingredient content is English only. Locale switcher persists to **cookie only** (no DB column).
+- **Localization:** Ukrainian primary + English fallback. UI strings translated via JSON / PHP lang files. Translatable content fields (recipe title / summary / description, step body, unit name, ingredient name, taxonomy names — categories / cuisines / tags / allergens / ingredient categories) stored as MySQL JSON via `spatie/laravel-translatable`. Slugs remain English-only for URL stability. Locale switcher persists to **cookie only** (no DB column). Adding a future locale requires only seeding the new key — no schema migration.
 - **Search:** MeiliSearch (via Laravel Scout).
 - **Hosting:** Single VPS managed by Laravel Forge.
 - **Time zones:** All timestamps stored in **UTC**; app `timezone=UTC`; display in UTC. Per-user timezone preference deferred to a later release.

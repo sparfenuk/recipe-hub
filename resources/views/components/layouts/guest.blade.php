@@ -26,6 +26,6 @@
         &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
     </p>
 
-    @livewireScripts
+    @livewireScriptConfig
 </body>
 </html>

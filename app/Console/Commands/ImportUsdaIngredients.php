@@ -202,7 +202,7 @@ class ImportUsdaIngredients extends Command
 
                 $attributes = [
                     'slug' => $slug,
-                    'name' => $name,
+                    'name' => ['en' => $name],
                     'category_id' => $categoryId,
                     'kcal_per_100g' => $this->nullableDecimal($data['kcal_per_100g'] ?? ''),
                     'protein_g' => $this->nullableDecimal($data['protein_g'] ?? ''),

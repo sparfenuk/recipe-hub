@@ -1,0 +1,256 @@
+[
+  {
+    "page": 36,
+    "category": "breakfast",
+    "title_uk": "Хелзі млинці з грецьким йогуртом, вишнями та какао",
+    "title_en": "Healthy crepes with Greek yogurt, cherries and cocoa",
+    "calories": 440,
+    "protein": 24,
+    "fat": 18,
+    "carbs": 51,
+    "servings": 1,
+    "ingredients": [
+      {
+        "name_uk": "Яйце",
+        "name_en": "Egg",
+        "amount": 1,
+        "unit": "шт"
+      },
+      {
+        "name_uk": "Вівсяне борошно або цільнозернове борошно",
+        "name_en": "Oat flour or whole grain flour",
+        "amount": 40,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Молоко",
+        "name_en": "Milk",
+        "amount": 70,
+        "unit": "мл"
+      },
+      {
+        "name_uk": "Какао-порошок",
+        "name_en": "Cocoa powder",
+        "amount": 5,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Мед або сироп агави",
+        "name_en": "Honey or agave syrup",
+        "amount": 1,
+        "unit": "ч. л."
+      },
+      {
+        "name_uk": "Вишні консервовані або свіжі",
+        "name_en": "Cherries, canned or fresh",
+        "amount": 50,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Грецький йогурт",
+        "name_en": "Greek yogurt",
+        "amount": 75,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Оливкова олія або кокосова олія",
+        "name_en": "Olive oil or coconut oil",
+        "amount": 5,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Сіль та кориця",
+        "name_en": "Salt and cinnamon",
+        "amount": 0,
+        "unit": "за смаком"
+      }
+    ],
+    "steps_uk": [
+      "У мисці збийте яйце з молоком до однорідної консистенції. Додайте вівсяне борошно, какао-порошок, дрібку солі, а також корицю або ванільний екстракт для аромату. За бажанням можна додати трохи меду для солодкості. Добре перемішайте, щоб не залишилося грудочок.",
+      "Нагрійте сковороду на середньому вогні і змастіть її оливковою або кокосовою олією.",
+      "Вилийте частину тіста на сковороду, розподіліть тонким шаром і обсмажте з обох боків по 1-2 хвилини, поки млинець не стане золотистим. Повторіть з усім тістом.",
+      "Вишні або інші ягоди трохи прогрійте на сковороді або в мікрохвильовці, щоб вони стали теплими і соковитими.",
+      "На кожен млинець викладіть грецький йогурт (по 1 ст. л), додайте трохи теплих вишень або ягід.",
+      "Згорніть млинці рулетом або складіть їх у трикутник. Подавайте млинці теплими, прикрасивши залишками вишень або йогурту зверху. Можна додати трохи меду або сиропу агави для додаткової солодкості."
+    ],
+    "steps_en": [
+      "In a bowl, beat the egg with milk until smooth. Add oat flour, cocoa powder, a pinch of salt, and cinnamon or vanilla extract for aroma. Optionally add a little honey for sweetness. Mix well until no lumps remain.",
+      "Heat a skillet over medium heat and grease it with olive or coconut oil.",
+      "Pour a portion of batter onto the skillet, spread in a thin layer and fry on both sides for 1-2 minutes until golden. Repeat with all the batter.",
+      "Warm the cherries or other berries slightly in a skillet or microwave until warm and juicy.",
+      "Spread Greek yogurt (1 tbsp each) on each crepe, add some warm cherries or berries.",
+      "Roll the crepes or fold them into triangles. Serve warm, garnished with remaining cherries or yogurt on top. You can add a little honey or agave syrup for extra sweetness."
+    ],
+    "image": "recipe-images/sample-recipe.png"
+  },
+  {
+    "page": 37,
+    "category": "breakfast",
+    "title_uk": "Високобілкові панкейки",
+    "title_en": "High-protein pancakes",
+    "calories": 250,
+    "protein": 12,
+    "fat": 7,
+    "carbs": 35,
+    "servings": 2,
+    "ingredients": [
+      {
+        "name_uk": "Творог 5%",
+        "name_en": "Cottage cheese 5%",
+        "amount": 100,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Яйце",
+        "name_en": "Egg",
+        "amount": 1,
+        "unit": "шт"
+      },
+      {
+        "name_uk": "Вівсяне борошно або цільнозернове борошно",
+        "name_en": "Oat flour or whole grain flour",
+        "amount": 30,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Молоко",
+        "name_en": "Milk",
+        "amount": 30,
+        "unit": "мл"
+      },
+      {
+        "name_uk": "Горіхи кеш'ю",
+        "name_en": "Cashew nuts",
+        "amount": 10,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Банан",
+        "name_en": "Banana",
+        "amount": 50,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Груша",
+        "name_en": "Pear",
+        "amount": 50,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Розпушувач",
+        "name_en": "Baking powder",
+        "amount": 0.5,
+        "unit": "ч. л."
+      },
+      {
+        "name_uk": "Оливкова або кокосова олія",
+        "name_en": "Olive or coconut oil",
+        "amount": 0.5,
+        "unit": "ч. л."
+      },
+      {
+        "name_uk": "Мед або сироп агави",
+        "name_en": "Honey or agave syrup",
+        "amount": 10,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Ванільний екстракт або кориця",
+        "name_en": "Vanilla extract or cinnamon",
+        "amount": 0,
+        "unit": "за смаком"
+      }
+    ],
+    "steps_uk": [
+      "У мисці змішайте творог, яйце та молоко до однорідної консистенції. Додайте вівсяне борошно, розпушувач, ванільний екстракт або корицю. Добре перемішайте.",
+      "Додайте нарізані банан і грушу, а також подрібнені горіхи кеш'ю. Знову акуратно перемішайте.",
+      "На середньому вогні розігрійте сковороду з оливковою або кокосовою олією.",
+      "Викладайте тісто ложкою, формуючи панкейки. Смажте з обох боків по 1-2 хвилини, поки не з'явиться золотава скоринка.",
+      "Полийте готові панкейки медом або сиропом агави зверху."
+    ],
+    "steps_en": [
+      "In a bowl, mix cottage cheese, egg and milk until smooth. Add oat flour, baking powder, vanilla extract or cinnamon. Mix well.",
+      "Add sliced banana and pear, as well as crushed cashew nuts. Gently mix again.",
+      "Heat a skillet over medium heat with olive or coconut oil.",
+      "Spoon the batter onto the skillet, forming pancakes. Fry on both sides for 1-2 minutes until a golden crust forms.",
+      "Drizzle the finished pancakes with honey or agave syrup on top."
+    ],
+    "image": "recipe-images/sample-recipe.png"
+  },
+  {
+    "page": 38,
+    "category": "breakfast",
+    "title_uk": "Сирники з мигдальними пластівцями та ягодами",
+    "title_en": "Cottage cheese pancakes with almond flakes and berries",
+    "calories": 532,
+    "protein": 33,
+    "fat": 30,
+    "carbs": 29,
+    "servings": 1,
+    "ingredients": [
+      {
+        "name_uk": "Творог 9%",
+        "name_en": "Cottage cheese 9%",
+        "amount": 130,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Яйце куряче",
+        "name_en": "Chicken egg",
+        "amount": 1,
+        "unit": "шт"
+      },
+      {
+        "name_uk": "Олія",
+        "name_en": "Oil",
+        "amount": 5,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Ванільна цукрова пудра",
+        "name_en": "Vanilla powdered sugar",
+        "amount": 7,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Мигдальні пластівці або лущена ліщина",
+        "name_en": "Almond flakes or shelled hazelnuts",
+        "amount": 10,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Борошно класичне або рисове",
+        "name_en": "All-purpose or rice flour",
+        "amount": 1,
+        "unit": "ст. л."
+      },
+      {
+        "name_uk": "Сметана 15%",
+        "name_en": "Sour cream 15%",
+        "amount": 20,
+        "unit": "г"
+      },
+      {
+        "name_uk": "Ягоди (малина, чорниця, полуниця)",
+        "name_en": "Berries (raspberry, blueberry, strawberry)",
+        "amount": 60,
+        "unit": "г"
+      }
+    ],
+    "steps_uk": [
+      "У глибокій мисці розімніть творог до однорідної маси.",
+      "Додайте яйце, борошно, наріжте 15 ягід та додайте їх у масу, ретельно перемішайте. З отриманої маси сформуйте невеликі сирники руками. Обкачайте їх у цукровій пудрі для легкого обсмажування.",
+      "Розігрійте сковорідку на середньому вогні та додайте олію.",
+      "Обсмажуйте сирники з обох боків до золотистої скоринки (приблизно по 3 хвилини на кожну сторону).",
+      "Подавайте сирники теплими зі сметаною та свіжими ягодами, що залишилися. Посипте зверху шматочками мигдалю чи ліщини."
+    ],
+    "steps_en": [
+      "In a deep bowl, mash the cottage cheese until smooth.",
+      "Add the egg, flour, chop 15 berries and add them to the mixture, mix thoroughly. Form small pancakes by hand from the mixture. Roll them in powdered sugar for light frying.",
+      "Heat a skillet over medium heat and add oil.",
+      "Fry the cottage cheese pancakes on both sides until golden crust forms (about 3 minutes per side).",
+      "Serve warm with sour cream and remaining fresh berries. Sprinkle with almond or hazelnut pieces on top."
+    ],
+    "image": "recipe-images/missing.png"
+  }
+]
