@@ -63,26 +63,29 @@
 
 ### 2b. App-level Private Mode (основне рішення)
 
-- [ ] **2b.1** Додати в `config/app.php`:
+- [x] **2b.1** Додати в `config/app.php`:
   ```php
   'private' => env('APP_PRIVATE', false),
   ```
-- [ ] **2b.2** Створити `app/Http/Middleware/EnsurePrivateAccess.php`. Логіка:
+- [x] **2b.2** Створити `app/Http/Middleware/EnsurePrivateAccess.php`. Логіка:
   - якщо `! config('app.private')` → `$next($request)`
   - якщо `Auth::check()` → `$next($request)`
-  - якщо шлях у allowlist → `$next($request)`. Allowlist:
-    - `/login`, `/logout`, `/forgot-password`, `/reset-password/*`
-    - `/two-factor-challenge`, `/user/two-factor-*`
-    - `/up` (health-check)
-    - `/livewire/update`, `/livewire/upload-file` (інакше зламається сама login-форма, бо вона Livewire-based — перевір)
+  - якщо шлях у allowlist → `$next($request)`. Allowlist (фактично):
+    - `login`, `logout`
+    - `forgot-password`, `reset-password`, `reset-password/*`
+    - `two-factor-challenge`, `user/two-factor-*`
+    - `email/verify`, `email/verify/*`, `email/verification-notification`
+    - `up` (health-check)
+    - `admin`, `admin/*` (Filament має власний auth-стек)
   - інакше → `redirect()->guest(route('login'))`
-- [ ] **2b.3** У `bootstrap/app.php`:
+  - Login-форма виявилась plain HTML, не Livewire — `/livewire/*` не потрібно в allowlist; для auth-юзерів Livewire-запити проходять через гілку `Auth::check()`.
+- [x] **2b.3** У `bootstrap/app.php`:
   ```php
   $middleware->web(append: [SetLocale::class, EnsurePrivateAccess::class]);
   ```
 - [ ] **2b.4** На Forge → site → Environment: `APP_PRIVATE=true`. Локально в `.env` не задавати або поставити `false`.
-- [ ] **2b.5** `config/fortify.php:147` — закоментувати `Features::registration()`.
-- [ ] **2b.6** З `resources/views/components/layouts/app.blade.php` прибрати кнопки Register (рядки ~102–104 і ~173–175).
+- [~] **2b.5** ~~`config/fortify.php:147` — закоментувати `Features::registration()`.~~ Відмінено: маршрут `/register` лишається зареєстрованим, але EnsurePrivateAccess не містить його в allowlist — на проді з `APP_PRIVATE=true` він редіректить на `/login`. Це зберігає покриття тестами скеффолдингу (welcome email, авто-профіль, role assign).
+- [x] **2b.6** З `resources/views/components/layouts/app.blade.php` прибрати кнопки Register (рядки ~102–104 і ~173–175). Також прибрано посилання «Don't have an account? Register» з `resources/views/auth/login.blade.php`.
 - [ ] **2b.7** Deploy, потім `php artisan config:cache` на проді (Forge зробить автоматично, якщо в deploy script).
 - [ ] **2b.8** Тест з інкогніто: `/`, `/recipes`, `/recipes/<slug>`, `/recipes/<slug>/pdf` → всі редіректять на `/login`. `/up` → 200 OK.
 

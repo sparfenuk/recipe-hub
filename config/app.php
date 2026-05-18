@@ -43,6 +43,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Private Mode (lockdown)
+    |--------------------------------------------------------------------------
+    |
+    | When true, EnsurePrivateAccess middleware redirects every unauthenticated
+    | request to /login except for an allowlist (auth flows, health check,
+    | Filament panel). See docs/lockdown-plan.md.
+    |
+    */
+
+    'private' => (bool) env('APP_PRIVATE', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |

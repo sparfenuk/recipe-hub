@@ -58,8 +58,4 @@
         </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-600">
-        {{ __("Don't have an account?") }}
-        <a href="{{ route('register') }}" class="font-medium text-emerald-600 hover:text-emerald-500">{{ __('Register') }}</a>
-    </p>
 </x-layouts.guest>

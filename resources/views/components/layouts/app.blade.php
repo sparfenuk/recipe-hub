@@ -100,9 +100,6 @@
                     <a href="/login" class="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600">
                         {{ __('Log in') }}
                     </a>
-                    <a href="/register" class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-700">
-                        {{ __('Register') }}
-                    </a>
                 @endauth
             </div>
 
@@ -170,9 +167,6 @@
                 @else
                     <a href="/login" class="block py-2 text-sm font-medium text-slate-600">
                         {{ __('Log in') }}
-                    </a>
-                    <a href="/register" class="block py-2 text-sm font-medium text-emerald-600">
-                        {{ __('Register') }}
                     </a>
                 @endauth
             </div>
