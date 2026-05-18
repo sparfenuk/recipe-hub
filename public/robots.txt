@@ -1,11 +1,2 @@
 User-agent: *
-Allow: /
-Allow: /recipes
-Disallow: /admin/
-Disallow: /cabinet/
-Disallow: /login
-Disallow: /register
-Disallow: /password/
-Disallow: /email/
-
-Sitemap: /sitemap.xml
+Disallow: /

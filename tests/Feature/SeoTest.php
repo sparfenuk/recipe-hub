@@ -209,84 +209,34 @@ test('json-ld contains author name', function () {
         ->assertSee('"name":"Chef Test"', false);
 });
 
-// --- Sitemap ---
+// --- Sitemap removed during lockdown (2026-05-17). See docs/lockdown-plan.md. ---
 
-test('sitemap.xml returns xml content type', function () {
-    $this->get('/sitemap.xml')
-        ->assertOk()
-        ->assertHeader('Content-Type', 'application/xml');
+test('sitemap.xml is not exposed', function () {
+    $this->get('/sitemap.xml')->assertNotFound();
 });
 
-test('sitemap contains static pages', function () {
-    $this->get('/sitemap.xml')
-        ->assertOk()
-        ->assertSee(url('/'), false)
-        ->assertSee(route('recipes.index'), false);
-});
+// --- robots.txt disallows everything during lockdown ---
 
-test('sitemap contains published recipes', function () {
-    $recipe = Recipe::factory()->published()->create([
-        'author_id' => User::factory()->create()->id,
-        'slug' => 'sitemap-recipe',
-    ]);
-
-    $this->get('/sitemap.xml')
-        ->assertOk()
-        ->assertSee(route('recipes.show', 'sitemap-recipe'), false);
-});
-
-test('sitemap excludes draft recipes', function () {
-    Recipe::factory()->create([
-        'author_id' => User::factory()->create()->id,
-        'slug' => 'draft-recipe',
-        'status' => 'draft',
-    ]);
-
-    $this->get('/sitemap.xml')
-        ->assertOk()
-        ->assertDontSee(route('recipes.show', 'draft-recipe'), false);
-});
-
-test('sitemap has hreflang annotations', function () {
-    $this->get('/sitemap.xml')
-        ->assertOk()
-        ->assertSee('hreflang="en"', false)
-        ->assertSee('hreflang="uk"', false)
-        ->assertSee('hreflang="x-default"', false);
-});
-
-test('sitemap has valid xml structure', function () {
-    $response = $this->get('/sitemap.xml');
-    $response->assertOk();
-
-    $content = $response->getContent();
-    expect($content)->toContain('<?xml version="1.0" encoding="UTF-8"?>');
-    expect($content)->toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"');
-    expect($content)->toContain('</urlset>');
-});
-
-// --- robots.txt ---
-
-test('robots.txt exists and allows recipes', function () {
-    $content = file_get_contents(public_path('robots.txt'));
-
-    expect($content)->toContain('Allow: /recipes');
-});
-
-test('robots.txt disallows admin and cabinet', function () {
+test('robots.txt disallows all crawling', function () {
     $content = file_get_contents(public_path('robots.txt'));
 
     expect($content)
-        ->toContain('Disallow: /admin/')
-        ->toContain('Disallow: /cabinet/');
+        ->toContain('User-agent: *')
+        ->toContain('Disallow: /');
 });
 
-test('robots.txt references sitemap', function () {
+test('robots.txt does not advertise sitemap', function () {
     $content = file_get_contents(public_path('robots.txt'));
 
-    expect($content)
-        ->toContain('Sitemap:')
-        ->toContain('sitemap.xml');
+    expect($content)->not->toContain('Sitemap:');
+});
+
+// --- noindex meta on layouts ---
+
+test('app layout emits noindex robots meta', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">', false);
 });
 
 // --- hreflang on public pages ---
