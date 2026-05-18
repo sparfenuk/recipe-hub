@@ -173,6 +173,12 @@
         </div>
     </header>
 
+    @if (config('app.private') && Auth::check())
+        <div class="border-b border-amber-300 bg-amber-100 px-4 py-2 text-center text-sm text-amber-900">
+            {{ __('Private preview prepared for :name. Not for public distribution.', ['name' => Auth::user()->name]) }}
+        </div>
+    @endif
+
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {{ $slot }}
     </main>

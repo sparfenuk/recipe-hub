@@ -85,6 +85,28 @@ test('private mode on — health check is reachable by guests', function () {
     $this->get('/up')->assertOk();
 });
 
+// --- Private preview banner ---
+
+test('banner appears when private mode is on and user is authenticated', function () {
+    config(['app.private' => true]);
+
+    $user = User::factory()->create(['name' => 'Iryna Tester']);
+
+    $this->actingAs($user)
+        ->get('/')
+        ->assertOk()
+        ->assertSee('Private preview prepared for Iryna Tester. Not for public distribution.');
+});
+
+test('banner does not appear when private mode is off', function () {
+    config(['app.private' => false]);
+
+    $this->actingAs(User::factory()->create())
+        ->get('/')
+        ->assertOk()
+        ->assertDontSee('Private preview prepared for');
+});
+
 // --- Registration is gated by private mode (route still exists for tests) ---
 
 test('private mode on — register page redirects guests to login', function () {

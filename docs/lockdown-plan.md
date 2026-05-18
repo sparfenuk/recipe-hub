@@ -98,7 +98,7 @@
 
 ## Хвиля 3 — підготувати demo для автора (перед листом)
 
-- [ ] **3.1** Створити акаунт автора:
+- [ ] **3.1** Створити акаунт автора (один раз на проді):
   ```bash
   sail artisan tinker
   >>> App\Models\User::create([
@@ -109,16 +109,9 @@
   ... ]);
   ```
   Зберегти креди в Bitwarden/1Password.
-- [ ] **3.2** Опційний банер у `layouts/app.blade.php` під `<header>`:
-  ```blade
-  @auth
-    <div class="bg-amber-100 border-b border-amber-300 px-4 py-2 text-center text-sm text-amber-900">
-      Private preview prepared for {{ Auth::user()->name }}. Not for public distribution.
-    </div>
-  @endauth
-  ```
-- [ ] **3.3** Перевірити, що `/recipes/{slug}/pdf` теж за логіном (має покритись `EnsurePrivateAccess`, але переконатись руками).
-- [ ] **3.4** Перевірити, що Filament admin (`/admin`) працює лише для тебе. Автору адмінку **не** давати на цьому етапі.
+- [x] **3.2** Банер у `layouts/app.blade.php` під `<header>`. Реалізовано: показується лише коли `config('app.private') && Auth::check()`; рядок «Private preview prepared for :name. Not for public distribution.» з перекладом EN/UK у `lang/*.json`; тести в `PrivateModeTest`.
+- [x] **3.3** ~~Перевірити, що `/recipes/{slug}/pdf` теж за логіном~~ — покрито `EnsurePrivateAccess` і тестом «private mode on — recipe PDF redirects guests». На проді ще раз руками.
+- [x] **3.4** ~~Перевірити, що Filament admin (`/admin`) працює лише для тебе~~ — покрито тестами в `RolesAndPermissionsTest` («admin can access filament admin panel» / «regular user cannot access filament admin panel»). На проді ще раз руками.
 - [ ] **3.5** Зробити 30–60 сек screen recording walkthrough — щоб вкласти в лист поряд із приватним посиланням.
 
 ---

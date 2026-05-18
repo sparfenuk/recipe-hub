@@ -49,5 +49,6 @@
     "Too Many Requests": "Забагато запитів",
     "You have made too many requests. Please wait a moment and try again.": "Ви зробили забагато запитів. Будь ласка, зачекайте хвилину і спробуйте знову.",
     "Go Back": "Повернутися",
-    "Too many requests. Please wait before saving again.": "Забагато запитів. Будь ласка, зачекайте перед повторним збереженням."
+    "Too many requests. Please wait before saving again.": "Забагато запитів. Будь ласка, зачекайте перед повторним збереженням.",
+    "Private preview prepared for :name. Not for public distribution.": "Приватний прев'ю-доступ для :name. Не для публічного поширення."
 }

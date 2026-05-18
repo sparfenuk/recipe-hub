@@ -49,5 +49,6 @@
     "Too Many Requests": "Too Many Requests",
     "You have made too many requests. Please wait a moment and try again.": "You have made too many requests. Please wait a moment and try again.",
     "Go Back": "Go Back",
-    "Too many requests. Please wait before saving again.": "Too many requests. Please wait before saving again."
+    "Too many requests. Please wait before saving again.": "Too many requests. Please wait before saving again.",
+    "Private preview prepared for :name. Not for public distribution.": "Private preview prepared for :name. Not for public distribution."
 }
