@@ -62,6 +62,10 @@
                     'transition-colors hover:text-emerald-600',
                     'text-emerald-600' => request()->routeIs('author'),
                 ])>{{ __('book.nav_author') }}</a>
+                <a href="{{ route('recipes.random') }}" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700">
+                    <x-heroicon-o-sparkles class="h-4 w-4" />
+                    {{ __('nav.random') }}
+                </a>
                 {{ $nav ?? '' }}
             </nav>
 
@@ -148,6 +152,10 @@
                 <a href="{{ route('recipes.index') }}" class="block rounded px-2 py-2 hover:bg-slate-50 hover:text-emerald-600">{{ __('nav.recipes') }}</a>
                 <a href="{{ route('book') }}" class="block rounded px-2 py-2 hover:bg-slate-50 hover:text-emerald-600">{{ __('book.nav_book') }}</a>
                 <a href="{{ route('author') }}" class="block rounded px-2 py-2 hover:bg-slate-50 hover:text-emerald-600">{{ __('book.nav_author') }}</a>
+                <a href="{{ route('recipes.random') }}" class="flex items-center gap-1.5 rounded px-2 py-2 text-emerald-700 hover:bg-emerald-50">
+                    <x-heroicon-o-sparkles class="h-4 w-4" />
+                    {{ __('nav.random') }}
+                </a>
                 {{ $nav ?? '' }}
             </nav>
 
