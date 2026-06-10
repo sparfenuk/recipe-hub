@@ -10,6 +10,7 @@ use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\Tag;
 use App\Models\Unit;
+use App\Services\RecipeDuplicationService;
 use Carbon\Carbon;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Placeholder;
@@ -437,51 +438,7 @@ class RecipeResource extends Resource
 
     public static function duplicateRecipe(Recipe $recipe): Recipe
     {
-        $recipe->loadMissing('recipeIngredients', 'steps', 'tags', 'media');
-
-        $clone = $recipe->replicate();
-
-        foreach ($recipe->getTranslations('title') as $locale => $value) {
-            $clone->setTranslation('title', $locale, $value.' (Copy)');
-        }
-
-        $clone->status = 'draft';
-        $clone->published_at = null;
-        $clone->nutrition_cached_at = null;
-
-        $baseSlug = Str::slug($recipe->getTranslation('title', 'en', false) ?: $recipe->getTranslation('title', 'uk'));
-        $baseSlug = $baseSlug !== '' ? $baseSlug.'-copy' : 'copy';
-        $slug = $baseSlug;
-        $counter = 1;
-
-        while (Recipe::withTrashed()->where('slug', $slug)->exists()) {
-            $slug = $baseSlug.'-'.++$counter;
-        }
-
-        $clone->slug = $slug;
-        $clone->save();
-
-        foreach ($recipe->recipeIngredients as $ri) {
-            $clone->recipeIngredients()->create($ri->only([
-                'ingredient_id', 'position', 'amount', 'unit_id',
-                'grams_override', 'note', 'is_optional', 'group_label',
-            ]));
-        }
-
-        foreach ($recipe->steps as $step) {
-            $clone->steps()->create([
-                'position' => $step->position,
-                'body' => $step->getTranslations('body'),
-            ]);
-        }
-
-        $clone->tags()->sync($recipe->tags->pluck('id'));
-
-        foreach ($recipe->media as $media) {
-            $media->copy($clone, $media->collection_name);
-        }
-
-        return $clone;
+        return app(RecipeDuplicationService::class)->duplicate($recipe);
     }
 
     /** @return Builder<Recipe> */
