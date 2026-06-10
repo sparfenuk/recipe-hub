@@ -91,7 +91,7 @@
             {{-- Description --}}
             @if ($recipe->description)
                 <div class="prose prose-slate max-w-none">
-                    {!! $recipe->description !!}
+                    {!! \App\Support\RichText::sanitize($recipe->description) !!}
                 </div>
             @endif
 
