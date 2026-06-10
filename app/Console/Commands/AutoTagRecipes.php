@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Enums\RecipeStatus;
+use App\Enums\TagType;
 use App\Models\Recipe;
 use App\Models\Tag;
 use Illuminate\Console\Command;
@@ -37,7 +38,7 @@ class AutoTagRecipes extends Command
         $parsed = json_decode((string) file_get_contents($rulesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->rules = $parsed['rules'];
 
-        $tagCache = Tag::where('type', 'diet')->pluck('id', 'slug')->all();
+        $tagCache = Tag::where('type', TagType::Diet)->pluck('id', 'slug')->all();
 
         foreach ($this->rules as $rule) {
             if (! isset($tagCache[$rule['tag']])) {

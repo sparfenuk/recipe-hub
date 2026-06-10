@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\TagType;
 use App\Filament\Concerns\HasTaxonomyResource;
 use App\Filament\Resources\TagResource\Pages;
 use App\Models\Tag;
@@ -39,11 +40,7 @@ class TagResource extends Resource
     {
         return [
             Select::make('type')
-                ->options([
-                    'diet' => 'Diet',
-                    'cuisine' => 'Cuisine',
-                    'misc' => 'Misc',
-                ])
+                ->options(TagType::class)
                 ->required(),
         ];
     }
@@ -52,13 +49,7 @@ class TagResource extends Resource
     protected static function extraTableColumns(): array
     {
         return [
-            TextColumn::make('type')
-                ->badge()
-                ->color(fn (string $state): string => match ($state) {
-                    'diet' => 'success',
-                    'cuisine' => 'info',
-                    default => 'gray',
-                }),
+            TextColumn::make('type')->badge(),
         ];
     }
 

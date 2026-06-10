@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TagType;
 use App\Models\Allergen;
 use App\Models\Category;
 use App\Models\Cuisine;
@@ -38,7 +39,7 @@ test('tag can be created with type', function () {
     $tag = Tag::create(['slug' => 'vegan', 'name' => 'Vegan', 'type' => 'diet']);
 
     expect($tag->slug)->toBe('vegan')
-        ->and($tag->type)->toBe('diet')
+        ->and($tag->type)->toBe(TagType::Diet)
         ->and($tag->isDiet())->toBeTrue()
         ->and($tag->isCuisine())->toBeFalse()
         ->and($tag->isMisc())->toBeFalse();

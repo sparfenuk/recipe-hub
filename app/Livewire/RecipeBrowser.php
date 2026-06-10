@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Enums\RecipeStatus;
+use App\Enums\TagType;
 use App\Models\Allergen;
 use App\Models\Category;
 use App\Models\Cuisine;
@@ -207,7 +208,7 @@ class RecipeBrowser extends Component
         $options = Cache::remember("recipe-filter-options:{$locale}", self::FILTER_OPTIONS_TTL, fn (): array => [
             'categories' => Category::whereHas('recipes', fn ($q) => $q->where('status', RecipeStatus::Published))->orderBy($nameByLocale)->get(),
             'cuisines' => Cuisine::whereHas('recipes', fn ($q) => $q->where('status', RecipeStatus::Published))->orderBy($nameByLocale)->get(),
-            'dietTags' => Tag::where('type', 'diet')
+            'dietTags' => Tag::where('type', TagType::Diet)
                 ->whereHas('recipes', fn ($q) => $q->where('status', RecipeStatus::Published))
                 ->orderBy($nameByLocale)->get(),
             'allergens' => Allergen::whereHas('ingredients.recipes', fn ($q) => $q->where('status', RecipeStatus::Published))
