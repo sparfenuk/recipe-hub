@@ -53,8 +53,12 @@ class IngredientObserver
         }
 
         // Name-only change: no nutrition recompute needed, just refresh the index.
-        // The Builder macro filters shouldBeSearchable(), so drafts stay out.
-        // searchable() is a Laravel Scout query-builder macro PHPStan can't resolve.
-        Recipe::whereKey($recipeIds)->searchable(); // @phpstan-ignore method.notFound
+        // Filter on shouldBeSearchable() so drafts stay out (the per-model
+        // searchable() does not check it the way Scout's save observer does).
+        Recipe::whereKey($recipeIds)->get()->each(function (Recipe $recipe): void {
+            if ($recipe->shouldBeSearchable()) {
+                $recipe->searchable();
+            }
+        });
     }
 }

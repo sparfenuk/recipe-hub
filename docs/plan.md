@@ -23,7 +23,7 @@
 A task is "done" when:
 
 - [ ] Code merged to `main` (or default branch).
-- [ ] CI green: Pint, Larastan level 6, Pest tests.
+- [ ] CI green: Pint, Larastan level 7, Pest tests.
 - [ ] Manual smoke check: the new behavior works in the running Sail stack.
 - [ ] No new TODOs left without a tracking note.
 

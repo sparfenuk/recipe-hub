@@ -18,6 +18,9 @@ class EnrichIngredients extends Command
     /** @var string */
     protected $description = 'Re-apply allergen keyword rules to all active ingredients';
 
+    /** Test seam: overrides the allergen-rules.json path when set. */
+    public static ?string $rulesPathOverride = null;
+
     /** @var array<string, int> */
     private array $allergenCache = [];
 
@@ -29,7 +32,7 @@ class EnrichIngredients extends Command
 
     public function handle(): int
     {
-        $rulesPath = database_path('seeders/data/allergen-rules.json');
+        $rulesPath = self::$rulesPathOverride ?? database_path('seeders/data/allergen-rules.json');
 
         if (! file_exists($rulesPath)) {
             $this->error("Rules file not found: {$rulesPath}");
@@ -38,7 +41,7 @@ class EnrichIngredients extends Command
         }
 
         /** @var array{by_keyword: list<array{allergen: string, keywords: list<string>}>, by_category: list<array{allergen: string, category_slugs: list<string>}>} $rules */
-        $rules = json_decode((string) file_get_contents($rulesPath), true);
+        $rules = json_decode((string) file_get_contents($rulesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->keywordRules = $rules['by_keyword'];
         $this->categoryRules = $rules['by_category'];
         $this->allergenCache = Allergen::pluck('id', 'slug')->all();

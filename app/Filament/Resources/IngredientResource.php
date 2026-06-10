@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\IngredientResource\Pages;
+use App\Filament\Support\TranslatableSearch;
 use App\Models\Allergen;
 use App\Models\Ingredient;
 use App\Models\IngredientCategory;
@@ -27,7 +28,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class IngredientResource extends Resource
@@ -203,11 +203,8 @@ class IngredientResource extends Resource
                     ->defaultImageUrl(fn () => '')
                     ->label(''),
                 TextColumn::make('name')
-                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $q) use ($search): void {
-                        $q->where('name->en', 'like', "%{$search}%")
-                            ->orWhere('name->uk', 'like', "%{$search}%");
-                    }))
-                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('name->'.app()->getLocale(), $direction)),
+                    ->searchable(query: TranslatableSearch::for('name'))
+                    ->sortable(query: TranslatableSearch::sort('name')),
                 TextColumn::make('category.name')
                     ->label('Category')
                     ->placeholder('--'),

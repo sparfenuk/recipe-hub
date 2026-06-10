@@ -1,0 +1,6 @@
+{
+    "rules": [
+        { "cuisine": "italian", "keywords": ["risotto", "pasta"] },
+        { "cuisine": "thai", "keywords": ["pad thai", "tom yum"] }
+    ]
+}

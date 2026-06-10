@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\RecipeDifficulty;
+use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -30,9 +32,9 @@ class RecipeFactory extends Factory
             'prep_time_min' => $prep,
             'cook_time_min' => $cook,
             'total_time_min' => $prep + $cook,
-            'difficulty' => fake()->randomElement(['easy', 'medium', 'hard']),
+            'difficulty' => fake()->randomElement(RecipeDifficulty::cases()),
             'author_id' => User::factory(),
-            'status' => 'draft',
+            'status' => RecipeStatus::Draft,
             'is_featured' => false,
         ];
     }
@@ -40,7 +42,7 @@ class RecipeFactory extends Factory
     public function published(): static
     {
         return $this->state(fn () => [
-            'status' => 'published',
+            'status' => RecipeStatus::Published,
             'published_at' => now(),
         ]);
     }
@@ -48,7 +50,7 @@ class RecipeFactory extends Factory
     public function archived(): static
     {
         return $this->state(fn () => [
-            'status' => 'archived',
+            'status' => RecipeStatus::Archived,
         ]);
     }
 

@@ -260,3 +260,70 @@ it('per-serving divides correctly with multiple servings', function () {
         ->and($totals->carbs_per_serving_g)->toBe(20.0)
         ->and($totals->fiber_per_serving_g)->toBe(3.0);
 });
+
+// ----------------------------------------------------------------
+// contributionFor(): the shared per-ingredient method (CQ.8)
+// ----------------------------------------------------------------
+it('contributionFor returns null for optional rows', function () {
+    $ingredient = Ingredient::factory()->create(['kcal_per_100g' => 100]);
+    $recipe = Recipe::factory()->create(['servings' => 1]);
+    $ri = RecipeIngredient::create([
+        'recipe_id' => $recipe->id, 'ingredient_id' => $ingredient->id,
+        'position' => 1, 'amount' => 100, 'unit_id' => gram()->id,
+        'is_optional' => true,
+    ]);
+
+    expect($this->calculator->contributionFor($ri))->toBeNull();
+});
+
+it('contributionFor uses grams_override and bypasses unit conversion', function () {
+    $ingredient = Ingredient::factory()->create([
+        'kcal_per_100g' => 200, 'protein_g' => 10, 'fat_g' => 5, 'carbs_g' => 20, 'fiber_g' => 2,
+    ]);
+    $recipe = Recipe::factory()->create(['servings' => 1]);
+    $ri = RecipeIngredient::create([
+        'recipe_id' => $recipe->id, 'ingredient_id' => $ingredient->id,
+        'position' => 1, 'amount' => 999, 'unit_id' => gram()->id,
+        'grams_override' => 50,
+    ]);
+
+    $contribution = $this->calculator->contributionFor($ri);
+
+    expect($contribution)->not->toBeNull()
+        ->and($contribution->kcal)->toBe(100.0)
+        ->and($contribution->protein_g)->toBe(5.0)
+        ->and($contribution->fat_g)->toBe(2.5)
+        ->and($contribution->carbs_g)->toBe(10.0)
+        ->and($contribution->fiber_g)->toBe(1.0);
+});
+
+it('contributionFor returns null when the amount cannot be converted', function () {
+    // Volume unit (ml) with no ingredient density → UnitConverter throws → skip.
+    $ingredient = Ingredient::factory()->create([
+        'kcal_per_100g' => 100, 'density_g_per_ml' => null,
+    ]);
+    $recipe = Recipe::factory()->create(['servings' => 1]);
+    $ri = RecipeIngredient::create([
+        'recipe_id' => $recipe->id, 'ingredient_id' => $ingredient->id,
+        'position' => 1, 'amount' => 100, 'unit_id' => ml()->id,
+    ]);
+
+    expect($this->calculator->contributionFor($ri))->toBeNull();
+});
+
+it('contributionFor computes unscaled macros for a mass unit', function () {
+    $ingredient = Ingredient::factory()->create([
+        'kcal_per_100g' => 165, 'protein_g' => 31, 'fat_g' => 3.6, 'carbs_g' => 0, 'fiber_g' => 0,
+    ]);
+    $recipe = Recipe::factory()->create(['servings' => 1]);
+    $ri = RecipeIngredient::create([
+        'recipe_id' => $recipe->id, 'ingredient_id' => $ingredient->id,
+        'position' => 1, 'amount' => 200, 'unit_id' => gram()->id,
+    ]);
+
+    $contribution = $this->calculator->contributionFor($ri);
+
+    expect($contribution)->not->toBeNull()
+        ->and($contribution->kcal)->toBe(330.0)
+        ->and($contribution->protein_g)->toBe(62.0);
+});

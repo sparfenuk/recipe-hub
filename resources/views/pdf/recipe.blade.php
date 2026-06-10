@@ -207,7 +207,7 @@
             $metaItems[] = ['label' => null, 'value' => $recipe->servings.' '.__('recipes.servings')];
         }
         if ($recipe->difficulty) {
-            $metaItems[] = ['label' => null, 'value' => __('recipes.difficulty_'.$recipe->difficulty)];
+            $metaItems[] = ['label' => null, 'value' => __('recipes.difficulty_'.$recipe->difficulty->value)];
         }
         if ($recipe->cuisine) {
             $metaItems[] = ['label' => null, 'value' => $recipe->cuisine->name];

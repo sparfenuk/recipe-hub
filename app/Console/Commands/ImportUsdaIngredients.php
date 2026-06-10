@@ -394,16 +394,16 @@ class ImportUsdaIngredients extends Command
         }
 
         /** @var array{items: list<array{keywords: list<string>, density_g_per_ml: float, default_unit: string}>} $densities */
-        $densities = json_decode((string) file_get_contents($densitiesPath), true);
+        $densities = json_decode((string) file_get_contents($densitiesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->densityRules = $densities['items'];
 
         /** @var array{by_keyword: list<array{allergen: string, keywords: list<string>}>, by_category: list<array{allergen: string, category_slugs: list<string>}>} $allergenRules */
-        $allergenRules = json_decode((string) file_get_contents($allergenRulesPath), true);
+        $allergenRules = json_decode((string) file_get_contents($allergenRulesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->allergenKeywordRules = $allergenRules['by_keyword'];
         $this->allergenCategoryRules = $allergenRules['by_category'];
 
         /** @var array{items: list<array{keywords: list<string>, aliases: list<string>}>} $aliases */
-        $aliases = json_decode((string) file_get_contents($aliasesPath), true);
+        $aliases = json_decode((string) file_get_contents($aliasesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->aliasRules = $aliases['items'];
 
         $this->allergenCache = Allergen::pluck('id', 'slug')->all();

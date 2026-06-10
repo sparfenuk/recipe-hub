@@ -260,13 +260,13 @@ class ApplyIngredientNutritionOverrides extends Command
     {
         $keys = [$normalized];
 
-        foreach (preg_split('/\s+(?:or|and)\s+/u', $normalized) as $part) {
+        foreach ((preg_split('/\s+(?:or|and)\s+/u', $normalized) ?: []) as $part) {
             $part = trim($part);
             if ($part !== '' && $part !== $normalized) {
                 $keys[] = $part;
             }
         }
-        foreach (preg_split('/\s*,\s*/u', $normalized) as $part) {
+        foreach ((preg_split('/\s*,\s*/u', $normalized) ?: []) as $part) {
             $part = trim($part);
             if ($part !== '' && $part !== $normalized) {
                 $keys[] = $part;
@@ -280,7 +280,7 @@ class ApplyIngredientNutritionOverrides extends Command
             if ($sing !== $k) {
                 $expanded[] = $sing;
             }
-            $words = preg_split('/\s+/u', $k);
+            $words = preg_split('/\s+/u', $k) ?: [];
             if (count($words) >= 2) {
                 $expanded[] = end($words);
                 $expanded[] = $words[0];

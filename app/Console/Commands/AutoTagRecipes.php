@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\RecipeStatus;
+use App\Enums\TagType;
 use App\Models\Recipe;
 use App\Models\Tag;
 use Illuminate\Console\Command;
@@ -17,6 +19,9 @@ class AutoTagRecipes extends Command
     /** @var string */
     protected $description = 'Auto-apply diet tags to published recipes based on ingredient allergens and name keywords';
 
+    /** Test seam: overrides the diet-rules.json path when set. */
+    public static ?string $rulesPathOverride = null;
+
     /**
      * @var list<array{tag: string, exclude_allergens?: list<string>, exclude_ingredient_keywords?: list<string>}>
      */
@@ -24,7 +29,7 @@ class AutoTagRecipes extends Command
 
     public function handle(): int
     {
-        $rulesPath = database_path('seeders/data/diet-rules.json');
+        $rulesPath = self::$rulesPathOverride ?? database_path('seeders/data/diet-rules.json');
 
         if (! file_exists($rulesPath)) {
             $this->error("Rules file not found: {$rulesPath}");
@@ -33,10 +38,10 @@ class AutoTagRecipes extends Command
         }
 
         /** @var array{rules: list<array{tag: string, exclude_allergens?: list<string>, exclude_ingredient_keywords?: list<string>}>} $parsed */
-        $parsed = json_decode((string) file_get_contents($rulesPath), true);
+        $parsed = json_decode((string) file_get_contents($rulesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->rules = $parsed['rules'];
 
-        $tagCache = Tag::where('type', 'diet')->pluck('id', 'slug')->all();
+        $tagCache = Tag::where('type', TagType::Diet)->pluck('id', 'slug')->all();
 
         foreach ($this->rules as $rule) {
             if (! isset($tagCache[$rule['tag']])) {
@@ -49,7 +54,7 @@ class AutoTagRecipes extends Command
         /** @var array<string, int> $stats */
         $stats = [];
 
-        Recipe::where('status', 'published')
+        Recipe::where('status', RecipeStatus::Published)
             ->with(['recipeIngredients.ingredient.allergens:id,slug'])
             ->chunkById(100, function ($recipes) use ($tagCache, $dryRun, &$stats): void {
                 foreach ($recipes as $recipe) {

@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\UnitType;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 
+/**
+ * @property UnitType $type
+ */
 class Unit extends Model
 {
     use HasTranslations;
@@ -24,22 +28,23 @@ class Unit extends Model
     protected function casts(): array
     {
         return [
+            'type' => UnitType::class,
             'to_base_factor' => 'decimal:6',
         ];
     }
 
     public function isMass(): bool
     {
-        return $this->type === 'mass';
+        return $this->type === UnitType::Mass;
     }
 
     public function isVolume(): bool
     {
-        return $this->type === 'volume';
+        return $this->type === UnitType::Volume;
     }
 
     public function isCount(): bool
     {
-        return $this->type === 'count';
+        return $this->type === UnitType::Count;
     }
 }

@@ -2,13 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\RecipeDifficulty;
+use App\Enums\RecipeStatus;
 use App\Filament\Resources\RecipeResource\Pages;
+use App\Filament\Support\TranslatableSearch;
 use App\Models\Category;
 use App\Models\Cuisine;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\Tag;
 use App\Models\Unit;
+use App\Services\RecipeDuplicationService;
 use Carbon\Carbon;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Placeholder;
@@ -90,12 +94,8 @@ class RecipeResource extends Resource
                             ->preload()
                             ->nullable(),
                         Select::make('difficulty')
-                            ->options([
-                                'easy' => 'Easy',
-                                'medium' => 'Medium',
-                                'hard' => 'Hard',
-                            ])
-                            ->default('medium')
+                            ->options(RecipeDifficulty::class)
+                            ->default(RecipeDifficulty::Medium)
                             ->required(),
                         TextInput::make('servings')
                             ->numeric()
@@ -114,13 +114,8 @@ class RecipeResource extends Resource
                             ->minValue(0)
                             ->default(0),
                         Select::make('status')
-                            ->options([
-                                'draft' => 'Draft',
-                                'review' => 'Review',
-                                'published' => 'Published',
-                                'archived' => 'Archived',
-                            ])
-                            ->default('draft')
+                            ->options(RecipeStatus::class)
+                            ->default(RecipeStatus::Draft)
                             ->required(),
                         Toggle::make('is_featured')
                             ->default(false),
@@ -206,7 +201,7 @@ class RecipeResource extends Resource
                             ->collapsible()
                             ->cloneable()
                             ->itemLabel(fn (array $state): ?string => ($state['ingredient_id'] ?? null)
-                                ? Ingredient::find($state['ingredient_id'])?->name
+                                ? Ingredient::find((int) $state['ingredient_id'])?->name
                                 : null),
                     ]),
 
@@ -313,23 +308,11 @@ class RecipeResource extends Resource
                     ->defaultImageUrl(url('/images/recipe-placeholder.svg'))
                     ->label(''),
                 TextColumn::make('title')
-                    ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->where(function (Builder $q) use ($search): void {
-                            $q->where('title->en', 'like', "%{$search}%")
-                                ->orWhere('title->uk', 'like', "%{$search}%");
-                        });
-                    })
-                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('title->'.app()->getLocale(), $direction))
+                    ->searchable(query: TranslatableSearch::for('title'))
+                    ->sortable(query: TranslatableSearch::sort('title'))
                     ->limit(40),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
-                        'review' => 'warning',
-                        'published' => 'success',
-                        'archived' => 'danger',
-                        default => 'gray',
-                    })
                     ->sortable(),
                 TextColumn::make('category.name')
                     ->label('Category')
@@ -349,12 +332,6 @@ class RecipeResource extends Resource
                     ->toggleable(),
                 TextColumn::make('difficulty')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'easy' => 'success',
-                        'medium' => 'warning',
-                        'hard' => 'danger',
-                        default => 'gray',
-                    })
                     ->toggleable(),
                 IconColumn::make('is_featured')
                     ->label('Featured')
@@ -408,7 +385,7 @@ class RecipeResource extends Resource
                             foreach ($records as $record) {
                                 /** @var Recipe $record */
                                 $record->update([
-                                    'status' => 'published',
+                                    'status' => RecipeStatus::Published,
                                     'published_at' => $record->published_at ?? now(),
                                 ]);
                             }
@@ -420,7 +397,7 @@ class RecipeResource extends Resource
                         ->action(function (Collection $records): void {
                             foreach ($records as $record) {
                                 /** @var Recipe $record */
-                                $record->update(['status' => 'archived']);
+                                $record->update(['status' => RecipeStatus::Archived]);
                             }
                         })
                         ->deselectRecordsAfterCompletion(),
@@ -441,51 +418,7 @@ class RecipeResource extends Resource
 
     public static function duplicateRecipe(Recipe $recipe): Recipe
     {
-        $recipe->loadMissing('recipeIngredients', 'steps', 'tags', 'media');
-
-        $clone = $recipe->replicate();
-
-        foreach ($recipe->getTranslations('title') as $locale => $value) {
-            $clone->setTranslation('title', $locale, $value.' (Copy)');
-        }
-
-        $clone->status = 'draft';
-        $clone->published_at = null;
-        $clone->nutrition_cached_at = null;
-
-        $baseSlug = Str::slug($recipe->getTranslation('title', 'en', false) ?: $recipe->getTranslation('title', 'uk'));
-        $baseSlug = $baseSlug !== '' ? $baseSlug.'-copy' : 'copy';
-        $slug = $baseSlug;
-        $counter = 1;
-
-        while (Recipe::withTrashed()->where('slug', $slug)->exists()) {
-            $slug = $baseSlug.'-'.++$counter;
-        }
-
-        $clone->slug = $slug;
-        $clone->save();
-
-        foreach ($recipe->recipeIngredients as $ri) {
-            $clone->recipeIngredients()->create($ri->only([
-                'ingredient_id', 'position', 'amount', 'unit_id',
-                'grams_override', 'note', 'is_optional', 'group_label',
-            ]));
-        }
-
-        foreach ($recipe->steps as $step) {
-            $clone->steps()->create([
-                'position' => $step->position,
-                'body' => $step->getTranslations('body'),
-            ]);
-        }
-
-        $clone->tags()->sync($recipe->tags->pluck('id'));
-
-        foreach ($recipe->media as $media) {
-            $media->copy($clone, $media->collection_name);
-        }
-
-        return $clone;
+        return app(RecipeDuplicationService::class)->duplicate($recipe);
     }
 
     /** @return Builder<Recipe> */

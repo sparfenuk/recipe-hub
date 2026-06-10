@@ -5,6 +5,7 @@ namespace App\Livewire\Cabinet;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -50,6 +51,14 @@ class ProfileForm extends Component
 
     public function save(): void
     {
+        $key = 'profile-save:'.Auth::id();
+        if (RateLimiter::tooManyAttempts($key, 30)) {
+            $this->addError('name', __('Too many requests. Please wait before saving again.'));
+
+            return;
+        }
+        RateLimiter::hit($key, 60);
+
         $this->validate();
 
         /** @var User $user */

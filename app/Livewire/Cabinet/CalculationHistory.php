@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,6 +17,12 @@ class CalculationHistory extends Component
 
     public function delete(int $sessionId): void
     {
+        $key = 'calc-delete:'.Auth::id();
+        if (RateLimiter::tooManyAttempts($key, 30)) {
+            return;
+        }
+        RateLimiter::hit($key, 60);
+
         /** @var User $user */
         $user = Auth::user();
 
