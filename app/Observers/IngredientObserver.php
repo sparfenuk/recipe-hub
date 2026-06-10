@@ -54,6 +54,7 @@ class IngredientObserver
 
         // Name-only change: no nutrition recompute needed, just refresh the index.
         // The Builder macro filters shouldBeSearchable(), so drafts stay out.
-        Recipe::whereKey($recipeIds)->searchable();
+        // searchable() is a Laravel Scout query-builder macro PHPStan can't resolve.
+        Recipe::whereKey($recipeIds)->searchable(); // @phpstan-ignore method.notFound
     }
 }
