@@ -19,12 +19,15 @@ class AutoCuisineRecipes extends Command
     /** @var string */
     protected $description = 'Auto-assign cuisine to published recipes by matching keywords against the English title. Only fills empty cuisine_id; admin edits survive.';
 
+    /** Test seam: overrides the cuisine-rules.json path when set. */
+    public static ?string $rulesPathOverride = null;
+
     /** @var list<array{cuisine: string, keywords: list<string>}> */
     private array $rules = [];
 
     public function handle(): int
     {
-        $rulesPath = database_path('seeders/data/cuisine-rules.json');
+        $rulesPath = self::$rulesPathOverride ?? database_path('seeders/data/cuisine-rules.json');
 
         if (! file_exists($rulesPath)) {
             $this->error("Rules file not found: {$rulesPath}");

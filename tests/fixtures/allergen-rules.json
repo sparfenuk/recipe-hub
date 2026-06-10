@@ -1,0 +1,9 @@
+{
+    "by_keyword": [
+        { "allergen": "gluten", "keywords": ["wheat", "flour"] },
+        { "allergen": "nuts", "keywords": ["almond", "peanut"] }
+    ],
+    "by_category": [
+        { "allergen": "lactose", "category_slugs": ["dairy"] }
+    ]
+}

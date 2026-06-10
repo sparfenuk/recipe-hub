@@ -19,6 +19,9 @@ class AutoTagRecipes extends Command
     /** @var string */
     protected $description = 'Auto-apply diet tags to published recipes based on ingredient allergens and name keywords';
 
+    /** Test seam: overrides the diet-rules.json path when set. */
+    public static ?string $rulesPathOverride = null;
+
     /**
      * @var list<array{tag: string, exclude_allergens?: list<string>, exclude_ingredient_keywords?: list<string>}>
      */
@@ -26,7 +29,7 @@ class AutoTagRecipes extends Command
 
     public function handle(): int
     {
-        $rulesPath = database_path('seeders/data/diet-rules.json');
+        $rulesPath = self::$rulesPathOverride ?? database_path('seeders/data/diet-rules.json');
 
         if (! file_exists($rulesPath)) {
             $this->error("Rules file not found: {$rulesPath}");

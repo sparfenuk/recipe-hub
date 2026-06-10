@@ -18,6 +18,9 @@ class EnrichIngredients extends Command
     /** @var string */
     protected $description = 'Re-apply allergen keyword rules to all active ingredients';
 
+    /** Test seam: overrides the allergen-rules.json path when set. */
+    public static ?string $rulesPathOverride = null;
+
     /** @var array<string, int> */
     private array $allergenCache = [];
 
@@ -29,7 +32,7 @@ class EnrichIngredients extends Command
 
     public function handle(): int
     {
-        $rulesPath = database_path('seeders/data/allergen-rules.json');
+        $rulesPath = self::$rulesPathOverride ?? database_path('seeders/data/allergen-rules.json');
 
         if (! file_exists($rulesPath)) {
             $this->error("Rules file not found: {$rulesPath}");
