@@ -14,6 +14,8 @@ return [
     'no_favorites' => 'У вас ще немає збережених рецептів.',
     'browse_recipes' => 'Переглянути рецепти',
     'unfavorite_confirm' => 'Видалити цей рецепт з обраного?',
+    'favorite_removed' => 'Видалено з обраного',
+    'undo' => 'Повернути',
     'sort_newest_saved' => 'Нещодавно збережені',
     'sort_oldest_saved' => 'Найдавніші',
     'sort_alpha' => 'А-Я',

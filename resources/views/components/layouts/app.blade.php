@@ -40,6 +40,11 @@
     @livewireStyles
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    {{-- Skip to content (UX.15) --}}
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-emerald-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg">
+        {{ __('nav.skip_to_content') }}
+    </a>
+
     <header x-data="{ mobileOpen: false }" class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
             {{-- Logo --}}
@@ -69,21 +74,9 @@
                 {{ $nav ?? '' }}
             </nav>
 
-            {{-- Header search --}}
-            <div
-                class="hidden md:block"
-                x-data="{ q: new URLSearchParams(window.location.search).get('q') || '' }"
-                x-on:keydown.enter.prevent="if (q.trim()) window.location.href = '{{ route('recipes.index') }}?q=' + encodeURIComponent(q.trim()); else window.location.href = '{{ route('recipes.index') }}';"
-            >
-                <div class="relative w-64">
-                    <x-heroicon-o-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                        type="search"
-                        x-model="q"
-                        placeholder="{{ __('recipes.search_placeholder') }}"
-                        class="block w-full rounded-lg border-slate-300 pl-9 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
-                    >
-                </div>
+            {{-- Header search (UX.14) --}}
+            <div class="hidden md:block">
+                <x-header-search class="w-64" />
             </div>
 
             {{-- Desktop right side: locale switcher + auth --}}
@@ -132,20 +125,8 @@
             x-cloak
             class="border-t border-slate-200 bg-white md:hidden"
         >
-            <div
-                class="px-4 pt-3"
-                x-data="{ q: new URLSearchParams(window.location.search).get('q') || '' }"
-                x-on:keydown.enter.prevent="if (q.trim()) window.location.href = '{{ route('recipes.index') }}?q=' + encodeURIComponent(q.trim()); else window.location.href = '{{ route('recipes.index') }}';"
-            >
-                <div class="relative">
-                    <x-heroicon-o-magnifying-glass class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                        type="search"
-                        x-model="q"
-                        placeholder="{{ __('recipes.search_placeholder') }}"
-                        class="block w-full rounded-lg border-slate-300 pl-9 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
-                    >
-                </div>
+            <div class="px-4 pt-3">
+                <x-header-search />
             </div>
 
             <nav class="space-y-1 px-4 py-3 text-sm font-medium text-slate-600">
@@ -187,7 +168,7 @@
         </div>
     @endif
 
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main id="main" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {{ $slot }}
     </main>
 
@@ -198,10 +179,19 @@
                     <x-heroicon-o-fire class="h-5 w-5" />
                     Recipe Hub
                 </a>
-                <p class="text-sm text-slate-500">
-                    &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
-                </p>
+
+                {{-- Footer navigation (UX.24) --}}
+                <nav class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-slate-600">
+                    <a href="{{ route('recipes.index') }}" class="transition-colors hover:text-emerald-600">{{ __('nav.recipes') }}</a>
+                    <a href="{{ route('book') }}" class="transition-colors hover:text-emerald-600">{{ __('book.nav_book') }}</a>
+                    <a href="{{ route('author') }}" class="transition-colors hover:text-emerald-600">{{ __('book.nav_author') }}</a>
+                    <livewire:locale-switcher />
+                </nav>
             </div>
+
+            <p class="mt-6 text-center text-sm text-slate-500 sm:text-left">
+                &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
+            </p>
         </div>
     </footer>
 

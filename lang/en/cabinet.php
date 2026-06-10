@@ -14,6 +14,8 @@ return [
     'no_favorites' => 'You haven\'t saved any favorites yet.',
     'browse_recipes' => 'Browse recipes',
     'unfavorite_confirm' => 'Remove this recipe from your favorites?',
+    'favorite_removed' => 'Removed from favorites',
+    'undo' => 'Undo',
     'sort_newest_saved' => 'Recently saved',
     'sort_oldest_saved' => 'Oldest saved',
     'sort_alpha' => 'A-Z',

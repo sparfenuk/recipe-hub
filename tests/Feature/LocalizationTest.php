@@ -95,6 +95,16 @@ test('locale switcher renders on the welcome page', function () {
     $response->assertSee('Українська');
 });
 
+test('locale switcher link preserves the current query string (UX.1)', function () {
+    $response = $this->get('/recipes?q=pasta&sort=lowest_kcal');
+
+    // The alternate-locale link must keep search/filter params, not wipe them.
+    $response->assertOk()
+        ->assertSee('locale=uk', false)
+        ->assertSee('q=pasta', false)
+        ->assertSee('sort=lowest_kcal', false);
+});
+
 test('login page renders translated when locale is uk', function () {
     $response = $this->withCookie('locale', 'uk')->get('/login');
 

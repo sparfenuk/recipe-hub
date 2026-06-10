@@ -33,6 +33,18 @@ class IngredientAutocomplete extends Component
         $this->dispatch('ingredient-filter-updated', mode: $this->mode, ids: array_map('intval', array_keys($this->selected)));
     }
 
+    /** Keep the autocomplete chips in sync when a filter chip is removed elsewhere (UX.4). */
+    #[On('remove-ingredient')]
+    public function onRemoveIngredient(string $mode, int $id): void
+    {
+        if ($mode !== $this->mode) {
+            return;
+        }
+
+        unset($this->selected[$id]);
+        $this->dispatch('ingredient-filter-updated', mode: $this->mode, ids: array_map('intval', array_keys($this->selected)));
+    }
+
     #[On('clear-ingredient-filters')]
     public function clearSelection(): void
     {

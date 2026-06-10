@@ -1,5 +1,5 @@
 <x-layouts.app
-    title="Recipe Hub — Your Personal Recipe & Nutrition Calculator"
+    :title="__('book.home_meta_title')"
     :canonical-url="url('/')"
     :og-image="asset('images/book/page-001.jpg')"
 >
@@ -45,7 +45,7 @@
 
     {{-- Stats strip --}}
     <section class="-mx-4 border-b border-slate-200 bg-white px-4 py-10 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-        <div class="mx-auto grid max-w-7xl grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-7">
+        <div class="mx-auto grid max-w-7xl grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-7">
             @foreach ([
                 ['30', __('book.stats_breakfasts')],
                 ['32', __('book.stats_lunches')],
@@ -63,23 +63,7 @@
         </div>
     </section>
 
-    {{-- Sections grid --}}
-    @php
-        $sectionTiles = [
-            ['slug' => 'breakfast',        'label' => 'book.section_breakfast', 'icon' => 'heroicon-o-sun',      'classes' => 'from-amber-100 to-amber-50 text-amber-800 ring-amber-200 hover:ring-amber-400'],
-            ['slug' => 'lunch',            'label' => 'book.section_lunch',     'icon' => 'heroicon-o-cake',     'classes' => 'from-emerald-100 to-emerald-50 text-emerald-800 ring-emerald-200 hover:ring-emerald-400'],
-            ['slug' => 'dinner',           'label' => 'book.section_dinner',    'icon' => 'heroicon-o-moon',     'classes' => 'from-indigo-100 to-indigo-50 text-indigo-800 ring-indigo-200 hover:ring-indigo-400'],
-            ['slug' => 'snacks',           'label' => 'book.section_snacks',    'icon' => 'heroicon-o-sparkles', 'classes' => 'from-rose-100 to-rose-50 text-rose-800 ring-rose-200 hover:ring-rose-400'],
-            ['slug' => 'smoothies',        'label' => 'book.section_smoothies', 'icon' => 'heroicon-o-beaker',   'classes' => 'from-lime-100 to-lime-50 text-lime-800 ring-lime-200 hover:ring-lime-400'],
-            ['slug' => 'ice-cream',        'label' => 'book.section_ice_cream', 'icon' => 'heroicon-o-cloud',    'classes' => 'from-sky-100 to-sky-50 text-sky-800 ring-sky-200 hover:ring-sky-400'],
-            ['slug' => 'desserts',         'label' => 'book.section_desserts',  'icon' => 'heroicon-o-heart',    'classes' => 'from-pink-100 to-pink-50 text-pink-800 ring-pink-200 hover:ring-pink-400'],
-            ['slug' => 'sauces-dressings', 'label' => 'book.section_sauces',    'icon' => 'heroicon-o-bolt',     'classes' => 'from-orange-100 to-orange-50 text-orange-800 ring-orange-200 hover:ring-orange-400'],
-        ];
-        $tileSlugs = array_column($sectionTiles, 'slug');
-        $categoryIdBySlug = \App\Models\Category::query()
-            ->whereIn('slug', $tileSlugs)
-            ->pluck('id', 'slug');
-    @endphp
+    {{-- Sections grid — $sectionTiles + $categoryIdBySlug are passed from the home route (UX.26) --}}
     <section class="py-16">
         <div class="mx-auto max-w-7xl">
             <div class="mb-10 text-center">
@@ -124,11 +108,13 @@
                 </a>
             </div>
 
-            <div class="flex flex-col justify-center rounded-2xl bg-gradient-to-br from-purple-50 to-fuchsia-50 p-8 ring-1 ring-slate-200">
+            <div class="flex flex-col justify-center rounded-2xl bg-gradient-to-br from-slate-50 to-emerald-50 p-8 ring-1 ring-slate-200">
                 <div class="flex items-center gap-4">
-                    <div class="h-14 w-14 shrink-0 rounded-full bg-gradient-to-br from-purple-400 to-fuchsia-400 ring-2 ring-white"></div>
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-lime-400 text-white ring-2 ring-white">
+                        <x-heroicon-s-user class="h-7 w-7" />
+                    </div>
                     <div>
-                        <div class="text-sm font-semibold uppercase tracking-wide text-purple-700">{{ __('book.author_role') }}</div>
+                        <div class="text-sm font-semibold uppercase tracking-wide text-emerald-700">{{ __('book.author_role') }}</div>
                         <div class="text-lg font-bold text-slate-900">{{ __('book.author_title') }}</div>
                     </div>
                 </div>
@@ -138,7 +124,7 @@
                 <p class="mt-3 text-base leading-relaxed text-slate-600">
                     {{ __('book.author_teaser_body') }}
                 </p>
-                <a href="{{ route('author') }}" class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-purple-700 hover:text-purple-800">
+                <a href="{{ route('author') }}" class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
                     {{ __('book.author_cta') }}
                     <x-heroicon-o-arrow-right class="h-4 w-4" />
                 </a>

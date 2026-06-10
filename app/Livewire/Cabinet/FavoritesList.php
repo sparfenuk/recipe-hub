@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,6 +20,14 @@ class FavoritesList extends Component
 
     public string $sort = 'newest';
 
+    /**
+     * Id of the just-removed favorite, kept so the view can offer an Undo (UX.17).
+     * Locked: set only server-side; a tampered value would let undo re-favorite
+     * an arbitrary (e.g. unpublished) recipe.
+     */
+    #[Locked]
+    public ?int $recentlyRemovedId = null;
+
     /** @var array<string, array<string, mixed>> */
     protected $queryString = [
         'search' => ['except' => '', 'as' => 'q'],
@@ -27,11 +36,13 @@ class FavoritesList extends Component
 
     public function updatedSearch(): void
     {
+        $this->recentlyRemovedId = null;
         $this->resetPage();
     }
 
     public function updatedSort(): void
     {
+        $this->recentlyRemovedId = null;
         $this->resetPage();
     }
 
@@ -40,6 +51,24 @@ class FavoritesList extends Component
         /** @var User $user */
         $user = Auth::user();
         $user->favorites()->detach($recipeId);
+        $this->recentlyRemovedId = $recipeId;
+    }
+
+    public function undoUnfavorite(): void
+    {
+        if ($this->recentlyRemovedId === null) {
+            return;
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+        $user->favorites()->syncWithoutDetaching([$this->recentlyRemovedId]);
+        $this->recentlyRemovedId = null;
+    }
+
+    public function dismissUndo(): void
+    {
+        $this->recentlyRemovedId = null;
     }
 
     public function render(): View

@@ -41,7 +41,9 @@ test('calculator renders with default servings', function () {
         ->assertSee(__('calculator.title'));
 });
 
-test('calculator shows scaled ingredient amounts when servings doubled', function () {
+test('calculator scales ingredient amounts when servings doubled', function () {
+    // The amounts now render on the recipe page's main list (UX.3); the calculator
+    // still computes them via scaledIngredients.
     $recipe = Recipe::factory()->published()->create([
         'author_id' => $this->author->id,
         'servings' => 2,
@@ -56,12 +58,22 @@ test('calculator shows scaled ingredient amounts when servings doubled', functio
         'position' => 1,
     ]);
 
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe]);
+    expect(collect($component->get('scaledIngredients'))->firstWhere('name', 'Flour')['amount'])->toBe(200.0);
+
+    $component->set('targetServings', 4);
+    expect(collect($component->get('scaledIngredients'))->firstWhere('name', 'Flour')['amount'])->toBe(400.0);
+});
+
+test('scaling dispatches portion-scaled for the recipe page (UX.3)', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
     Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
-        ->assertSee('200')
-        ->assertSee('Flour')
-        ->set('targetServings', 4)
-        ->assertSee('400')
-        ->assertSee('Flour');
+        ->set('targetServings', 8)
+        ->assertDispatched('portion-scaled', servings: 8, mode: 'servings', isScaled: true);
 });
 
 test('calculator shows scaled nutrition totals', function () {
@@ -207,11 +219,13 @@ test('calculator handles multiple ingredients with grouping', function () {
         'group_label' => 'Dough',
     ]);
 
-    Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
-        ->set('targetServings', 6)
-        ->assertSee('900')
-        ->assertSee('300')
-        ->assertSee('Dough');
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
+        ->set('targetServings', 6);
+
+    $ingredients = collect($component->get('scaledIngredients'));
+    expect($ingredients->firstWhere('name', 'Flour')['amount'])->toBe(900.0)
+        ->and($ingredients->firstWhere('name', 'Butter')['amount'])->toBe(300.0)
+        ->and($ingredients->firstWhere('name', 'Flour')['group_label'])->toBe('Dough');
 });
 
 test('calculator shows optional ingredients', function () {
@@ -230,10 +244,12 @@ test('calculator shows optional ingredients', function () {
         'is_optional' => true,
     ]);
 
-    Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
-        ->set('targetServings', 4)
-        ->assertSee('20')
-        ->assertSee('Parsley');
+    $component = Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
+        ->set('targetServings', 4);
+
+    $parsley = collect($component->get('scaledIngredients'))->firstWhere('name', 'Parsley');
+    expect($parsley['amount'])->toBe(20.0)
+        ->and($parsley['is_optional'])->toBeTrue();
 });
 
 test('scale factor is 1 when target equals original', function () {

@@ -212,4 +212,7 @@ return [
     'nav_book' => 'The Book',
     'nav_author' => 'Author',
 
+    // Home page <title> / og:title (UX.6)
+    'home_meta_title' => 'Recipe Hub — Your Personal Recipe & Nutrition Calculator',
+
 ];

@@ -310,3 +310,72 @@ test('recipe detail shows print button', function () {
     Livewire::test(RecipeDetail::class, ['slug' => 'printable-recipe'])
         ->assertSee(__('recipes.print'));
 });
+
+test('recipe detail scales the main ingredient list from the calculator (UX.3)', function () {
+    $unit = Unit::create(['code' => 'g', 'name' => 'gram', 'type' => 'mass', 'to_base_factor' => 1]);
+    $ingredient = Ingredient::factory()->create(['name' => 'Flour']);
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'slug' => 'scale-detail',
+        'servings' => 2,
+    ]);
+    RecipeIngredient::create([
+        'recipe_id' => $recipe->id,
+        'ingredient_id' => $ingredient->id,
+        'unit_id' => $unit->id,
+        'amount' => 200,
+        'position' => 1,
+    ]);
+
+    Livewire::test(RecipeDetail::class, ['slug' => 'scale-detail'])
+        ->assertSee('200')
+        ->dispatch('portion-scaled', factor: 2.0, servings: 4, mode: 'servings', isScaled: true)
+        ->assertSet('portionFactor', 2.0)
+        ->assertSet('portionScaled', true)
+        ->assertSee('400')
+        ->assertSee(__('recipes.amounts_for_servings', ['servings' => 4]));
+});
+
+test('recipe detail resetPortion restores original amounts (UX.3)', function () {
+    $unit = Unit::create(['code' => 'g', 'name' => 'gram', 'type' => 'mass', 'to_base_factor' => 1]);
+    $ingredient = Ingredient::factory()->create(['name' => 'Flour']);
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'slug' => 'reset-detail',
+        'servings' => 2,
+    ]);
+    RecipeIngredient::create([
+        'recipe_id' => $recipe->id,
+        'ingredient_id' => $ingredient->id,
+        'unit_id' => $unit->id,
+        'amount' => 200,
+        'position' => 1,
+    ]);
+
+    Livewire::test(RecipeDetail::class, ['slug' => 'reset-detail'])
+        ->dispatch('portion-scaled', factor: 2.0, servings: 4, mode: 'servings', isScaled: true)
+        ->assertSee('400')
+        ->call('resetPortion')
+        ->assertSet('portionScaled', false)
+        ->assertSet('portionFactor', 1.0)
+        ->assertSee('200')
+        ->assertDispatched('reset-portion');
+});
+
+test('recipe detail shows related recipes from the same category (UX.18)', function () {
+    $category = Category::create(['slug' => 'soups', 'name' => 'Soups']);
+    Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'slug' => 'main-soup',
+        'category_id' => $category->id,
+    ]);
+    Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'title' => 'Sibling Soup',
+        'category_id' => $category->id,
+    ]);
+
+    Livewire::test(RecipeDetail::class, ['slug' => 'main-soup'])
+        ->assertSee(__('recipes.more_from_category', ['category' => 'Soups']))
+        ->assertSee('Sibling Soup');
+});

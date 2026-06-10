@@ -13,9 +13,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
+ * @property-read float $scaleFactor
  * @property-read int|null $dailyKcalTarget
  * @property-read bool $isScaled
  * @property-read array{protein_g: float, fat_g: float, carbs_g: float}|null $macroTargets
@@ -54,13 +56,38 @@ class PortionCalculator extends Component
 
         $this->mode = $mode;
         $this->saved = false;
+        $this->notifyScaled();
     }
 
     public function updated(string $property): void
     {
         if (in_array($property, ['targetServings', 'targetKcal', 'targetDailyPct'], true)) {
             $this->saved = false;
+            $this->notifyScaled();
         }
+    }
+
+    #[On('reset-portion')]
+    public function onResetPortion(): void
+    {
+        $this->resetCalculator();
+    }
+
+    /**
+     * Broadcast the current scaling to the parent recipe-detail component so the
+     * main ingredient list is the single source of truth for amounts. (UX.3)
+     */
+    private function notifyScaled(): void
+    {
+        unset($this->scaleFactor, $this->isScaled);
+
+        $this->dispatch(
+            'portion-scaled',
+            factor: $this->scaleFactor,
+            servings: $this->mode === 'servings' ? $this->targetServings : null,
+            mode: $this->mode,
+            isScaled: $this->isScaled,
+        );
     }
 
     #[Computed]
@@ -327,21 +354,25 @@ class PortionCalculator extends Component
         $this->targetServings = $this->originalServings;
         $this->targetKcal = null;
         $this->targetDailyPct = null;
+        $this->notifyScaled();
     }
 
     public function resetServings(): void
     {
         $this->targetServings = $this->originalServings;
+        $this->notifyScaled();
     }
 
     public function increment(): void
     {
         $this->targetServings = min(($this->targetServings ?? $this->originalServings) + 1, 100);
+        $this->notifyScaled();
     }
 
     public function decrement(): void
     {
         $this->targetServings = max(($this->targetServings ?? $this->originalServings) - 1, 1);
+        $this->notifyScaled();
     }
 
     #[Computed]

@@ -97,7 +97,7 @@
                 {{-- Prominent daily target badge --}}
                 <div class="flex items-center justify-between rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/60 px-4 py-3">
                     <div>
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">
                             {{ __('calculator.daily_target_label') }}
                         </p>
                         <p class="mt-0.5 leading-none">
@@ -155,41 +155,8 @@
         @endif
     </div>
 
-    {{-- Scaled ingredients --}}
-    <div class="border-t border-slate-100 px-5 py-4">
-        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            {{ __('calculator.scaled_ingredients') }}
-        </h3>
-
-        <div class="mt-3">
-            @php
-                $grouped = $this->scaledIngredients->groupBy('group_label');
-            @endphp
-
-            @foreach ($grouped as $label => $ingredients)
-                @if ($label)
-                    <p class="mt-3 mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $label }}</p>
-                @endif
-
-                <ul class="space-y-1">
-                    @foreach ($ingredients as $item)
-                        <li class="flex items-start gap-2 text-sm">
-                            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500"></span>
-                            <span>
-                                @if ((float) $item['amount'] > 0)
-                                    <span class="font-semibold text-slate-900">{{ rtrim(rtrim(number_format($item['amount'], 1), '0'), '.') }}</span>
-                                @endif
-                                @if ($item['unit_label'])
-                                    <span class="text-slate-600">{{ $item['unit_label'] }}</span>
-                                @endif
-                                <span class="text-slate-700">{{ $item['name'] }}</span>
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endforeach
-        </div>
-    </div>
+    {{-- Ingredient amounts moved to the recipe's main list as the single source of
+         truth (correct on screen and in print) — see RecipeDetail / UX.3. --}}
 
     {{-- Scaled nutrition --}}
     @if ($this->recipe->nutrition_cached_at)
@@ -243,14 +210,14 @@
                                 @focusin="open = true"
                                 @focusout="open = false"
                                 tabindex="0"
-                                class="relative inline-flex cursor-help text-red-500 outline-none"
+                                class="relative inline-flex cursor-help text-slate-400 outline-none"
                             >
                                 <x-heroicon-o-information-circle class="h-3.5 w-3.5" />
                                 <span
                                     x-show="open"
                                     x-cloak
                                     x-transition.opacity
-                                    class="pointer-events-none absolute left-1/2 top-full z-20 mt-1 w-64 -translate-x-1/2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[11px] font-normal normal-case tracking-normal text-slate-700 shadow-lg"
+                                    class="pointer-events-none absolute left-1/2 top-full z-20 mt-1 w-64 -translate-x-1/2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-normal normal-case tracking-normal text-slate-700 shadow-lg"
                                     role="tooltip"
                                 >
                                     {{ __('calculator.breakdown_mismatch_info') }}
@@ -265,7 +232,7 @@
                                     <span class="text-sm font-semibold text-slate-900">{{ $row['name'] }}</span>
                                     <span class="text-xs font-medium text-slate-700 whitespace-nowrap">{{ number_format($row['kcal'], 0) }} {{ __('recipes.kcal') }}</span>
                                 </div>
-                                <div class="text-[11px] text-slate-500">
+                                <div class="text-xs text-slate-500">
                                     {{ __('recipes.protein') }} {{ number_format($row['protein_g'], 1) }}{{ __('recipes.g') }}
                                     <span class="text-slate-400">·</span>
                                     {{ __('recipes.fat') }} {{ number_format($row['fat_g'], 1) }}{{ __('recipes.g') }}

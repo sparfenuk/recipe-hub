@@ -1,10 +1,9 @@
 <div>
-    {{-- Breadcrumb --}}
-    <nav class="mb-6 text-sm text-slate-500">
-        <a href="{{ route('cabinet') }}" class="transition-colors hover:text-emerald-600">{{ __('cabinet.dashboard') }}</a>
-        <span class="mx-2">/</span>
-        <span class="text-slate-900">{{ __('cabinet.calculations') }}</span>
-    </nav>
+    {{-- Breadcrumb (UX.8) --}}
+    <x-ui.breadcrumb :items="[
+        ['label' => __('cabinet.dashboard'), 'url' => route('cabinet')],
+        ['label' => __('cabinet.calculations')],
+    ]" />
 
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-slate-900">{{ __('cabinet.calculations') }}</h1>

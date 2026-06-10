@@ -260,3 +260,58 @@ test('catalog is accessible without login', function () {
         ->assertOk()
         ->assertSeeLivewire(RecipeBrowser::class);
 });
+
+test('activeFilterCount reflects applied filters (UX.4)', function () {
+    $category = Category::create(['slug' => 'mains', 'name' => 'Mains']);
+
+    $component = Livewire::test(RecipeBrowser::class)
+        ->call('toggleCategory', $category->id)
+        ->set('max_kcal', 400);
+
+    expect($component->instance()->activeFilterCount())->toBe(2);
+});
+
+test('removeDietTag removes a single diet tag (UX.4)', function () {
+    Livewire::test(RecipeBrowser::class)
+        ->set('diet_tags', [1, 2, 3])
+        ->call('removeDietTag', 2)
+        ->assertSet('diet_tags', [1, 3]);
+});
+
+test('removeAllergen removes a single allergen (UX.4)', function () {
+    Livewire::test(RecipeBrowser::class)
+        ->set('exclude_allergens', [4, 5])
+        ->call('removeAllergen', 4)
+        ->assertSet('exclude_allergens', [5]);
+});
+
+test('clearMaxKcal and clearSearch reset their filters (UX.4)', function () {
+    Livewire::test(RecipeBrowser::class)
+        ->set('max_kcal', 500)
+        ->set('search', 'pasta')
+        ->call('clearMaxKcal')
+        ->assertSet('max_kcal', null)
+        ->call('clearSearch')
+        ->assertSet('search', '');
+});
+
+test('removeIngredient drops a filter and notifies the autocomplete (UX.4)', function () {
+    Livewire::test(RecipeBrowser::class)
+        ->set('include_ingredients', [5, 6])
+        ->call('removeIngredient', 'include', 5)
+        ->assertSet('include_ingredients', [6])
+        ->assertDispatched('remove-ingredient', mode: 'include', id: 5);
+});
+
+test('active filter chips render above the results (UX.4)', function () {
+    $category = Category::create(['slug' => 'desserts', 'name' => 'Sweet Things']);
+    Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'category_id' => $category->id,
+        'title' => 'A Dessert',
+    ]);
+
+    Livewire::test(RecipeBrowser::class)
+        ->call('toggleCategory', $category->id)
+        ->assertSee(__('recipes.remove_filter').': Sweet Things');
+});

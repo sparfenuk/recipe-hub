@@ -1,10 +1,9 @@
 <div>
-    {{-- Breadcrumb --}}
-    <nav class="mb-6 text-sm text-slate-500">
-        <a href="{{ route('cabinet') }}" class="transition-colors hover:text-emerald-600">{{ __('cabinet.dashboard') }}</a>
-        <span class="mx-2">/</span>
-        <span class="text-slate-900">{{ __('cabinet.favorites') }}</span>
-    </nav>
+    {{-- Breadcrumb (UX.8) --}}
+    <x-ui.breadcrumb :items="[
+        ['label' => __('cabinet.dashboard'), 'url' => route('cabinet')],
+        ['label' => __('cabinet.favorites')],
+    ]" />
 
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-slate-900">{{ __('cabinet.favorites') }}</h1>
@@ -31,6 +30,21 @@
         </select>
     </div>
 
+    {{-- Undo affordance for a just-removed favorite (UX.17) --}}
+    @if ($recentlyRemovedId)
+        <div wire:key="undo-banner" class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
+            <span class="text-slate-600">{{ __('cabinet.favorite_removed') }}</span>
+            <div class="flex items-center gap-2">
+                <button wire:click="undoUnfavorite" type="button" class="font-semibold text-emerald-600 transition-colors hover:text-emerald-700">
+                    {{ __('cabinet.undo') }}
+                </button>
+                <button wire:click="dismissUndo" type="button" class="rounded p-1 text-slate-400 transition-colors hover:text-slate-600" aria-label="{{ __('recipes.gallery_close') }}">
+                    <x-heroicon-m-x-mark class="h-4 w-4" />
+                </button>
+            </div>
+        </div>
+    @endif
+
     @if ($recipes->isEmpty())
         <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 py-16 text-center">
             <x-heroicon-o-heart class="h-12 w-12 text-slate-300" />
@@ -42,61 +56,20 @@
     @else
         <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($recipes as $recipe)
-                <div class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-emerald-200 hover:shadow-md">
-                    {{-- Unfavorite button --}}
-                    <button
-                        wire:click="unfavorite({{ $recipe->id }})"
-                        wire:confirm="{{ __('cabinet.unfavorite_confirm') }}"
-                        type="button"
-                        class="absolute right-2 top-2 z-10 rounded-full bg-white/90 p-1.5 text-red-500 shadow-sm backdrop-blur transition hover:bg-red-50"
-                        title="{{ __('recipes.remove_favorite') }}"
-                    >
-                        <x-heroicon-s-heart class="h-5 w-5" />
-                    </button>
-
-                    <a href="{{ route('recipes.show', $recipe->slug) }}">
-                        {{-- Hero image --}}
-                        <div class="aspect-[3/2] overflow-hidden bg-slate-100">
-                            @if ($recipe->getFirstMediaUrl('hero', 'card'))
-                                <img
-                                    src="{{ $recipe->getFirstMediaUrl('hero', 'card') }}"
-                                    alt="{{ $recipe->title }}"
-                                    class="h-full w-full object-cover transition-transform group-hover:scale-105"
-                                    loading="lazy"
-                                >
-                            @else
-                                <div class="flex h-full items-center justify-center">
-                                    <x-heroicon-o-photo class="h-12 w-12 text-slate-300" />
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Content --}}
-                        <div class="p-4">
-                            <h3 class="font-semibold text-slate-900 group-hover:text-emerald-700">{{ $recipe->title }}</h3>
-
-                            <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                                @if ($recipe->display_kcal_per_serving)
-                                    <span class="inline-flex items-center gap-1">
-                                        <x-heroicon-o-fire class="h-3.5 w-3.5" />
-                                        {{ number_format((float) $recipe->display_kcal_per_serving, 0) }} {{ __('recipes.kcal_serving') }}
-                                    </span>
-                                @endif
-                                @if ($recipe->prep_time_min)
-                                    <span class="inline-flex items-center gap-1">
-                                        <x-heroicon-o-clock class="h-3.5 w-3.5" />
-                                        {{ $recipe->prep_time_min }} {{ __('recipes.min') }}
-                                    </span>
-                                @endif
-                                @if ($recipe->difficulty)
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5">
-                                        {{ ucfirst($recipe->difficulty->value) }}
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                <x-recipe-card :recipe="$recipe" variant="compact" wire:key="fav-{{ $recipe->id }}">
+                    <x-slot:overlay>
+                        {{-- Unfavorite (UX.17: no confirm dialog, undo instead) --}}
+                        <button
+                            wire:click="unfavorite({{ $recipe->id }})"
+                            type="button"
+                            class="absolute right-2 top-2 z-10 rounded-full bg-white/90 p-1.5 text-red-500 shadow-sm backdrop-blur transition hover:bg-red-50"
+                            title="{{ __('recipes.remove_favorite') }}"
+                            aria-label="{{ __('recipes.remove_favorite') }}"
+                        >
+                            <x-heroicon-s-heart class="h-5 w-5" />
+                        </button>
+                    </x-slot:overlay>
+                </x-recipe-card>
             @endforeach
         </div>
 

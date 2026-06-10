@@ -20,7 +20,7 @@
         @foreach ($locales as $code => $label)
             @if ($code !== $currentLocale)
                 <a
-                    href="?locale={{ $code }}"
+                    href="{{ request()->fullUrlWithQuery(['locale' => $code]) }}"
                     class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                 >
                     {{ $label }}

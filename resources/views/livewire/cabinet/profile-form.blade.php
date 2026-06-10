@@ -1,11 +1,9 @@
 <div>
-    {{-- Breadcrumb --}}
-    <div class="mb-6">
-        <a href="{{ route('cabinet') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-emerald-600">
-            <x-heroicon-o-arrow-left class="h-4 w-4" />
-            {{ __('cabinet.back_to_cabinet') }}
-        </a>
-    </div>
+    {{-- Breadcrumb (UX.8) --}}
+    <x-ui.breadcrumb :items="[
+        ['label' => __('cabinet.dashboard'), 'url' => route('cabinet')],
+        ['label' => __('cabinet.profile')],
+    ]" />
 
     <div class="mx-auto max-w-2xl">
         <h1 class="text-2xl font-bold text-slate-900">{{ __('cabinet.profile') }}</h1>
