@@ -8,7 +8,9 @@ use App\Models\Cuisine;
 use App\Models\Recipe;
 use App\Models\Tag;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -18,6 +20,9 @@ class RecipeBrowser extends Component
     use WithPagination;
 
     private const PAGE_SIZE = 12;
+
+    /** Seconds to cache the filter sidebar's taxonomy options (admin-only edits). */
+    private const FILTER_OPTIONS_TTL = 600;
 
     public int $perPage = self::PAGE_SIZE;
 
@@ -167,10 +172,33 @@ class RecipeBrowser extends Component
 
     public function render(): View
     {
-        $nameByLocale = 'name->'.app()->getLocale();
-
         return view('livewire.recipe-browser', [
             'recipes' => $this->getRecipes(),
+            ...$this->filterOptions(),
+        ])->layout('components.layouts.app', [
+            'title' => __('recipes.catalog').' — '.config('app.name'),
+            'metaDescription' => __('recipes.catalog_desc'),
+            'canonicalUrl' => route('recipes.index'),
+        ]);
+    }
+
+    /**
+     * Taxonomy options for the filter sidebar. The four whereHas() queries only
+     * change when a recipe is (un)published or taxonomies are edited — all
+     * admin-only — yet previously ran on every render (every search keystroke,
+     * every filter toggle). Cache them per locale; sort order is locale-dependent
+     * so the locale must be part of the key. A short TTL over event-based flush
+     * is the MVP-appropriate trade-off (CQ.5).
+     *
+     * @return array{categories: Collection<int, Category>, cuisines: Collection<int, Cuisine>, dietTags: Collection<int, Tag>, allergens: Collection<int, Allergen>}
+     */
+    private function filterOptions(): array
+    {
+        $locale = app()->getLocale();
+        $nameByLocale = 'name->'.$locale;
+
+        /** @var array{categories: Collection<int, Category>, cuisines: Collection<int, Cuisine>, dietTags: Collection<int, Tag>, allergens: Collection<int, Allergen>} $options */
+        $options = Cache::remember("recipe-filter-options:{$locale}", self::FILTER_OPTIONS_TTL, fn (): array => [
             'categories' => Category::whereHas('recipes', fn ($q) => $q->where('status', 'published'))->orderBy($nameByLocale)->get(),
             'cuisines' => Cuisine::whereHas('recipes', fn ($q) => $q->where('status', 'published'))->orderBy($nameByLocale)->get(),
             'dietTags' => Tag::where('type', 'diet')
@@ -178,11 +206,9 @@ class RecipeBrowser extends Component
                 ->orderBy($nameByLocale)->get(),
             'allergens' => Allergen::whereHas('ingredients.recipes', fn ($q) => $q->where('status', 'published'))
                 ->orderBy($nameByLocale)->get(),
-        ])->layout('components.layouts.app', [
-            'title' => __('recipes.catalog').' — '.config('app.name'),
-            'metaDescription' => __('recipes.catalog_desc'),
-            'canonicalUrl' => route('recipes.index'),
         ]);
+
+        return $options;
     }
 
     /** @return LengthAwarePaginator<int, Recipe> */
