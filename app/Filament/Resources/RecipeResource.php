@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RecipeResource\Pages;
+use App\Filament\Support\TranslatableSearch;
 use App\Models\Category;
 use App\Models\Cuisine;
 use App\Models\Ingredient;
@@ -313,13 +314,8 @@ class RecipeResource extends Resource
                     ->defaultImageUrl(url('/images/recipe-placeholder.svg'))
                     ->label(''),
                 TextColumn::make('title')
-                    ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->where(function (Builder $q) use ($search): void {
-                            $q->where('title->en', 'like', "%{$search}%")
-                                ->orWhere('title->uk', 'like', "%{$search}%");
-                        });
-                    })
-                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('title->'.app()->getLocale(), $direction))
+                    ->searchable(query: TranslatableSearch::for('title'))
+                    ->sortable(query: TranslatableSearch::sort('title'))
                     ->limit(40),
                 TextColumn::make('status')
                     ->badge()
