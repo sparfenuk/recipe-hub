@@ -6,6 +6,7 @@ use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Models\Unit;
 use App\Models\User;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -15,6 +16,17 @@ beforeEach(function () {
 
     $this->author = User::factory()->create();
     $this->unit = Unit::create(['code' => 'g', 'name' => 'gram', 'type' => 'mass', 'to_base_factor' => 1]);
+});
+
+test('originalServings cannot be tampered from the client', function () {
+    $recipe = Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'servings' => 4,
+    ]);
+
+    expect(fn () => Livewire::test(PortionCalculator::class, ['recipe' => $recipe])
+        ->set('originalServings', 1))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
 });
 
 test('calculator renders with default servings', function () {

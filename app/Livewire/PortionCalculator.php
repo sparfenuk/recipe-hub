@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Throwable;
 
@@ -26,6 +27,7 @@ class PortionCalculator extends Component
 {
     public Recipe $recipe;
 
+    #[Locked]
     public int $originalServings;
 
     public string $mode = 'servings';
