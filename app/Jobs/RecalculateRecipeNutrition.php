@@ -42,5 +42,13 @@ class RecalculateRecipeNutrition implements ShouldBeUnique, ShouldQueue
             'fiber_per_serving_g' => $totals->fiber_per_serving_g,
             'nutrition_cached_at' => now(),
         ])->saveQuietly();
+
+        // saveQuietly() suppresses model events, which includes Scout's automatic
+        // index sync. Re-index by hand so ingredient and nutrition changes reach
+        // Meilisearch; the guard keeps drafts out of the index (the collection-path
+        // searchable() does not check shouldBeSearchable() on its own).
+        if ($recipe->shouldBeSearchable()) {
+            $recipe->loadMissing('recipeIngredients.ingredient')->searchable();
+        }
     }
 }
