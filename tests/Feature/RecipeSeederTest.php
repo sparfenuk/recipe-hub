@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use App\Models\User;
 use Database\Seeders\AllergenSeeder;
@@ -41,7 +42,7 @@ it('seeds bilingual recipes from the fixture', function (): void {
 
     expect($first->getTranslation('title', 'en'))->toBe('Healthy crepes with Greek yogurt, cherries and cocoa')
         ->and($first->getTranslation('title', 'uk'))->toBe('Хелзі млинці з грецьким йогуртом, вишнями та какао')
-        ->and($first->status)->toBe('published')
+        ->and($first->status)->toBe(RecipeStatus::Published)
         ->and($first->published_at)->not->toBeNull();
 });
 

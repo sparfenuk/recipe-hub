@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Cabinet;
 
+use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -57,7 +58,7 @@ class FavoritesList extends Component
         $user = Auth::user();
 
         $query = $user->favorites()
-            ->where('status', 'published')
+            ->where('status', RecipeStatus::Published)
             ->with('media');
 
         if ($this->search !== '') {

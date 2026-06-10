@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,7 +27,7 @@ class RecipeDuplicationService
                 $clone->setTranslation('title', $locale, $value.' (Copy)');
             }
 
-            $clone->status = 'draft';
+            $clone->status = RecipeStatus::Draft;
             $clone->published_at = null;
             $clone->nutrition_cached_at = null;
             $clone->slug = $this->uniqueSlug($recipe);

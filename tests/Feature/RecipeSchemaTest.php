@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RecipeStatus;
 use App\Models\Category;
 use App\Models\Cuisine;
 use App\Models\Ingredient;
@@ -31,7 +32,7 @@ it('can create a recipe with all required fields', function () {
         ->and($recipe->slug)->toBe('cabbage-rolls')
         ->and($recipe->servings)->toBe(4)
         ->and($recipe->difficulty)->toBe('medium')
-        ->and($recipe->status)->toBe('draft')
+        ->and($recipe->status)->toBe(RecipeStatus::Draft)
         ->and($recipe->is_featured)->toBeFalse();
 });
 
@@ -211,14 +212,14 @@ it('cascade deletes recipe tags when recipe is deleted', function () {
 it('factory published state sets status and published_at', function () {
     $recipe = Recipe::factory()->published()->create();
 
-    expect($recipe->status)->toBe('published')
+    expect($recipe->status)->toBe(RecipeStatus::Published)
         ->and($recipe->published_at)->not->toBeNull();
 });
 
 it('factory archived state sets status', function () {
     $recipe = Recipe::factory()->archived()->create();
 
-    expect($recipe->status)->toBe('archived');
+    expect($recipe->status)->toBe(RecipeStatus::Archived);
 });
 
 it('recipe has media collections for hero and gallery', function () {
@@ -251,7 +252,7 @@ it('total_time_min is stored correctly', function () {
 
 it('status enum rejects invalid values', function () {
     Recipe::factory()->create(['status' => 'invalid']);
-})->throws(QueryException::class);
+})->throws(ValueError::class);
 
 it('difficulty enum rejects invalid values', function () {
     Recipe::factory()->create(['difficulty' => 'extreme']);

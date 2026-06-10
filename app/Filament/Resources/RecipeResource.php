@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\RecipeStatus;
 use App\Filament\Resources\RecipeResource\Pages;
 use App\Filament\Support\TranslatableSearch;
 use App\Models\Category;
@@ -116,13 +117,8 @@ class RecipeResource extends Resource
                             ->minValue(0)
                             ->default(0),
                         Select::make('status')
-                            ->options([
-                                'draft' => 'Draft',
-                                'review' => 'Review',
-                                'published' => 'Published',
-                                'archived' => 'Archived',
-                            ])
-                            ->default('draft')
+                            ->options(RecipeStatus::class)
+                            ->default(RecipeStatus::Draft)
                             ->required(),
                         Toggle::make('is_featured')
                             ->default(false),
@@ -320,13 +316,6 @@ class RecipeResource extends Resource
                     ->limit(40),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
-                        'review' => 'warning',
-                        'published' => 'success',
-                        'archived' => 'danger',
-                        default => 'gray',
-                    })
                     ->sortable(),
                 TextColumn::make('category.name')
                     ->label('Category')
@@ -405,7 +394,7 @@ class RecipeResource extends Resource
                             foreach ($records as $record) {
                                 /** @var Recipe $record */
                                 $record->update([
-                                    'status' => 'published',
+                                    'status' => RecipeStatus::Published,
                                     'published_at' => $record->published_at ?? now(),
                                 ]);
                             }
@@ -417,7 +406,7 @@ class RecipeResource extends Resource
                         ->action(function (Collection $records): void {
                             foreach ($records as $record) {
                                 /** @var Recipe $record */
-                                $record->update(['status' => 'archived']);
+                                $record->update(['status' => RecipeStatus::Archived]);
                             }
                         })
                         ->deselectRecordsAfterCompletion(),

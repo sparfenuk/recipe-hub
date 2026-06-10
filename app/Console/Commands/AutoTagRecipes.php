@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use App\Models\Tag;
 use Illuminate\Console\Command;
@@ -49,7 +50,7 @@ class AutoTagRecipes extends Command
         /** @var array<string, int> $stats */
         $stats = [];
 
-        Recipe::where('status', 'published')
+        Recipe::where('status', RecipeStatus::Published)
             ->with(['recipeIngredients.ingredient.allergens:id,slug'])
             ->chunkById(100, function ($recipes) use ($tagCache, $dryRun, &$stats): void {
                 foreach ($recipes as $recipe) {

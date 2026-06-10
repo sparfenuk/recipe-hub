@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\RecipeStatus;
 use App\Models\Allergen;
 use App\Models\Category;
 use App\Models\Cuisine;
@@ -204,12 +205,12 @@ class RecipeBrowser extends Component
 
         /** @var array{categories: Collection<int, Category>, cuisines: Collection<int, Cuisine>, dietTags: Collection<int, Tag>, allergens: Collection<int, Allergen>} $options */
         $options = Cache::remember("recipe-filter-options:{$locale}", self::FILTER_OPTIONS_TTL, fn (): array => [
-            'categories' => Category::whereHas('recipes', fn ($q) => $q->where('status', 'published'))->orderBy($nameByLocale)->get(),
-            'cuisines' => Cuisine::whereHas('recipes', fn ($q) => $q->where('status', 'published'))->orderBy($nameByLocale)->get(),
+            'categories' => Category::whereHas('recipes', fn ($q) => $q->where('status', RecipeStatus::Published))->orderBy($nameByLocale)->get(),
+            'cuisines' => Cuisine::whereHas('recipes', fn ($q) => $q->where('status', RecipeStatus::Published))->orderBy($nameByLocale)->get(),
             'dietTags' => Tag::where('type', 'diet')
-                ->whereHas('recipes', fn ($q) => $q->where('status', 'published'))
+                ->whereHas('recipes', fn ($q) => $q->where('status', RecipeStatus::Published))
                 ->orderBy($nameByLocale)->get(),
-            'allergens' => Allergen::whereHas('ingredients.recipes', fn ($q) => $q->where('status', 'published'))
+            'allergens' => Allergen::whereHas('ingredients.recipes', fn ($q) => $q->where('status', RecipeStatus::Published))
                 ->orderBy($nameByLocale)->get(),
         ]);
 
@@ -220,7 +221,7 @@ class RecipeBrowser extends Component
     private function getRecipes(): LengthAwarePaginator
     {
         $query = Recipe::query()
-            ->where('status', 'published')
+            ->where('status', RecipeStatus::Published)
             ->when($this->category_ids !== [], fn ($q) => $q->whereIn('category_id', $this->category_ids))
             ->when($this->cuisine_ids !== [], fn ($q) => $q->whereIn('cuisine_id', $this->cuisine_ids))
             ->when($this->max_kcal, fn ($q, $v) => $q->whereRaw('COALESCE(ref_kcal_per_serving, kcal_per_serving) <= ?', [$v]))

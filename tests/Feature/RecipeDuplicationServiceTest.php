@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RecipeStatus;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\Tag;
@@ -37,7 +38,7 @@ test('duplicate clones a recipe as a draft with copied relations', function () {
     $clone = $this->service->duplicate($original);
 
     expect($clone->is($original))->toBeFalse()
-        ->and($clone->status)->toBe('draft')
+        ->and($clone->status)->toBe(RecipeStatus::Draft)
         ->and($clone->published_at)->toBeNull()
         ->and($clone->nutrition_cached_at)->toBeNull()
         ->and($clone->slug)->toBe('source-recipe-copy')

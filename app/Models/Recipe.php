@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RecipeStatus;
 use Database\Factories\RecipeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,9 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Translatable\HasTranslations;
 
+/**
+ * @property RecipeStatus $status
+ */
 class Recipe extends Model implements AuditableContract, HasMedia
 {
     /** @use HasFactory<RecipeFactory> */
@@ -63,6 +67,7 @@ class Recipe extends Model implements AuditableContract, HasMedia
     protected function casts(): array
     {
         return [
+            'status' => RecipeStatus::class,
             'servings' => 'integer',
             'prep_time_min' => 'integer',
             'cook_time_min' => 'integer',
@@ -223,7 +228,7 @@ class Recipe extends Model implements AuditableContract, HasMedia
 
     public function shouldBeSearchable(): bool
     {
-        return $this->status === 'published';
+        return $this->status === RecipeStatus::Published;
     }
 
     /** @return array<string, mixed> */

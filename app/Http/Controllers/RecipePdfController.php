@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
@@ -14,7 +15,7 @@ class RecipePdfController extends Controller
     {
         $recipe = Recipe::query()
             ->where('slug', $slug)
-            ->where('status', 'published')
+            ->where('status', RecipeStatus::Published)
             ->with([
                 'author',
                 'category',

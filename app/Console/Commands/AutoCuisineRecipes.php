@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\RecipeStatus;
 use App\Models\Cuisine;
 use App\Models\Recipe;
 use Illuminate\Console\Command;
@@ -49,7 +50,7 @@ class AutoCuisineRecipes extends Command
         /** @var array<string, int> $alreadyAssigned */
         $alreadyAssigned = [];
         $alreadyRows = DB::table('recipes')
-            ->where('status', 'published')
+            ->where('status', RecipeStatus::Published)
             ->whereNotNull('cuisine_id')
             ->select('cuisine_id', DB::raw('COUNT(*) as cnt'))
             ->groupBy('cuisine_id')
@@ -67,7 +68,7 @@ class AutoCuisineRecipes extends Command
         $stats = [];
         $unmatched = 0;
 
-        Recipe::where('status', 'published')
+        Recipe::where('status', RecipeStatus::Published)
             ->whereNull('cuisine_id')
             ->chunkById(100, function ($recipes) use ($cuisineCache, $dryRun, &$stats, &$unmatched): void {
                 foreach ($recipes as $recipe) {

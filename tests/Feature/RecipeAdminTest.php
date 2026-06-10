@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RecipeStatus;
 use App\Filament\Resources\RecipeResource;
 use App\Filament\Resources\RecipeResource\Pages\CreateRecipe;
 use App\Filament\Resources\RecipeResource\Pages\EditRecipe;
@@ -276,9 +277,9 @@ test('bulk publish sets status and published_at', function () {
         ->test(ListRecipes::class)
         ->callTableBulkAction('publish', [$draft1, $draft2]);
 
-    expect($draft1->fresh()->status)->toBe('published')
+    expect($draft1->fresh()->status)->toBe(RecipeStatus::Published)
         ->and($draft1->fresh()->published_at)->not->toBeNull()
-        ->and($draft2->fresh()->status)->toBe('published')
+        ->and($draft2->fresh()->status)->toBe(RecipeStatus::Published)
         ->and($draft2->fresh()->published_at)->not->toBeNull();
 });
 
@@ -289,7 +290,7 @@ test('bulk archive sets status', function () {
         ->test(ListRecipes::class)
         ->callTableBulkAction('archive', [$published]);
 
-    expect($published->fresh()->status)->toBe('archived');
+    expect($published->fresh()->status)->toBe(RecipeStatus::Archived);
 });
 
 test('duplicate action creates a copy', function () {
@@ -322,7 +323,7 @@ test('duplicate action creates a copy', function () {
 
     expect($clone)->not->toBeNull()
         ->and($clone->title)->toBe('Original Recipe (Copy)')
-        ->and($clone->status)->toBe('draft')
+        ->and($clone->status)->toBe(RecipeStatus::Draft)
         ->and($clone->published_at)->toBeNull()
         ->and($clone->recipeIngredients)->toHaveCount(1)
         ->and($clone->steps)->toHaveCount(1)

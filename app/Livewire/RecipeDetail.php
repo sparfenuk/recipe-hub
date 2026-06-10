@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Models\RecipeStep;
@@ -18,7 +19,7 @@ class RecipeDetail extends Component
     {
         $this->recipe = Recipe::query()
             ->where('slug', $slug)
-            ->where('status', 'published')
+            ->where('status', RecipeStatus::Published)
             ->with([
                 'author',
                 'category',
