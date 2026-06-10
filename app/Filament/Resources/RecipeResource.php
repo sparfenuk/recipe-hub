@@ -201,7 +201,7 @@ class RecipeResource extends Resource
                             ->collapsible()
                             ->cloneable()
                             ->itemLabel(fn (array $state): ?string => ($state['ingredient_id'] ?? null)
-                                ? Ingredient::find($state['ingredient_id'])?->name
+                                ? Ingredient::find((int) $state['ingredient_id'])?->name
                                 : null),
                     ]),
 

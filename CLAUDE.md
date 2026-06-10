@@ -23,7 +23,7 @@ sail artisan / sail composer / sail npm / sail test / sail shell
 
 # Quality gates (all must pass before task is done)
 sail composer pint          # formatter
-sail composer larastan      # static analysis (level 6)
+sail composer larastan      # static analysis (level 7)
 sail test                   # Pest
 ```
 

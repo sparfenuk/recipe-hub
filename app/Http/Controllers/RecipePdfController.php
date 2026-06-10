@@ -86,7 +86,7 @@ class RecipePdfController extends Controller
             $cropY = (int) round(($srcH - $cropH) / 2);
         }
 
-        $dst = imagecreatetruecolor($targetW, $targetH);
+        $dst = imagecreatetruecolor(max(1, $targetW), max(1, $targetH));
         imagecopyresampled($dst, $src, 0, 0, $cropX, $cropY, $targetW, $targetH, $cropW, $cropH);
 
         ob_start();
