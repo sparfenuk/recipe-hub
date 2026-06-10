@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\RecipeDifficulty;
 use App\Enums\RecipeStatus;
 use App\Models\Recipe;
 use App\Models\User;
@@ -31,7 +32,7 @@ class RecipeFactory extends Factory
             'prep_time_min' => $prep,
             'cook_time_min' => $cook,
             'total_time_min' => $prep + $cook,
-            'difficulty' => fake()->randomElement(['easy', 'medium', 'hard']),
+            'difficulty' => fake()->randomElement(RecipeDifficulty::cases()),
             'author_id' => User::factory(),
             'status' => RecipeStatus::Draft,
             'is_featured' => false,

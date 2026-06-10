@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RecipeDifficulty;
 use App\Enums\RecipeStatus;
 use Database\Factories\RecipeFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,6 +22,7 @@ use Spatie\Translatable\HasTranslations;
 
 /**
  * @property RecipeStatus $status
+ * @property RecipeDifficulty $difficulty
  */
 class Recipe extends Model implements AuditableContract, HasMedia
 {
@@ -68,6 +70,7 @@ class Recipe extends Model implements AuditableContract, HasMedia
     {
         return [
             'status' => RecipeStatus::class,
+            'difficulty' => RecipeDifficulty::class,
             'servings' => 'integer',
             'prep_time_min' => 'integer',
             'cook_time_min' => 'integer',

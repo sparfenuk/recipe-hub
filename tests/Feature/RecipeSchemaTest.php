@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RecipeDifficulty;
 use App\Enums\RecipeStatus;
 use App\Models\Category;
 use App\Models\Cuisine;
@@ -31,7 +32,7 @@ it('can create a recipe with all required fields', function () {
     expect($recipe->title)->toBe('Cabbage Rolls')
         ->and($recipe->slug)->toBe('cabbage-rolls')
         ->and($recipe->servings)->toBe(4)
-        ->and($recipe->difficulty)->toBe('medium')
+        ->and($recipe->difficulty)->toBe(RecipeDifficulty::Medium)
         ->and($recipe->status)->toBe(RecipeStatus::Draft)
         ->and($recipe->is_featured)->toBeFalse();
 });
@@ -256,4 +257,4 @@ it('status enum rejects invalid values', function () {
 
 it('difficulty enum rejects invalid values', function () {
     Recipe::factory()->create(['difficulty' => 'extreme']);
-})->throws(QueryException::class);
+})->throws(ValueError::class);

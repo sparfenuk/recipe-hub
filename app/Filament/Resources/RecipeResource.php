@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\RecipeDifficulty;
 use App\Enums\RecipeStatus;
 use App\Filament\Resources\RecipeResource\Pages;
 use App\Filament\Support\TranslatableSearch;
@@ -93,12 +94,8 @@ class RecipeResource extends Resource
                             ->preload()
                             ->nullable(),
                         Select::make('difficulty')
-                            ->options([
-                                'easy' => 'Easy',
-                                'medium' => 'Medium',
-                                'hard' => 'Hard',
-                            ])
-                            ->default('medium')
+                            ->options(RecipeDifficulty::class)
+                            ->default(RecipeDifficulty::Medium)
                             ->required(),
                         TextInput::make('servings')
                             ->numeric()
@@ -335,12 +332,6 @@ class RecipeResource extends Resource
                     ->toggleable(),
                 TextColumn::make('difficulty')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'easy' => 'success',
-                        'medium' => 'warning',
-                        'hard' => 'danger',
-                        default => 'gray',
-                    })
                     ->toggleable(),
                 IconColumn::make('is_featured')
                     ->label('Featured')

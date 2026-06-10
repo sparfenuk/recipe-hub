@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RecipeDifficulty;
 use App\Enums\RecipeStatus;
 use App\Filament\Resources\RecipeResource;
 use App\Filament\Resources\RecipeResource\Pages\CreateRecipe;
@@ -67,7 +68,7 @@ test('admin can create a recipe', function () {
     expect($recipe)->not->toBeNull()
         ->and($recipe->title)->toBe('Test Recipe')
         ->and($recipe->servings)->toBe(4)
-        ->and($recipe->difficulty)->toBe('easy')
+        ->and($recipe->difficulty)->toBe(RecipeDifficulty::Easy)
         ->and($recipe->author_id)->toBe($this->admin->id)
         ->and($recipe->total_time_min)->toBe(45);
 });

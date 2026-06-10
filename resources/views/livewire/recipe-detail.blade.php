@@ -57,7 +57,7 @@
             @endif
             @if ($recipe->difficulty)
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1">
-                    {{ __('recipes.difficulty_' . $recipe->difficulty) }}
+                    {{ __('recipes.difficulty_' . $recipe->difficulty->value) }}
                 </span>
             @endif
             @if ($recipe->cuisine)
