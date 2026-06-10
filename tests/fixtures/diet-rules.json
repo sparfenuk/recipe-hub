@@ -1,0 +1,6 @@
+{
+    "rules": [
+        { "tag": "gluten-free", "exclude_allergens": ["gluten"] },
+        { "tag": "nut-free", "exclude_ingredient_keywords": ["almond", "peanut"] }
+    ]
+}

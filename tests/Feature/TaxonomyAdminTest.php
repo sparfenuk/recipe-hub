@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TagType;
 use App\Filament\Resources\AllergenResource;
 use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\CuisineResource;
@@ -128,7 +129,7 @@ test('admin can create a tag', function () {
         ]);
 
     expect(Tag::where('slug', 'keto')->exists())->toBeTrue()
-        ->and(Tag::where('slug', 'keto')->first()->type)->toBe('diet');
+        ->and(Tag::where('slug', 'keto')->first()->type)->toBe(TagType::Diet);
 });
 
 test('admin can edit a tag', function () {

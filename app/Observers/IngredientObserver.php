@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Jobs\RecalculateRecipeNutrition;
 use App\Models\Ingredient;
+use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 
 class IngredientObserver
@@ -18,9 +19,18 @@ class IngredientObserver
         'piece_weight_g',
     ];
 
+    /**
+     * Columns that change a recipe's searchable payload (ingredient_names_*)
+     * without affecting its nutrition.
+     */
+    private const SEARCH_COLUMNS = ['name'];
+
     public function updated(Ingredient $ingredient): void
     {
-        if (! $ingredient->wasChanged(self::NUTRITION_COLUMNS)) {
+        $nutritionChanged = $ingredient->wasChanged(self::NUTRITION_COLUMNS);
+        $searchChanged = $ingredient->wasChanged(self::SEARCH_COLUMNS);
+
+        if (! $nutritionChanged && ! $searchChanged) {
             return;
         }
 
@@ -28,8 +38,27 @@ class IngredientObserver
             ->distinct()
             ->pluck('recipe_id');
 
-        foreach ($recipeIds as $recipeId) {
-            RecalculateRecipeNutrition::dispatch($recipeId);
+        if ($recipeIds->isEmpty()) {
+            return;
         }
+
+        if ($nutritionChanged) {
+            // The recompute job ends with searchable(), so dispatching it also
+            // refreshes the search index — one path covers nutrition + rename.
+            foreach ($recipeIds as $recipeId) {
+                RecalculateRecipeNutrition::dispatch($recipeId);
+            }
+
+            return;
+        }
+
+        // Name-only change: no nutrition recompute needed, just refresh the index.
+        // Filter on shouldBeSearchable() so drafts stay out (the per-model
+        // searchable() does not check it the way Scout's save observer does).
+        Recipe::whereKey($recipeIds)->get()->each(function (Recipe $recipe): void {
+            if ($recipe->shouldBeSearchable()) {
+                $recipe->searchable();
+            }
+        });
     }
 }

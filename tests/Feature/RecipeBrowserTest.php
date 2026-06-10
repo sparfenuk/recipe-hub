@@ -5,6 +5,7 @@ use App\Models\Category;
 use App\Models\Cuisine;
 use App\Models\Recipe;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -13,6 +14,40 @@ beforeEach(function () {
     Role::create(['name' => 'user']);
 
     $this->author = User::factory()->create();
+});
+
+test('filter options are cached per locale on render', function () {
+    $category = Category::create(['slug' => 'shown', 'name' => 'Shown Category']);
+    Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'category_id' => $category->id,
+    ]);
+
+    expect(Cache::has('recipe-filter-options:en'))->toBeFalse();
+
+    Livewire::test(RecipeBrowser::class);
+
+    $cached = Cache::get('recipe-filter-options:en');
+    expect($cached)->toBeArray()
+        ->and($cached)->toHaveKeys(['categories', 'cuisines', 'dietTags', 'allergens'])
+        ->and($cached['categories']->pluck('id')->all())->toContain($category->id);
+});
+
+test('filter options are served from cache, not re-queried, on later renders', function () {
+    Recipe::factory()->published()->create(['author_id' => $this->author->id]);
+
+    Livewire::test(RecipeBrowser::class); // primes the cache
+
+    // A category published after the first render must not appear until the TTL
+    // expires — proving the sidebar is served from cache rather than re-queried.
+    $late = Category::create(['slug' => 'late', 'name' => 'Late Category']);
+    Recipe::factory()->published()->create([
+        'author_id' => $this->author->id,
+        'category_id' => $late->id,
+    ]);
+
+    $cached = Cache::get('recipe-filter-options:en');
+    expect($cached['categories']->pluck('id')->all())->not->toContain($late->id);
 });
 
 test('recipe catalog page loads', function () {

@@ -5,10 +5,13 @@ namespace App\Livewire;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class FavoriteButton extends Component
 {
+    #[Locked]
     public int $recipeId;
 
     public bool $isFavorited = false;
@@ -31,6 +34,12 @@ class FavoriteButton extends Component
 
             return;
         }
+
+        $key = 'favorite-toggle:'.Auth::id();
+        if (RateLimiter::tooManyAttempts($key, 30)) {
+            return;
+        }
+        RateLimiter::hit($key, 60);
 
         /** @var User $user */
         $user = Auth::user();

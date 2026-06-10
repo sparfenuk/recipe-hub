@@ -1,6 +1,10 @@
 <?php
 
+use App\Livewire\Cabinet\CalculationHistory;
+use App\Livewire\Cabinet\ProfileForm;
+use App\Livewire\FavoriteButton;
 use App\Livewire\PortionCalculator;
+use App\Models\CalculatorSession;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
@@ -147,6 +151,65 @@ test('calculator save succeeds within rate limit', function () {
         ->call('saveCalculation')
         ->assertHasNoErrors('save')
         ->assertSet('saved', true);
+});
+
+test('favorite toggle is rate limited', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->published()->create();
+
+    $key = 'favorite-toggle:'.$user->id;
+    RateLimiter::clear($key);
+    for ($i = 0; $i < 30; $i++) {
+        RateLimiter::hit($key, 60);
+    }
+
+    Livewire::actingAs($user)
+        ->test(FavoriteButton::class, ['recipeId' => $recipe->id])
+        ->call('toggle')
+        ->assertSet('isFavorited', false);
+
+    expect($user->favorites()->count())->toBe(0);
+});
+
+test('profile save is rate limited', function () {
+    $user = User::factory()->create();
+
+    $key = 'profile-save:'.$user->id;
+    RateLimiter::clear($key);
+    for ($i = 0; $i < 30; $i++) {
+        RateLimiter::hit($key, 60);
+    }
+
+    Livewire::actingAs($user)
+        ->test(ProfileForm::class)
+        ->set('name', 'New Name')
+        ->call('save')
+        ->assertHasErrors('name');
+});
+
+test('calculation history delete is rate limited', function () {
+    $user = User::factory()->create();
+    $recipe = Recipe::factory()->published()->create();
+    $session = CalculatorSession::create([
+        'user_id' => $user->id,
+        'recipe_id' => $recipe->id,
+        'mode' => 'servings',
+        'input_value' => 4,
+        'scale_factor' => 1.0,
+        'totals' => [],
+    ]);
+
+    $key = 'calc-delete:'.$user->id;
+    RateLimiter::clear($key);
+    for ($i = 0; $i < 30; $i++) {
+        RateLimiter::hit($key, 60);
+    }
+
+    Livewire::actingAs($user)
+        ->test(CalculationHistory::class)
+        ->call('delete', $session->id);
+
+    expect(CalculatorSession::find($session->id))->not->toBeNull();
 });
 
 test('auth rate limiter is defined', function () {
