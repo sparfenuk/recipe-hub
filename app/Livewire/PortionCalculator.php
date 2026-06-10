@@ -6,7 +6,7 @@ use App\Models\CalculatorSession;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Models\User;
-use App\Services\Nutrition\UnitConverter;
+use App\Services\Nutrition\NutritionCalculator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use Throwable;
 
 /**
  * @property-read int|null $dailyKcalTarget
@@ -208,37 +207,26 @@ class PortionCalculator extends Component
     private function computeIngredientBreakdown(float $factor): Collection
     {
         $this->recipe->loadMissing('recipeIngredients.ingredient', 'recipeIngredients.unit');
+        $calculator = app(NutritionCalculator::class);
 
         return $this->recipe->recipeIngredients
-            ->map(function (RecipeIngredient $ri) use ($factor): ?array {
+            ->map(function (RecipeIngredient $ri) use ($factor, $calculator): ?array {
+                $contribution = $calculator->contributionFor($ri);
                 $ingredient = $ri->ingredient;
 
-                if ($ingredient === null || $ri->unit === null || $ri->is_optional) {
+                if ($contribution === null || $ingredient === null) {
                     return null;
                 }
 
-                try {
-                    $grams = $ri->grams_override !== null
-                        ? (float) $ri->grams_override
-                        : UnitConverter::toGrams(
-                            (float) $ri->amount,
-                            $ri->unit,
-                            $ingredient->density_g_per_ml !== null ? (float) $ingredient->density_g_per_ml : null,
-                            $ingredient->piece_weight_g !== null ? (float) $ingredient->piece_weight_g : null,
-                        );
-                } catch (Throwable) {
-                    return null;
-                }
-
-                $per100 = $grams * $factor / 100;
-
+                // contributionFor() returns the unscaled (whole-recipe) macros;
+                // multiply by the caller's per-serving / scale factor here.
                 return [
                     'name' => $ingredient->name,
-                    'kcal' => round($per100 * (float) ($ingredient->kcal_per_100g ?? 0), 1),
-                    'protein_g' => round($per100 * (float) ($ingredient->protein_g ?? 0), 1),
-                    'fat_g' => round($per100 * (float) ($ingredient->fat_g ?? 0), 1),
-                    'carbs_g' => round($per100 * (float) ($ingredient->carbs_g ?? 0), 1),
-                    'fiber_g' => round($per100 * (float) ($ingredient->fiber_g ?? 0), 1),
+                    'kcal' => round($contribution->kcal * $factor, 1),
+                    'protein_g' => round($contribution->protein_g * $factor, 1),
+                    'fat_g' => round($contribution->fat_g * $factor, 1),
+                    'carbs_g' => round($contribution->carbs_g * $factor, 1),
+                    'fiber_g' => round($contribution->fiber_g * $factor, 1),
                 ];
             })
             ->filter(fn (?array $row): bool => $row !== null && $row['kcal'] > 0)
