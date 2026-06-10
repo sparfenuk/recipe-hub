@@ -38,7 +38,7 @@ class EnrichIngredients extends Command
         }
 
         /** @var array{by_keyword: list<array{allergen: string, keywords: list<string>}>, by_category: list<array{allergen: string, category_slugs: list<string>}>} $rules */
-        $rules = json_decode((string) file_get_contents($rulesPath), true);
+        $rules = json_decode((string) file_get_contents($rulesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->keywordRules = $rules['by_keyword'];
         $this->categoryRules = $rules['by_category'];
         $this->allergenCache = Allergen::pluck('id', 'slug')->all();

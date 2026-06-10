@@ -32,7 +32,7 @@ class AutoCuisineRecipes extends Command
         }
 
         /** @var array{rules: list<array{cuisine: string, keywords: list<string>}>} $parsed */
-        $parsed = json_decode((string) file_get_contents($rulesPath), true);
+        $parsed = json_decode((string) file_get_contents($rulesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->rules = $parsed['rules'];
 
         $cuisineCache = Cuisine::pluck('id', 'slug')->all();

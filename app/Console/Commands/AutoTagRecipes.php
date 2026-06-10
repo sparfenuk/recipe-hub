@@ -33,7 +33,7 @@ class AutoTagRecipes extends Command
         }
 
         /** @var array{rules: list<array{tag: string, exclude_allergens?: list<string>, exclude_ingredient_keywords?: list<string>}>} $parsed */
-        $parsed = json_decode((string) file_get_contents($rulesPath), true);
+        $parsed = json_decode((string) file_get_contents($rulesPath), true, flags: JSON_THROW_ON_ERROR);
         $this->rules = $parsed['rules'];
 
         $tagCache = Tag::where('type', 'diet')->pluck('id', 'slug')->all();
