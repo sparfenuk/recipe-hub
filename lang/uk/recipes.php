@@ -58,4 +58,34 @@ return [
     'no_ingredients_found' => 'Інгредієнтів не знайдено.',
     'selected_count' => '{1} :count вибрано|[2,4] :count вибрано|[5,*] :count вибрано',
 
+    // Active-filter chips + mobile filter panel (UX.4)
+    'active_filters' => 'Активні фільтри',
+    'remove_filter' => 'Прибрати фільтр',
+    'clear_all' => 'Очистити все',
+    'chip_max_kcal' => '≤ :value ккал/порц',
+    'chip_max_prep' => '≤ :value хв',
+
+    // Catalog view toggle (UX.22)
+    'view_grid' => 'Сітка',
+    'view_list' => 'Список',
+
+    // Scaled-amount banner on the ingredient list (UX.3)
+    'amounts_for_servings' => 'Кількість указана для :servings порцій',
+    'amounts_scaled' => 'Кількість підлаштована під ваш калькулятор',
+    'show_original_amounts' => 'показати оригінал',
+
+    // Related recipes (UX.18)
+    'more_from_category' => 'Більше з категорії «:category»',
+
+    // Cook-mode ingredient checklist (UX.19)
+    'tick_ingredient' => 'Позначити інгредієнт як підготовлений',
+
+    // Gallery lightbox (UX.20)
+    'gallery_close' => 'Закрити',
+    'gallery_prev' => 'Попереднє зображення',
+    'gallery_next' => 'Наступне зображення',
+
+    // Guest favourite affordance (UX.23)
+    'login_to_save' => 'Увійдіть, щоб зберегти',
+
 ];

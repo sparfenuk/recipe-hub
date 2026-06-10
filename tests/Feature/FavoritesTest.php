@@ -5,6 +5,7 @@ use App\Livewire\FavoriteButton;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -14,6 +15,23 @@ beforeEach(function () {
 
     $this->user = User::factory()->create();
     $this->user->assignRole('user');
+});
+
+test('favorite button recipeId cannot be tampered from the client', function () {
+    $recipe = Recipe::factory()->published()->create();
+    $other = Recipe::factory()->published()->create();
+
+    expect(fn () => Livewire::actingAs($this->user)
+        ->test(FavoriteButton::class, ['recipeId' => $recipe->id])
+        ->set('recipeId', $other->id))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
+});
+
+test('favorites list recentlyRemovedId cannot be tampered from the client', function () {
+    expect(fn () => Livewire::actingAs($this->user)
+        ->test(FavoritesList::class)
+        ->set('recentlyRemovedId', 999999))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
 });
 
 test('user can favorite a recipe', function () {
@@ -226,4 +244,21 @@ test('duplicate favorite is prevented by composite primary key', function () {
 
     expect(fn () => $this->user->favorites()->attach($recipe->id))
         ->toThrow(QueryException::class);
+});
+
+test('user can undo removing a favorite (UX.17)', function () {
+    $recipe = Recipe::factory()->published()->create(['title' => 'Undo Me']);
+    $this->user->favorites()->attach($recipe->id);
+
+    Livewire::actingAs($this->user)
+        ->test(FavoritesList::class)
+        ->call('unfavorite', $recipe->id)
+        ->assertSet('recentlyRemovedId', $recipe->id)
+        ->assertSee(__('cabinet.favorite_removed'))
+        ->assertDontSee('Undo Me')
+        ->call('undoUnfavorite')
+        ->assertSet('recentlyRemovedId', null)
+        ->assertSee('Undo Me');
+
+    expect($this->user->favorites()->where('recipe_id', $recipe->id)->exists())->toBeTrue();
 });

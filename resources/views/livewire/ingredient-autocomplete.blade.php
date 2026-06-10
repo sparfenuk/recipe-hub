@@ -1,4 +1,4 @@
-<div x-data="{ open: false }" @click.outside="open = false" class="relative">
+<div x-data="listNav()" @click.outside="close()" class="relative">
     <label class="block text-sm font-medium text-slate-700">
         {{ $mode === 'include' ? __('recipes.include_ingredients') : __('recipes.exclude_ingredients') }}
     </label>
@@ -16,6 +16,7 @@
                     <button
                         type="button"
                         wire:click="removeIngredient({{ $id }})"
+                        aria-label="{{ __('recipes.remove_filter') }}: {{ $name }}"
                         @class([
                             'rounded-full p-0.5 transition-colors',
                             'hover:bg-emerald-200' => $mode === 'include',
@@ -29,7 +30,7 @@
         </div>
     @endif
 
-    {{-- Search input --}}
+    {{-- Search input (combobox) --}}
     <div class="relative mt-1">
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <x-heroicon-o-magnifying-glass class="h-4 w-4 text-slate-400" />
@@ -37,8 +38,14 @@
         <input
             type="text"
             wire:model.live.debounce.300ms="query"
-            @focus="open = true"
-            @keydown.escape="open = false"
+            @focus="openPanel()"
+            @keydown="onKeydown($event)"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="ac-list-{{ $mode }}"
+            aria-label="{{ $mode === 'include' ? __('recipes.include_ingredients') : __('recipes.exclude_ingredients') }}"
+            :aria-expanded="open"
+            :aria-activedescendant="activeIndex >= 0 ? 'ac-opt-{{ $mode }}-' + activeIndex : null"
             placeholder="{{ __('recipes.ingredient_search_placeholder') }}"
             autocomplete="off"
             class="block w-full rounded-lg border-slate-300 pl-9 text-sm shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
@@ -54,6 +61,9 @@
     {{-- Dropdown results --}}
     @if (mb_strlen($query) >= 2)
         <ul
+            x-ref="list"
+            id="ac-list-{{ $mode }}"
+            role="listbox"
             x-show="open"
             x-cloak
             x-transition:enter="transition ease-out duration-100"
@@ -68,9 +78,14 @@
                 <li wire:key="result-{{ $ingredient->id }}">
                     <button
                         type="button"
+                        role="option"
+                        id="ac-opt-{{ $mode }}-{{ $loop->index }}"
+                        :aria-selected="activeIndex === {{ $loop->index }}"
                         wire:click="selectIngredient({{ $ingredient->id }}, {{ Js::from($ingredient->name) }})"
-                        @click="open = false"
+                        @click="close()"
+                        @mouseenter="activeIndex = {{ $loop->index }}"
                         class="flex w-full items-center px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                        :class="{ 'bg-emerald-50 text-emerald-700': activeIndex === {{ $loop->index }} }"
                     >
                         {{ $ingredient->name }}
                     </button>

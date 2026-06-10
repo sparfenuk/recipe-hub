@@ -5,10 +5,12 @@ namespace App\Livewire;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class FavoriteButton extends Component
 {
+    #[Locked]
     public int $recipeId;
 
     public bool $isFavorited = false;

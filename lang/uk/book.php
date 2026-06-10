@@ -212,4 +212,7 @@ return [
     'nav_book' => 'Книга',
     'nav_author' => 'Автор',
 
+    // Home page <title> / og:title (UX.6)
+    'home_meta_title' => 'Recipe Hub — рецепти з калькулятором калорій та порцій',
+
 ];
