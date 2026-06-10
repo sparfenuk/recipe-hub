@@ -148,6 +148,11 @@ class RecipeBrowser extends Component
 
     public function loadMore(): void
     {
+        // "Load more" grows the page size while getRecipes() always fetches page 1,
+        // so click N re-transfers the rows from clicks 1..N (quadratic over a
+        // session). Deliberate for an MVP catalog of dozens of recipes — it keeps
+        // Livewire state trivial. If the catalog grows into the hundreds, switch to
+        // cursor pagination with an accumulated id list. (CQ.6)
         $this->perPage += self::PAGE_SIZE;
     }
 
@@ -253,6 +258,7 @@ class RecipeBrowser extends Component
             ->when($this->search === '' && $this->sort === 'newest', fn ($q) => $q->orderByDesc('published_at'))
             ->when($this->sort === 'lowest_kcal', fn ($q) => $q->orderByRaw('COALESCE(ref_kcal_per_serving, kcal_per_serving) asc'))
             ->when($this->sort === 'shortest_prep', fn ($q) => $q->orderBy('prep_time_min'))
+            // Always page 1 with a growing perPage — see loadMore() for the trade-off.
             ->paginate($this->perPage, ['*'], 'page', 1);
     }
 }
